@@ -23,7 +23,7 @@
 				| <a href="/help">Help</a> 
 				| <a href="/logout">Log Out</a>
 
-</div>
+</div> <!-- /#nav -->
 
 <h1>BlogMarks.net</h1>
 
@@ -34,7 +34,7 @@
 <input type="submit" value="Search" />
 </form>
 
-<ul>
+
 
 <?php
 
@@ -51,10 +51,13 @@ array( 'user' => $userlogin,
 */
 
 
-$params = array( 'user_login' => 'znarf',
-				 'order_by' => 'created DESC',
-				// 'include_tags' => array( 'blog') ,
+$params = array( 
+			 'user_login' => 'znarf',
+			 'order_by' => array('created', 'DESC'),
+	//		'include_tags' => array( 'blog') ,
 				 'select_priv' => true );
+
+if ( isset( $_GET['include_tags'] ))  $params['include_tags'] = array( $_GET['include_tags'] );
 
 $list =& $marker->getMarksList( $params );
 
@@ -62,18 +65,33 @@ if ( Blogmarks::isError($list) ) die( $list->getMessage() );
 
 if ( DB::isError($list) ) die( $list->getMessage() );
 
- while ( $list->fetch() ) {
+$i = 0;
+
+$string_date_prev = '';
+
+while ( $list->fetch() ) {
+
+
+		$timestamp = dcdate2php( $list->created );
+
+		$string_date = date( "j/m/Y" ,  $timestamp );
+
+		if ($string_date_prev != $string_date) {
+			if ( $i != 0 ) echo "</ul>";
+			echo "<h3>" . $string_date . "</h3><ul>";
+		}
+		$string_date_prev = $string_date;
 		
 		echo '<li>';
 
 	//	print_r( $list );
 
-	//	print_r( $list->getHref() );
+	//		print_r( $list->getHref() );
 
 		echo '<a href="' .  $list->getHref() . '">' . $list->title . '</a>' . ' : ' . $list->summary;
        // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
 
-		echo ' (' . $list->created . ')';
+	//	echo ' (' . dcdate2php( $list->created ) . ')';
         
         echo " [ ";
         foreach ( $list->getTags() as $tag ) echo "$tag ";
@@ -84,30 +102,12 @@ if ( DB::isError($list) ) die( $list->getMessage() );
 		echo '<a onclick="return confirmDelete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
 
 		echo '</li>';
+
+		$i ++;
     }
 
 ?>
 
-</ul>
-
-<h3>1er avril 2004</h3>
-
-<ul>
-<li>D</li>
-<li>fffd</li>
-<li>fdfdfg</li>
-<li>efdt</li>
-<li></li>
-</ul>
-
-<h3>12 mars 2004</h3>
-
-<ul>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
 </ul>
 
 <hr />
@@ -138,8 +138,6 @@ if ( DB::isError($list) ) die( $list->getMessage() );
 
 <p><a href="javascript:url=location.href;title=document.title;void( open('http://localhost/bm/blogmarks.net/new_popup.php?url='+escape(url)+'&title='+escape(title),'BlogMarks', 'location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no'));">Simple fuckin bookmarklet</a></p>
 
-
-
-</div>
+</div> <!-- /#conteneur -->
 
 </body></html>

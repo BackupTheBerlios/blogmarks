@@ -12,7 +12,7 @@
 
 if ( isset( $_GET['mini'] ) ) 
 
-	echo '<body class="mini">';
+	echo '<body onload="window.focus()" class="mini">';
 
 else
 

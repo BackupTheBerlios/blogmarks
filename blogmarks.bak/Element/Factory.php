@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Element_Factory
- * @version    $Id: Factory.php,v 1.1 2004/03/02 17:29:14 mbertier Exp $
+ * @version    $Id: Factory.php,v 1.2 2004/03/05 11:41:56 mbertier Exp $
  * @todo       Passer les define dans les fichiers de conf
  * @todo       Définir une liste d'éléments valides
  */
@@ -28,7 +28,7 @@ class Element_Factory {
      *                                         Les clés ne correspondant pas a des propriétés sont ignorées
      * @returns    object      La référence à une instance d'élément.
      */
-    function &makeElement( $elem_type, $params ) {
+    function &makeElement( $elem_type, $params = array() ) {
 
         if ( ! $this->isRegisteredElement($elem_type) ) { return false; }
 

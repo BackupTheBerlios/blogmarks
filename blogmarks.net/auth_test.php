@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 require_once 'PEAR.php';
 include_once 'Blogmarks/Marker.php';
 

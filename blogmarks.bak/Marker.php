@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.6 2004/03/05 11:41:05 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.7 2004/03/05 16:36:41 mbertier Exp $
  */
 
 require_once 'PEAR.php';
@@ -45,7 +45,7 @@ class BlogMarks_Marker {
     /** Création d'un mark. 
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
-     * @returns    string    L'URI du mark créé.
+     * @return    string    L'URI du mark créé.
      */
     function createMark( $props ) {
 
@@ -54,12 +54,7 @@ class BlogMarks_Marker {
 
         // Si le lien n'est pas déjà enregistré, on le fait.
         if ( $link->get( 'href', $props['href'] ) == 0 ) {
-
-            // Récupération d'infos supplémentaires à partir de l'URL
-            $link->fetchUrlInfo();
-
-            // Ajout du lien à la base de données
-            $link->insert();
+            $link = $this->createLink( $props['href'], true );
         }
 
 
@@ -99,16 +94,41 @@ class BlogMarks_Marker {
     /** Mise à jour d'un mark.
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
-     * @returns    string   L'uri du mark mis à jour.
+     * @return    string   L'uri du mark mis à jour.
      */
     function updateMark( $id, $props ) {
         $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
         
         // Si le mark à mettre à jour n'existe pas -> erreur 404
         if ( ! $mark->get( $id ) ) {
-            return Blogmarks::raiseError( 404 );
+            return Blogmarks::raiseError( "Le Mark [$id]  n'existe pas.", 404 );
         }
         
+        // Si l'URL associée au Mark doit être modifiée
+        if ( isset($props['href']) ) {
+
+            // Récupération du Link associé
+            $link =& $mark->getLink( 'bm_Links_id', 'Bm_Links', 'id' );
+            print_r( $mark );
+            // L'URL doit être modifiée
+            if ( $link->href !== $props['href'] ) {
+                
+                // Si le Link existe déja, on se contente de modifier l'association
+                if ( $link->get('href', $props['href']) > 0 ) {
+                    $mark->bm_Links_id = $link->id;
+                    $mark->update();
+                } 
+
+                // Aucun Link correspondant n'existe, on en crée un
+                else {
+                    $link =& $this->createLink( $props['href'], true );
+                    $mark->bm_Links_id = $link->id;
+                    $mark->update();
+                }
+            }
+
+        } // Fin if URL associée
+
         // Mise à jour des propriétés
         $mark->title    = $props['title'];
         $mark->summary  = $props['summary'];
@@ -131,7 +151,7 @@ class BlogMarks_Marker {
 
     /** Suppression d'un mark.
      * @param     int      $id       URI identifiant le mark
-     * @returns   mixed    true ou Blogmarks_Exception en cas d'erreur.
+     * @return   mixed    true ou Blogmarks_Exception en cas d'erreur.
      */
     function deleteMark( $id ) {
         $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
@@ -149,11 +169,50 @@ class BlogMarks_Marker {
 
     /** Génération de l'URI d'un Mark
      * @param     object     Element_Bm_Marks     Une référence à un Mark.
-     * @returns   string     L'URI du Mark.
+     * @return   string     L'URI du Mark.
      */
     function getMarkUri( &$mark ) {
         $pattern = 'http://www.blogmarks.net/users/%s/?mark_id=%u';
         $uri = sprintf( $pattern, "MOCK!", $mark->id );
+
+        return $uri;
+    }
+
+
+    /** Création d'un Link.
+     * @param     string     href          URL désignant la ressource.
+     * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
+     * @returns   objet Elem_bm_Links      Le Links créé
+     */
+    function createLink( $href, $autofetch = false ) {
+        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        
+        $link->href = $href;
+
+        // Si le Link existe déja on se contente de renvoyer son URI
+        if ( $link->find(true) ) { return  $link; }
+
+        // Sinon, création du Link
+        else { $link->insert(); }
+
+
+        // Récupération des informations de la page (si autofetch)
+        if ( $autofetch === true ) { 
+            $link->fetchUrlInfo(); 
+            $link->update();
+        }
+
+        return $link;
+        
+    }
+
+    /** Génération de l'URI d'un Link.
+     * @param    object Element_Bm_Links     Une référence au Link dont on veut obtenir l'URI
+     * @return   string     L'URI du Link
+     */
+    function getLinkUri( &$link ) {
+        $pattern = 'http://www.blogmarks.net/links/?link_id=%u';
+        $uri = sprintf( $pattern, $link->id );
 
         return $uri;
     }

@@ -2,7 +2,7 @@
 
 <?php
 /** Génération du package PEAR
- * @version      $Id: make_pkg.php,v 1.3 2004/04/05 10:20:12 mbertier Exp $
+ * @version      $Id: make_pkg.php,v 1.4 2004/05/19 13:11:23 mbertier Exp $
  * @todo         Comprendre pourquoi le tableau que retourne getopt est aussi tarabiscoté ou étendre getopt
  */
 
@@ -49,7 +49,7 @@ echo "Looking for files in $pkg_dir...\n";
 $pkgxml = new PEAR_PackageFileManager;
 
 # -- Options
-$e = $pkgxml->setOptions( array( 'baseinstalldir'       => 'Blogmarks',
+$e = $pkgxml->setOptions( array( 'baseinstalldir'       => '/',
                                  'package'              => 'Blogmarks_Server_Atom',
                                  'version'              => '0.1',
                                  'summary'              => 'Blogmarks\' Atom Server',

@@ -1,6 +1,6 @@
-;; $Id: config.ini.dist,v 1.3 2004/03/17 10:40:19 mbertier Exp $
+;; $Id: config.ini.dist,v 1.4 2004/03/29 13:30:19 benfle Exp $
 
-[DB_Dataobject]
+[DB_DataObject]
 ;; @see    http://pear.php.net/manual/en/package.database.db-dataobject.intro-configuration.php
 
 database         = mysql://user:pass@host/Blogmarks

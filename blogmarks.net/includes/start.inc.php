@@ -34,6 +34,7 @@ if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 		$auth_error = $auth->getMessage();
 	
 	//echo $auth_error;
+   // echo $auth;
 	//die();
 
 

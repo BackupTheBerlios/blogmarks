@@ -24,6 +24,7 @@ class Element_Bm_Marks extends Blogmarks_Element
     var $modified;                        // datetime(19)  not_null
     var $lang;                            // string(255)  
     var $via;                             // int(11)  
+    var $source;                          // int(11)  
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}

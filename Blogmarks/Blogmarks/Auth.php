@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.4 2004/04/06 15:00:27 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.5 2004/05/04 16:21:02 mbertier Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -71,7 +71,7 @@ class Blogmarks_Auth {
         if ( $make_session ) {
 
             // Démarrage de la session
-            session_start();
+            // BUGGY --     session_start();
             
             // On lie la session à l'utilisateur
             $_SESSION['_BM']['user_id'] = $user->id;
@@ -176,6 +176,8 @@ class Blogmarks_Auth {
     function _sessWrite( $sess_id, $sess_data ) {
         $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
         
+        $sess_data = addslashes( $sess_data );
+
         // Création d'une session
         if ( ! $sess->get( $sess_id ) ) {
             $q = "INSERT INTO bm_Sessions VALUES ('$sess_id', '', '', '$sess_data');";

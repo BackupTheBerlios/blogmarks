@@ -41,7 +41,10 @@ if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 			//print_r( $params );
 			$result =& $marker->createUser( $params );
 
-			echo "Account created";
+			if ( Blogmarks::isError($result) ) die( $result->getMessage() );
+			if ( DB::isError($result) ) die( $result->getMessage() );
+
+			echo "<p>Account created</p>";
 
 	}
 
@@ -60,7 +63,7 @@ if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 <input type="password" name="pwd2" />
 
 <label>E-mail adress</label>
-<input type="text" name="e-mail" />
+<input type="text" name="email" />
 
 <input type="hidden" name="create" value="1" />
 

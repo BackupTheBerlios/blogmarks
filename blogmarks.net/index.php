@@ -86,9 +86,28 @@ if ( isset( $_GET['q'] ) ) {
 
 $list =& $marker->getMarksList( $params );
 
-if ( Blogmarks::isError($list) ) die( $list->getMessage() );
+if ( Blogmarks::isError($list) ) {
 
-if ( DB::isError($list) ) die( $list->getMessage() );
+	echo '<p>' . $list->getMessage() . '</p>';
+
+	if ( $list->getCode() == '444' ) {
+
+		if ( !isset( $_GET['q'] ) )
+			echo "<p>Your BlogMark account seems to be empty :-)</p>";
+		else 
+			echo "<p>Aucun BlogMark ne correspond aux termes de recherche spécifiés</p>";
+
+	}
+
+	//die(  $list->getCode() . ' ' .  $list->getMessage() );
+
+}
+
+elseif ( DB::isError($list) )
+	
+die( $list->getMessage() );
+
+else {
 
 $i = 0;
 
@@ -145,6 +164,7 @@ while ( $list->fetch() ) {
 		$i ++;
     }
 
+} // fin de si pas d'erreur
 ?>
 
 </ul>

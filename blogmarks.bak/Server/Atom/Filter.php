@@ -1,7 +1,7 @@
 <?php
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.3 2004/03/11 16:19:18 benfle Exp $
+ * @version    $Id: Filter.php,v 1.4 2004/03/11 16:21:50 benfle Exp $
  */
 
 
@@ -44,7 +44,9 @@ class FilterChainRoot
 }
 
 /**
- * Classe de base pour les objets filtres */
+ * Classe de base pour les objets filtres.
+ * @package    Atom
+ */
 class InterceptingFilter
 {
   /** Pointeur vers le filtre suivant.
@@ -79,7 +81,9 @@ class InterceptingFilter
 /**
  * Classe du filtre constructeur de contexte.
  * construit le contexte d'exécution du controller
- * à partir de la requête HTTP. */
+ * à partir de la requête HTTP. 
+ * @package    Atom
+ */
 class ContextBuilderFilter extends InterceptingFilter {
 
   /** Arguments :
@@ -165,7 +169,9 @@ class ContextBuilderFilter extends InterceptingFilter {
 
 /**
  * Classe du filtre d'authentification. 
- * Enregistre la chaine d'authentification dans le contexte. */
+ * Enregistre la chaine d'authentification dans le contexte. 
+ * @package    Atom
+ */
 class AuthenticateFilter extends InterceptingFilter {
   
   function execute($arg) {

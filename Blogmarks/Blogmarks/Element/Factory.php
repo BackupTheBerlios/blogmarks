@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Element_Factory
- * @version    $Id: Factory.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Factory.php,v 1.2 2004/06/25 12:14:26 benfle Exp $
  * @todo       Passer les define dans les fichiers de conf
  * @todo       Définir une liste d'éléments valides
  */
@@ -63,4 +63,3 @@ class Element_Factory {
     
 }
 ?>
-

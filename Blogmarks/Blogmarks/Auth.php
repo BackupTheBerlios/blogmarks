@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.8 2004/06/01 15:07:16 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.9 2004/06/25 12:14:26 benfle Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -15,7 +15,7 @@ require_once 'Blogmarks/Element/Factory.php';
  */
 class Blogmarks_Auth {
 
-    /** Identifiant de l'utilisateur en cours.
+    /** Login de l'utilisateur en cours.
      * @var string */
     var $_connectedUserId = null;
 
@@ -72,11 +72,11 @@ class Blogmarks_Auth {
         // Création de session à la demande
         if ( $make_session ) {
             // On lie la session à l'utilisateur
-            $_SESSION['_BM']['user_id'] = $user->id;
+            $_SESSION['_BM']['user_id'] = $user->login;
         } 
 
         // On se contente de stocker l'id utilisateur dans l'objet
-        else $this->_connectedUserId = $user->id;
+        else $this->_connectedUserId = $user->login;
 
         return true;
         

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.21 2004/06/03 13:28:49 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.22 2004/06/25 12:14:26 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -89,8 +89,8 @@ class BlogMarks_Marker {
         $link =& Element_Factory::makeElement( 'Bm_Links' );
 
         // Si le lien n'est pas déjà enregistré, on le fait.
-        if ( $link->get( 'href', $props['href'] ) == 0 ) {
-            $link = $this->createLink( $props['href'], true );
+        if ( $link->get( 'href', $props['related'] ) == 0 ) {
+            $link = $this->createLink( $props['related'], true );
             if ( Blogmarks::isError($link) ) { return $link; }
         }
 
@@ -102,8 +102,8 @@ class BlogMarks_Marker {
         $u =& $this->_slots['auth']->getConnectedUser();
 
         // Si le Mark n'existe pas, on le crée
-        $mark->bm_Users_id = $u->id;
-        $mark->href = $link->id;
+        $mark->author = $u->login;
+        $mark->related = $link->id;
 
         if ( ! $mark->find(true) ) {
 
@@ -117,7 +117,7 @@ class BlogMarks_Marker {
                 $link =& Element_Factory::makeElement( 'Bm_Links' );
 
                 // Si le Link n'existe pas, on le crée
-                if ( isset($props[$field]) && ! $link->get('href', $props[$field]) ) {
+                if ( isset($props[$field]) && $props[$field] != '' && ! $link->get('href', $props[$field]) ) {
                     $link =& $this->createLink( $props[$field], true );
                 }
                 $mark->$field = $link->id;
@@ -179,7 +179,7 @@ class BlogMarks_Marker {
         foreach ( $mark->getLinksFields() as $field ) {
 
             // Une mise à jour est requise
-            if ( isset($props[$field]) ) {
+            if ( isset($props[$field]) && $props[$field] != '' ) {
     
                 $link =& Element_Factory::makeElement( 'Bm_Links' );
                 
@@ -249,7 +249,7 @@ class BlogMarks_Marker {
         if ( ! $user->owns( $mark ) && ! $user->isAdmin() ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Supression des associations avec des Tags
-        foreach ( $mark->getTags() as $tag_id ) $mark->remTagAssoc( $tag_id );
+        foreach ( $this->getTags($id) as $tag_id ) $mark->remTagAssoc( $tag_id );
 
         // Suppression du Mark
         $res = $mark->delete();
@@ -282,49 +282,76 @@ class BlogMarks_Marker {
         if ( ! $user->owns($mark) && ! $user->isAdmin() ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Nettoyage des Tags avant association
+
         $this->_cleanTags( $tags ); 
 
-        // Désassociations
-        if ( ! $merge && is_array($tags) ) {
-            $deprec_tags = array_diff( $mark->getTags(), $tags );
-            foreach ( $deprec_tags as $tag_id ) {
-                $mark->remTagAssoc( $tag_id );
-            }
-        }
 
-        // Associations
-        foreach ( $tags as $tag_name ) {
-            $tag =& Element_Factory::makeElement( 'Bm_Tags' );
+		// Récupére l'info (si nécessaire), déassocie ou associe ensuite
 
-            // Tag non-existant
-            if ( ! $tag->get($tag_name) ) {
-                // Utilisateur connecté
-                $user =& $this->_slots['auth']->getConnectedUser();
+        foreach ( $tags as $tag_name ) 
+		{
+			// Récupère les infos du tag s'il existe et le crée sinon
 
-                // Création d'un tag privé correspondant
-                $res =& $this->createPrivateTag( array('id'          => $tag_name,
-                                                       'bm_Users_id' => $user->id) );
+			$tag =& Element_Factory::makeElement( 'Bm_Tags' );
 
-                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
+            // Utilisateur connecté
+            $user =& $this->_slots['auth']->getConnectedUser();
+	
+			// Recherche du mark, création si nécessaire
+			if ( ereg ('^private:(.+)$', $tag_name, $regs) )
+			{
+				// Tag privé
+				$tag->author = $user->login;
+				$tag->title  = $regs[1];
 
-                // Association au Mark
-                $res =& $mark->addTagAssoc( $tag->id );
-                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res; // _errorStack ne va pas durer.....
-                
-            }
+				// Tag non-existant
+				if ( ! $tag->find() ) 
+				{
+					// Création d'un tag privé correspondant
+			        $res =& $this->createPrivateTag( array('title'  => $regs[1],
+														   'author' => $user->login) );
+					$tag = $res;
+				} else
+					$tag->fetch();
+			} else
+			{
+				// Tag public
+				$tag->author = NULL;
+				$tag->title  = $tag_name;
 
-            // Tag déjà associé
-            elseif ( $tag->isAssociatedToMark($mark->id) ) continue;
+				// Tag non-existant
+				if ( ! $tag->find() ) 
+				{
+					// Création d'un tag public correspondant
+			        $res =& $this->createPublicTag( array('title'  => $tag_name) );
+					$tag = $res;
+				} else
+					$tag->fetch();            
+			}
 
-            // Tag existant non-associé
-            elseif ( ! $tag->isAssociatedToMark($mark->id) ) {
-                //                $res =& $this->associateTagToMark( $tag, $mark );
-                $res =& $mark->addTagAssoc( $tag->id );
-                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
-            }
-            
-        } # -- fin foreach
-    }
+			// enregistre l'id du tag pour les desacciations
+			$tags_id[] = $tag->id;
+
+			if ( Blogmarks::isError($tag) ) $this->_errorStack[] =& $tag;
+
+			// Association au Mark
+
+			$res =& $mark->addTagAssoc( $tag->id );
+			if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res; // _errorStack ne va pas durer....
+
+		} # -- fin foreach
+
+		
+		// Désassociation
+		if ( ! $merge )
+		{
+			$diff = array_diff( $this->getTags($mark->id), $tags_id);
+			foreach ( $diff as $tag_id )
+			{
+				$mark->remTagAssoc( $tag_id );
+			}
+		}
+	}
 
 
     /** Récupération d'un Mark.
@@ -493,8 +520,13 @@ class BlogMarks_Marker {
         $tag =& Element_Factory::makeElement( 'Bm_Tags' );
         
         // Si le tag existe déja -> erreur 500
-        $tag->id = $props['id'];
+		$tag->title  = $props['title'];
+		$tag->author = $props['author'];
+
         if ( $tag->find() ) return Blogmarks::raiseError( "Le Tag [$tag->id] existe déjà.", 500 );
+
+		// ajout de la date de derniere modification si nécessaire
+		$props['modified'] = date('Ymd His');
 
         // Initialisation des propriétés de l'objet
         $tag->populateProps( $props );
@@ -512,7 +544,7 @@ class BlogMarks_Marker {
      * @return     mixed     L'instance du Bm_Tags créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPublicTag( $props = array() ) {
-        $props['status'] = 'public';
+		$props['author'] = NULL;
         return $this->createTag( $props );
     }
 
@@ -522,7 +554,8 @@ class BlogMarks_Marker {
      * @return     mixed     L'instance du Bm_Tags créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPrivateTag( $props = array() ) {
-        $props['status'] = 'private';
+		if ( !isset ( $props['author'] ) || $props['author'] == '' )
+			return Blogmarks::raiseError( "Ne peut créer un tag privé sans propriétaire.", 500 );
         return $this->createTag( $props );
     }
 
@@ -590,6 +623,99 @@ class BlogMarks_Marker {
     }
 
 
+	/** Renvoie l'id du tag privé en fonction de son nom.
+	 * @param   string     $title    Titre du tag
+	 * @perms   Pour avoir l'id il faut posséder le tag.
+	 */
+	function getPrivateTagId ( $title )
+	{
+		$user =& $this->userIsAuthenticated();
+
+		if ( $user == false )
+			return Blogmarks::raiseError( "Permission denied", 400 );
+		
+		$tag =& Element_Factory::makeElement( 'Bm_Tags' );
+		$tag->title = $title;
+		$tag->author = $user->login;
+		$tag->find();
+		$tag->fetch();
+
+		return $tag->id;
+	}
+
+	/** Renvoie l'id du tag public en fonction de son nom.
+	 * @param   string     $title    Titre du tag
+	 * @perms   Pour avoir l'id il faut posséder le tag.
+	 */
+	function getPublicTagId ( $title )
+	{
+		$tag =& Element_Factory::makeElement( 'Bm_Tags' );
+		$tag->title = $title;
+		$tag->author = null;
+		$tag->find();
+		$tag->fetch();
+
+		return $tag->id;
+	}
+
+	/** Renvoie la liste des tags d'un mark
+	* @param     int        $id     L'identifiant du mark dont on veut la liste de tags
+	* @perms     Pour avoir les tags privés, il faut posséder le mark
+	*/
+	function getTags( $id )
+	{
+		$mark =& Element_Factory::makeElement( 'Bm_Marks' );
+
+		if ( ! $mark->get ('id', $id) )
+			return Blogmarks::raiseError( "Le mark [$id] n'existe pas", 404 );
+
+		if ( $mark->isPrivate() )
+		{
+			$user =& $this->_slots['auth']->getConnectedUser();
+		    if ( Blogmarks::isError($user) ) return $user;
+
+			if ( ! $user->owns($mark) )
+				return Blogmarks::raiseError( "Permission denied", 401 );
+			else
+				$private = true;
+		} else
+		{
+			if ( $this->userIsAuthenticated() )
+			{
+				$user =& $this->_slots['auth']->getConnectedUser();
+				if ( Blogmarks::isError($user) ) return $user;
+				if ( ! $user->owns($mark) )
+					$private = false;
+				else
+					$private = true;
+			} else
+				$private = false;
+		}
+
+		// Construit la liste des tags
+
+		$arr = array();
+		
+        $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        $assocs->bm_Marks_id = $id;
+        $assocs->find();
+
+        while ( $assocs->fetch() ) 
+		{
+			$tag =& Element_Factory::makeElement( 'Bm_Tags' );
+			$tag->id = $assocs->bm_Tags_id;
+			$tag->find();
+
+			while ( $tag->fetch() )
+			{
+				if ( $tag->author == NULL || $private == true)
+					$arr[] = $tag->id;
+			}
+		}
+
+        return $arr;
+	}
+		
 # ------- MARKSLISTS
 
 
@@ -597,7 +723,7 @@ class BlogMarks_Marker {
      * La méthode attend un tableau associatif définissant les critères de sélection : 
      *         - user_login    => recherche au sein des marks d'un utilisateur en particulier (sinon recherche globale)
      *         - date_in       => date au format mysql. On ne recherche que les marks créés ultérieurement à cette date
-     *         - date_out      => date au format mysql. On ne recherche que les marks créés postérieurement à cette date
+     *         - date_out      => date au format mysql. On ne recherche que les marks créés antérieurement à cette date
      *         - exclude_tags  => tableau de tags. Les marks décrits par ces tags ne seront pas sélectionnés
      *         - include_tags  => tableau de tags. Seuls les marks décrits par ces tags seront sélectionnés
      *         - select_priv   => booléen. Si vrai, recherche aussi au sein des marks privés 
@@ -617,7 +743,7 @@ class BlogMarks_Marker {
      * @return     DB_DataObject ou Blogmarks_Exception en cas d'erreur.
      */
     function getMarksList( $cond ) {
-        
+
         $now = date( "Ymd His" );        
         $marks =& Element_Factory::makeElement( 'Bm_Marks' );
 
@@ -629,12 +755,15 @@ class BlogMarks_Marker {
             if ( ! $user->get( 'login', $cond['user_login'] ) ) 
                 return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
-            // -- TODO: Vérification du niveau de permission
-            /*
-            $cur_user &= $this->_slots['auth']->getConnectedUser();
-            $cond['select_priv'] = ( $cur_user->id == $user->id ) ? $cond['select_priv'] : false;
-            */
-            $marks->bm_Users_id = $user->id;
+            $cur_user =& $this->_slots['auth']->getConnectedUser();
+            $cond['select_priv'] = ( $cur_user->login == $user->login ) ? $cond['select_priv'] : false;
+
+            $marks->author = $user->login;
+        }
+
+        else {
+            // -- HACK: Les recherches globales ne se font qu'au sein des marks publics.
+            $cond['select_priv'] = false;
         }
 
         // Recherche au sein d'une plage de dates donnée
@@ -652,12 +781,20 @@ class BlogMarks_Marker {
             $assocs->debug( 'Excluding '. count($cond['exclude_tags']) .' Tags...', __FUNCTION__, 1 );
 
             // Constitution de la clause WHERE de la requête, à partir de la liste des Tags à ignorer
-            foreach ( $cond['exclude_tags'] as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'AND' );
+            foreach ( $cond['exclude_tags'] as $tag_title ) 
+			{
+				if ( ereg ('^private:(.+)$', $tag_title, $regs) )
+					$tag_id = $this->getPrivateTagId ($regs[1]);
+				else
+					$tag_id = $this->getPublicTagId ($tag_title);
+
+				$assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'AND' );
+			}
 
             if ( $assocs->find() ) {
                 while ( $assocs->fetch() ) { 
                     $excluded_marks[] = $assocs->bm_Marks_id;
-                    
+
                     // Dédoublonnage des résultats
                     $excluded_marks = array_unique( $excluded_marks );
                 }
@@ -676,25 +813,35 @@ class BlogMarks_Marker {
         // -- Sélection des Marks à inclure
         // Selon un Tag les décrivant
         if ( isset($cond['include_tags']) && is_array($cond['include_tags']) ) {
-            foreach ( $cond['include_tags'] as $tag_id ) $marks->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
-        }
+            foreach ( $cond['include_tags'] as $tag_title )
+			{
+				if ( ereg ('^private:(.+)$', $tag_title, $regs) )
+					$tag_id = $this->getPrivateTagId ($regs[1]);
+				else
+					$tag_id = $this->getPublicTagId ($tag_title);
+
+				$marks->whereAdd( "$assocs->__table.bm_Tags_id = '$tag_id'", 'OR' );
+			}
+		}
 
         // On ne sélectionne pas les Marks dont le Tag est exclu
         if ( isset($excluded_marks) ) {
-            foreach ( $excluded_marks as $mark_id ) $marks->whereAdd( "bm_Marks_id != '$mark_id'", 'AND' );
-        }
-        
-        // Par défaut, on ne sélectionne que les Marks publics
-        if ( ! isset($cond['select_priv']) || $cond['select_priv'] == false ) {
-            $marks->whereAdd( "issued != 0 ",  'AND' );
-            $marks->whereAdd( "issued < '$now'", 'AND' );
-        }
-
+            foreach ( $excluded_marks as $mark_id )
+				$marks->whereAdd( "$assocs->__table.bm_Marks_id != '$mark_id'", 'AND' );
+		}
         // Ajout des clauses de recherche
         foreach ( $marks->getSearchFields() as $f ) {
             // On doit rechercher sur un des champs
             if ( isset($cond[$f]) && is_array($cond[$f]) ) {
-                
+
+                /*
+                // Préfixage des champs de tables externes
+                if ( count(array_keys($marks->getLinksFields(), $f)) ) { 
+                    $links =& Element_Factory::makeElement( 'Bm_Links' );
+                    $field =  $links->__table .'.'. $f;
+                }
+                */
+
                 // Constitution du WHERE
                 // "nomchamps LIKE / REGEXP pattern"
                 $q = "$f ". $cond[$f][1] ." '". $marks->escape($cond[$f][0]). "'";
@@ -702,16 +849,22 @@ class BlogMarks_Marker {
                 // Le champs sur lequel on effectue la recherche se trouve dans une autre table
                 // TODO -- faire fonctionner le bouzin
                 if ( count(array_keys($marks->getLinksFields(), $f)) ) {
-                    $links =& Element_Factory::makeElement( 'Bm_Links' );
                     $marks->joinAdd( $links, 'LEFT' );
-                    //                    $links->href = 'http';
-                    //                    $marks->whereAdd( $q, 'AND' );
+                    $marks->whereAdd( $q, 'AND' );
                 }
 
                 // Recherche simple
                 else $marks->whereAdd( $q, 'OR' );
             }
         }
+
+        
+        // Par défaut, on ne sélectionne que les Marks publics
+        if ( ! $cond['select_priv'] ) {
+            $marks->whereAdd( "issued > 0",  'AND' );
+            $marks->whereAdd( "issued <= '$now'", 'AND' );
+        }
+
 
         // Tri des résultats
         if ( isset($cond['order_by']) ) {
@@ -742,7 +895,7 @@ class BlogMarks_Marker {
 
         }
 
-        // HACK: permet de ne pas avoir de doublons
+        // -- HACK: permet de ne pas avoir de doublons
         $marks->groupBy( 'id' );
 
         return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 444 ) );

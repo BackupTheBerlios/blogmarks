@@ -10,26 +10,25 @@ require_once 'Blogmarks/Element.php';
  */
 class Element_Bm_Links extends Blogmarks_Element 
 {
-    ###START_AUTOCODE
-    /* the code below is auto generated do not remove the above tag */
+	###START_AUTOCODE
+	/* the code below is auto generated do not remove the above tag */
 
-    var $__table = 'bm_Links';                        // table name
-    var $id;                              // int(11)  not_null primary_key auto_increment
-    var $lang;                            // string(255)  
-    var $type;                            // string(255)  
-    var $href;                            // string(255)  multiple_key
-    var $title;                           // blob(65535)  blob
-    var $charset;                         // string(255)  
+	var $__table = 'bm_links';                        // table name
+	var $id;                              // int(11)  not_null primary_key auto_increment
+	var $lang;                            // string(255)
+	var $type;                            // string(255)
+	var $href;                            // string(255)  not_null unique_key
+	var $title;                           // blob(65535)  blob
+	var $charset;                         // string(255)
 
-    /* ZE2 compatibility trick*/
-    function __clone() { return $this;}
+	/* ZE2 compatibility trick*/
+	function __clone() { return $this;}
 
-    /* Static get */
-    function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_Links',$k,$v); }
-
-    /* the code above is auto generated do not remove the tag below */
-    ###END_AUTOCODE
-
+	/* Static get */
+	function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_links',$k,$v); }
+	
+	/* the code above is auto generated do not remove the tag below */
+	###END_AUTOCODE
 
     /** Récupèration d'informations à propos de la ressource désignée par $this->href.
      *
@@ -50,6 +49,10 @@ class Element_Bm_Links extends Blogmarks_Element
 
         // Récupération des informations contenues dans l'entête de la réponse.
         $url_info = $r->getResponseHeader();
+
+		// Initialisation des variables
+		$content_type = null;
+		$charset      = null;
 
         // --- Détermination du Content-Type et du Charset de la page --- //
         // 1. D'apres un entete http

@@ -9,26 +9,28 @@ require_once 'Blogmarks/Element.php';
  */
 class Element_Bm_Tags extends Blogmarks_Element 
 {
-    ###START_AUTOCODE
-    /* the code below is auto generated do not remove the above tag */
+	###START_AUTOCODE
+	/* the code below is auto generated do not remove the above tag */
 
-    var $__table = 'bm_Tags';                         // table name
-    var $id;                              // string(255)  not_null primary_key
-    var $subTagOf;                        // int(11)  
-    var $bm_Users_id;                     // int(11)  not_null multiple_key
-    var $summary;                         // blob(65535)  blob
-    var $lang;                            // int(10)  unsigned
-    var $status;                          // string(14)  not_null set
+	var $__table = 'bm_tags';                         // table name
+	var $id;                              // int(11)  not_null primary_key auto_increment
+	var $title;                           // string(255)  not_null
+	var $author;                          // string(255)  not_null multiple_key
+	var $issued;                          // datetime(19)  
+	var $modified;                        // datetime(19)  not_null
+	var $summary;                         // blob(65535)  blob
+	var $lang;                            // string(10)  
+	var $ico;                             // string(255)  
 
-    /* ZE2 compatibility trick*/
-    function __clone() { return $this;}
 
-    /* Static get */
-    function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_Tags',$k,$v); }
+	/* ZE2 compatibility trick*/
+	function __clone() { return $this;}
 
-    /* the code above is auto generated do not remove the tag below */
-    ###END_AUTOCODE
+	/* Static get */
+	function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_tags',$k,$v); }
 
+	/* the code above is auto generated do not remove the tag below */
+	###END_AUTOCODE
 
     /** Permet de savoir si le Tag est associé à un Mark donné. 
      * @param      int       $mark_id
@@ -49,25 +51,34 @@ class Element_Bm_Tags extends Blogmarks_Element
     }
 
 
-    /** @return bool */
-    function isPublic() { return ( $this->status == 'public' ) ? true : false; }
+    /** Permet de savoir si le Tag est public.
+     * Comportement :
+     *   - author != NULL -> privé
+	 *   - author = NULL  -> public
+     *
+     * @return       bool
+     */
+    function isPublic() {
+        return ( $this->author == null );
+    }
 
-
-    /** @return bool */
-    function isPrivate() { return ( $this->status == 'private' ) ? true : false; }
+    /** Permet de savoir si un Tag est privé.
+     * @return      bool
+     */
+    function isPrivate() { return ! $this->isPublic(); }
 
 
     /** Surcharge de Blogmarks_Element::populateProps(). */
     function populateProps( $props = array() ) {
 
         $this->id          = isset($props['id'])            ? $props['id']          : null;
-        $this->subTagOf    = isset($props['subTagOf'])      ? $props['subTagOf']    : null;
-        $this->bm_Users_id = isset($props['bm_Users_id'])   ? $props['bm_Users_id'] : null;
-        $this->status      = isset($props['status'])        ? $props['status']      : null;
+		$this->title       = isset($props['title'])         ? $props['title']       : null;
+        $this->author      = isset($props['author'])        ? $props['author']      : null;
+		$this->issued      = isset($props['issued'])        ? $props['issued']      : null;
+        $this->modified    = isset($props['modified'])      ? $props['modified']    : null;
         $this->summary     = isset($props['summary'])       ? $props['summary']     : null;
         $this->lang        = isset($props['lang'])          ? $props['lang']        : null;
-
+        $this->ico         = isset($props['ico'])           ? $props['ico']         : null;
     }
-
 }
 ?>

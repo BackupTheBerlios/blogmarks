@@ -15,37 +15,35 @@ class Element_Bm_Marks extends Blogmarks_Element
 
     /** Champs correpondants à des Links.
      * @var      array */
-    var $_links_fields = array( 'href', 'via', 'source' );
+    var $_links_fields = array( 'related', 'via' );
 
     /** Champs sur lesquels on peut effectuer une recherche
      * @var      array */
-    var $_search_fields = array( 'href', 'title', 'summary' );
-    ###START_AUTOCODE
-    /* the code below is auto generated do not remove the above tag */
+    var $_search_fields = array( 'title', 'summary' );
+	
+	###START_AUTOCODE
+	/* the code below is auto generated do not remove the above tag */
+    var $__table = 'bm_marks';                        // table name
+	var $id;                              // int(11)  not_null primary_key auto_increment
+	var $title;                           // string(255)  
+	var $issued;                          // datetime(19)  
+	var $created;                         // datetime(19)  
+	var $modified;                        // datetime(19)  not_null
+	var $related;                         // int(11)  not_null multiple_key
+	var $via;                             // int(11)  
+	var $screenshot;                      // string(255)  
+	var $author;                          // string(255)  not_null multiple_key
+	var $summary;                         // blob(65535)  blob
+	var $lang;                            // string(10)
+	
+	/* ZE2 compatibility trick*/
+	function __clone() { return $this;}
+	
+	/* Static get */
+	function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_marks',$k,$v); }
 
-    var $__table = 'bm_Marks';                        // table name
-    var $id;                              // int(11)  not_null primary_key auto_increment
-    var $href;                            // int(11)  not_null multiple_key
-    var $bm_Users_id;                     // int(11)  not_null multiple_key
-    var $title;                           // string(255)  
-    var $summary;                         // blob(65535)  blob
-    var $screenshot;                      // string(255)  
-    var $issued;                          // datetime(19)  
-    var $created;                         // datetime(19)  
-    var $modified;                        // datetime(19)  not_null
-    var $lang;                            // string(255)  
-    var $via;                             // int(11)  
-    var $source;                          // int(11)  
-
-    /* ZE2 compatibility trick*/
-    function __clone() { return $this;}
-
-    /* Static get */
-    function staticGet($k,$v=NULL) { return DB_DataObject::staticGet('Element_Bm_Marks',$k,$v); }
-
-    /* the code above is auto generated do not remove the tag below */
-    ###END_AUTOCODE
-
+	/* the code above is auto generated do not remove the tag below */
+	###END_AUTOCODE
 
 # ------ AUTH
     
@@ -69,12 +67,12 @@ class Element_Bm_Marks extends Blogmarks_Element
     function isPrivate() { return ! $this->isPublic(); }
 
 
-    /** Renvoie l'id du posseseur du Mark.
-     * @return      string      L'id du possesseur du mark
+    /** Renvoie le login du posseseur du Mark.
+     * @return      string      Le login du possesseur du mark
      */
     function getOwner() {
         $user =& Element_Factory::makeElement( 'Bm_Users' );
-        $user->get( $this->bm_Users_id );
+        $user->get( $this->author );
 
         return $user->login;
     }
@@ -95,7 +93,7 @@ class Element_Bm_Marks extends Blogmarks_Element
 
         // Insertion dans la base de données
         if ( ! $assoc_def->find() ) { 
-            $this->debug( "Insertion du le association [$this->id / $tag_id].", __FUNCTION__, 1 );
+            $this->debug( "Insertion de l' association [$this->id / $tag_id].", __FUNCTION__, 1 );
             $assoc_def->insert();
         }
         else return Blogmarks::raiseError( "Le Tag [$tag_id] est déjà associé au Mark [$this->id].", 500 );
@@ -116,6 +114,7 @@ class Element_Bm_Marks extends Blogmarks_Element
         $assoc_def->bm_Tags_id  = $tag_id;
 
         if ( $assoc_def->find(true) ) {
+			$this->debug( "Suppression de l' association [$this->id / $tag_id].", __FUNCTION__, 1 );
             $assoc_def->delete();
             return true;
         }
@@ -123,26 +122,20 @@ class Element_Bm_Marks extends Blogmarks_Element
         else return Blogmarks::raiseError( "Le Tag [$tag_id] n'est pas associé au Mark [$this->id]", 404 );
     }
 
-
-    /** Renvoie la liste des Tags associés au Mark.
-     * @return      array 
-     * 
-     * @todo     Devrait plutot renvoyer un itérateur, mais le retour d'array est utilisé ailleurs :
-     *           <code>./Marker.php:            $deprec_tags = array_diff( $mark->getTags(), $tags );</code>
+    /** Renvoie la valeur d'un tag.
+     * @param      int         id       Identifiant du tag
+     * @return     mixed       String ou Blogmarks_Exception en cas d'erreur
      */
-    function getTags() {
+    function getTag( $id ) {
 
-        $arr = array();
+        $tag =& Element_Factory::makeElement( 'Bm_Tags' );
 
-        $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $assocs->bm_Marks_id = $this->id;
-        $assocs->find();
-
-        while ( $assocs->fetch() ) $arr[] = $assocs->bm_Tags_id;
+        // Récupération du tag
+        if ( ! $tag->get('id', $id) )
+            return Blogmarks::raiseError( "Aucun tag avec l'id [$id] n'existe.", 404 );
         
-        return $arr;
+        return $tag;
     }
-
 
 # ------ LINKS
 

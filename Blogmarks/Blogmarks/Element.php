@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Element
- * @version    $Id: Element.php,v 1.3 2004/05/19 12:46:30 mbertier Exp $
+ * @version    $Id: Element.php,v 1.4 2004/06/25 12:14:26 benfle Exp $
  */
 
 include_once 'DB/DataObject.php';
@@ -60,4 +60,3 @@ class Blogmarks_Element extends DB_DataObject {
   
 }
 ?>
-

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks
- * @version    $Id: Blogmarks.php,v 1.2 2004/04/29 10:45:52 mbertier Exp $
+ * @version    $Id: Blogmarks.php,v 1.3 2004/06/25 12:14:26 benfle Exp $
  */
 
 # --
@@ -50,4 +50,3 @@ class Blogmarks {
     
 }
 ?>
-

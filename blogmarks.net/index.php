@@ -64,11 +64,18 @@ if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 $params['order_by']		=  array('created','DESC') ;
 
 
+// To clean
+if ( isset( $_GET['all']) AND ( $_GET['all'] == 1 ) )
+	$complete_tag = "all=1";
+else
+	$complete_tag = "private=1";
+//
+
 if ( isset( $_GET['include_tags'] ))  {
 	
 	$params['include_tags'] = explode( ";" , $_GET['include_tags'] );
 
-	echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php">reset</a>)</span> </h4>'."\r\n\r\n";
+	echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php?'.$complete_tag.'">reset</a>)</span> </h4>'."\r\n\r\n";
 
 }
 
@@ -113,9 +120,6 @@ else {
 // To clean
 $i = 0;
 $string_date_prev = '';
-
-if ( isset( $_GET['all']) AND ( $_GET['all'] == 1 ) )
-	$complete_tag = "&amp;all=1";
 //
 
 while ( $list->fetch() ) {
@@ -151,7 +155,7 @@ while ( $list->fetch() ) {
 		//	echo ' (' . dcdate2php( $list->created ) . ')';
         
         foreach ( $list->getTags() as $tag ) {
-			echo ' <a class="tag" href="?include_tags='. $tag .$complete_tag.'">[' . $tag . ']</a> ';
+			echo ' <a class="tag" href="?include_tags='. $tag . '&amp;' . $complete_tag.'">[' . $tag . ']</a> ';
 		}
 
 		//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';

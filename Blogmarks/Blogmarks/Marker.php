@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.13 2004/04/29 16:00:32 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.14 2004/04/30 13:49:25 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -101,25 +101,27 @@ class BlogMarks_Marker {
         $u =& $this->_slots['auth']->getConnectedUser();
         $mark->bm_Users_id = $u->id;
 
-        $mark->bm_Links_id = $link->id;
+        $mark->href = $link->id;
 
         // Si le Mark n'existe pas, on le crée
-        if ( $mark->find(true) == 0 ) {
+        if ( ! $mark->find(true) ) {
 
             // Définition des propriétés
-            $mark->title    = $props['title'];
-            $mark->summary  = $props['summary'];
-            $mark->lang     = $props['lang'];
+            $mark->title    = isset($props['title'])   ? $props['title']   : null;
+            $mark->summary  = isset($props['summary']) ? $props['summary'] : null;
+            $mark->lang     = isset($props['lang'])    ? $props['lang']    : null;
 
-            // Création d'un Link pour le via
-            // TODO -- check d'erreur
-            $link =& $this->createLink( $props['via'], true );
-            $mark->via = $link->id;
+            // Création des Links associés
+            foreach ( $mark->getLinksFields() as $field ) {
+                $link =& Element_Factory::makeElement( 'Bm_Links' );
 
-            // Création d'un Link pour la source
-            // TODO -- check d'erreur
-            $link =& $this->createLink( $props['source'], true );
-            $mark->source = $link->id;
+                // Si le Link n'existe pas, on le crée
+                if ( ! $link->get('href', $props[$field]) ) {
+                    $link =& $this->createLink( $props[$field], true );
+                }
+                $mark->$field = $link->id;
+
+            } // -- Fin de la création des Links associés
 
             // Dates
             $date = date("Ymd HIs");
@@ -127,6 +129,7 @@ class BlogMarks_Marker {
             $mark->modified = $date;
 
             // Public / privé
+            $props['public'] = isset($props['public']) ? $props['public'] : true;
             if ( $props['public'] === true  ) $pub = $date;
             if ( $props['public'] === false ) $pub = 0;
             else $pub = $props['public'];
@@ -174,40 +177,36 @@ class BlogMarks_Marker {
         if ( Blogmarks::isError($user) ) return $user;
         if ( ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
-        // Si l'URL associée au Mark doit être modifiée
-        if ( isset($props['href']) ) {
+        // Mise à jour des URLs associées
+        foreach ( $mark->getLinksFields() as $field ) {
 
-            // Récupération du Link associé
-            $link =& Element_Factory::makeElement( 'Bm_Links' );
-            $link->get( $this->bm_Links_id );
-
-
-            // L'URL doit être modifiée
-            if ( $link && $link->href !== $props['href'] ) {
+            // Une mise à jour est requise
+            if ( isset($props[$field]) ) {
+    
+                $link =& Element_Factory::makeElement( 'Bm_Links' );
                 
                 // Si le Link existe déja, on se contente de modifier l'association
-                if ( $link->get('href', $props['href']) > 0 ) {
-                    $mark->bm_Links_id = $link->id;
+                if ( $link->get('href', $props[$field]) ) {
+                    $mark->$field = $link->id;
                     $res = $mark->update();
-                    if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+                    if ( Blogmarks::isError($res) ) return $res;
                 } 
-
-                // Aucun Link correspondant n'existe, on en crée un
+                
+                // Si aucun Link correspondant n'existe, on en crée un
                 else {
-                    $link =& $this->createLink( $props['href'], true );
-                    $mark->bm_Links_id = $link->id;
+                    $link =& $this->createLink( $props[$field], true );
+                    $mark->$field = $link->id;
                     $res = $mark->update();
                     if ( Blogmarks::isError($res) ) return $res;
                 }
             }
+        } // Fin mise à jour des URLs associées
 
-        } // Fin if URL associée
 
         // Mise à jour des propriétés
         $mark->title    = isset($props['title'])   ? $props['title']   : $mark->title;
         $mark->summary  = isset($props['summary']) ? $props['summary'] : $mark->summary;
         $mark->lang     = isset($props['lang'])    ? $props['lang']    : $mark->lang;
-        $mark->via      = isset($props['via'])     ? $props['via']     : $mark->via;
         
         // Dates
         $date = date("Ymd Hms");
@@ -288,6 +287,7 @@ class BlogMarks_Marker {
      * @param      array                        $tags      Tableau d'identifiants de Tags
      * @param      object Element_Bm_Marks      $mark
      * @param      bool                         $merge     Si true, on merge les Tags passés en paramètres avec les Tags associés déjà existants
+     *                                                     defaut: FALSE
      * @return
      * @perms      il faut posséder le Mark pour éditer les associations de Tags
      *
@@ -301,6 +301,7 @@ class BlogMarks_Marker {
         if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Suppression de caractères génants
+        // -- TODO: un vrai callback de nettoyage
         array_walk( $tags, 'trim' );
 
         // Désassociations
@@ -323,6 +324,7 @@ class BlogMarks_Marker {
                 // Création d'un tag privé correspondant
                 $res =& $this->createPrivateTag( array('id'          => $tag_name,
                                                        'bm_Users_id' => $user->id) );
+
                 if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
 
                 // Association au Mark
@@ -333,7 +335,7 @@ class BlogMarks_Marker {
             }
 
             // Tag déjà associé
-            if ( $tag->isAssociatedToMark($mark->id) ) { continue; }
+            elseif ( $tag->isAssociatedToMark($mark->id) ) continue;
 
             // Tag existant non-associé
             elseif ( ! $tag->isAssociatedToMark($mark->id) ) {
@@ -360,8 +362,10 @@ class BlogMarks_Marker {
         if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // On vérifie si le Tag n'est pas déja associé au Mark
-        if ( $tag->isAssociatedToMark($mark->id) ) return Blogmarks::raiseError( "Le Tag [$tag->id] est déjà associé au Mark [$mark->id].", 500 );
-        
+        if ( $tag->isAssociatedToMark($mark->id) )
+            return Blogmarks::raiseError( "Le Tag [$tag->id] est déjà associé au Mark [$mark->id].", 500 );
+ 
+
         // Association
         $res =& $mark->addTagAssoc( $tag->id );
         if ( Blogmarks::isError($res) ) return $res;
@@ -412,7 +416,7 @@ class BlogMarks_Marker {
         
         $link->href = $href;
         
-        // Si le Link existe déja on se contente de renvoyer son URI
+        // Si le Link existe déja on se contente de renvoyer l'existant
         if ( $link->find(true) ) { return  $link; }
 
         // Sinon, création du Link

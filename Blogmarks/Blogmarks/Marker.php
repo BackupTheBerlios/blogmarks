@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.5 2004/04/06 14:00:40 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.6 2004/04/06 14:59:44 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -702,13 +702,11 @@ class BlogMarks_Marker {
     }
 
     /** Permet de savoir si l'utilisateur est authentifié.
-     * @return      mixed       true ou false; ou Blogmarks_Exception en cas d'erreur.
+     * @return      bool       true ou false
      */
     function userIsAuthenticated() {
         $user =& $this->_slots['auth']->getConnectedUser();
-
-        if ( Blogmarks::isError($user) ) return $user;
-        
+        if ( Blogmarks::isError($user) ) return false;
         return $user->isAuthenticated();
         
     }
@@ -730,6 +728,10 @@ class BlogMarks_Marker {
         $res =& $this->_slots['auth']->authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session );
         return $res;
     }
+
+    /** Déconnexion de l'utilisateur en cours.
+     * @return      bool */
+    function disconnectUser() { return $this->_slots['auth']->disconnectUser(); }
 
                        
 # ----------------------- #

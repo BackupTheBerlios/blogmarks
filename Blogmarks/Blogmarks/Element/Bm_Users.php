@@ -9,6 +9,12 @@ require_once 'Blogmarks/Element.php';
  */
 class Element_Bm_Users extends Blogmarks_Element 
 {
+
+    /** Champs dont on peut renvoyer les valeurs sans danger.
+     * @var array */
+    var $_info_fields;
+
+
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
@@ -51,6 +57,12 @@ class Element_Bm_Users extends Blogmarks_Element
      * @return     bool
      */
     function owns( &$element ) { return ( $this->id == $element->bm_Users_id ) ? true : false; }        
+
+
+    /** Renvoie la liste des champs dont on peut renvoyer les valeurs sans danger.
+     * @return      array
+     */
+    function getInfoFields() { return $this->_info_fields; }
 
 }
 ?>

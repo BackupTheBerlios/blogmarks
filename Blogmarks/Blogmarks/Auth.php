@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.6 2004/05/19 09:42:59 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.7 2004/06/01 14:44:08 mbertier Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -193,7 +193,7 @@ class Blogmarks_Auth {
     
     /** Destruction de la session */
     function _sessDestroy( $sess_id ) {
-        $sess =& Element_Factory::makeElement( 'bm_Sessions' );
+        $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
         if ( $sess->get( $sess_id ) ) {
             $sess->delete();
             return true;

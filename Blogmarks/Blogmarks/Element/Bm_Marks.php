@@ -3,7 +3,7 @@
  * Table Definition for bm_Marks
  */
 require_once 'Blogmarks/Element.php';
-require_once 'Element/Factory.php';
+require_once 'Blogmarks/Element/Factory.php';
 
 /** Mark.
  * @package     Elements

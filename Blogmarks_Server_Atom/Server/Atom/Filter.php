@@ -1,7 +1,8 @@
 <?php
+
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.1 2004/03/31 16:01:01 mbertier Exp $
+ * @version    $Id: Filter.php,v 1.2 2004/05/19 13:39:46 benfle Exp $
  */
 
 
@@ -20,16 +21,24 @@ class FilterChainRoot
    * @param array $filters Tableau d'instances de filtres. */
   function FilterChainRoot($filters)
   {
+
     $this->_filters =& $filters;
+
     $count = count($this->_filters);
+
     $index = 0;
+
     while ($index < ($count)):
+
       if ($index > 0)
 	{
 	  $tmp =& $this->_filters[$index - 1];
+
 	  $tmp->setChildFilter(&$filters[$index]);
 	}
+
     $index++;
+
     endwhile;
   }
   
@@ -39,6 +48,7 @@ class FilterChainRoot
   function execute($args)
   {
     $tmp = $this->_filters[0];
+
     return $tmp->execute($args);
   }
 }
@@ -49,6 +59,7 @@ class FilterChainRoot
  */
 class InterceptingFilter
 {
+
   /** Pointeur vers le filtre suivant.
    *  @var object $_childFilter */
   var $_childFilter;
@@ -62,6 +73,7 @@ class InterceptingFilter
   function setChildFilter($filter)
   {
     $this->_hasChild = true;
+
     $this->_childFilter =& $filter;
   }
 
@@ -90,82 +102,120 @@ class ContextBuilderFilter extends InterceptingFilter {
    * - method : méthode HTTP
    * - uri : URI relative de la requête
    * - content : contenu si c'est un POST ou un PUT */   
+
   function execute(&$arg) {
     
     // filtre l'URI pour déterminer l'objet de la requête
+
     $uri = $arg['uri'];
+
     unset($arg['uri']); // on n'en a plus besoin dans les arguments
     
     // get, put ou delete un Mark
-    if ( ereg('^/users/([^/]+)/\?mark_id=([0-9]+)$', $uri, $regs) ) {
-      $arg['user']   = $regs[1];
-      $arg['object'] = 'Mark';
-      $arg['id']     = $regs[2];
+    if ( ereg('^/users/([^/]+)/\?mark_id=([0-9]+)$', $uri, $regs) ) 
+      {
 
-    } else if ( ereg('^/users/([^/]+)/?$', $uri, $regs) ) {
-      $arg['user'] = $regs[1];
-
-      // poste un Mark
-      if ( $arg['method'] == 'POST' ) 
+	$arg['user']   = $regs[1];
+	
 	$arg['object'] = 'Mark';
+	
+	$arg['id']     = $regs[2];
 
-      // get une liste de Marks prives
-      if ( $arg['method'] == 'GET' ) 
-	$arg['object'] = 'MarksList';
-
-      // get une liste de Marks prives avec un tag
-    } else if ( ereg('^/users/([^/]+)/tags/([^/]+)/?$', $uri, $regs) ) {
-      $arg['user']   = $regs[1];
-      $arg['object'] = 'MarksList';
-      $arg['tag']    = $regs[2];
-
-      // get une liste de Marks avec un tag
-    } else if ( ereg('^/tags/([^/]+)/?$', $uri, $regs) ) {
-      $arg['object'] = 'MarksList';
-      $arg['tag']    = $regs[1];
-    
-      // get une liste de tags publiques
-    } else if ( ereg('^/tags/([^/]+)*/?\?service=feed', $uri, $regs) ) {
-      $arg['object'] = 'TagsList';
-      $arg['tag']    = $regs[1];
-
-      // get une liste de tags privés
-    } else if ( ereg('^/users/([^/]+)/tags/([^/]+)*/?\?service=feed', 
-		     $uri, $regs) ) {
-      $arg['user']   = $regs[1];
-      $arg['object'] = 'TagsList';
-      $arg['tag']    = $regs[2];
-    
-      // get, put ou delete un tag privé
-    } else if ( ereg('^/users/([^/]+)/tags/\?tag_id=(.+)$)', $uri, $regs) ) {
-      $arg['user']   = $regs[1];
-      $arg['object'] = 'Tag';
-      $arg['tag']    = $resg[2];
-
-      // get, put ou delete un tag publique
-    } else if ( ereg('^/tags/\?tag_id=(.+)$)', $uri, $regs) ) {
-      $arg['object'] = 'Tag';
-      $arg['tag']    = $resg[1];
-
-      // poste un tag publique
-    } else if ( ereg('^/tags/?$', $uri) ) {
-      $arg['object'] = 'Tag';
+      } else if ( ereg('^/users/([^/]+)/?$', $uri, $regs) ) 
+	{
       
-      // poste un tag prive
-    } else if ( ereg('^/users/([^/]+)/tags/?$', $uri, $regs) ) {
-      $arg['object'] = 'Tag';
-      $arg['user']   = $resg[1];
+	  $arg['user'] = $regs[1];
 
-    } else
-      return BlogMarks::raiseError('URI incorrecte', 403);
+	  // poste un Mark
+	  if ( $arg['method'] == 'POST' ) 
+	    $arg['object'] = 'Mark';
+
+	  // get une liste de Marks prives
+	  if ( $arg['method'] == 'GET' ) 
+	    $arg['object'] = 'MarksList';
+
+	  // get une liste de Marks prives avec un tag
+	} else if ( ereg('^/users/([^/]+)/tags/([^/]+)/?$', $uri, $regs) ) 
+	  {
+	    
+	    $arg['user']   = $regs[1];
+
+	    $arg['object'] = 'MarksList';
+
+	    $arg['tag']    = $regs[2];
+
+	    // get une liste de Marks avec un tag
+	  } else if ( ereg('^/tags/([^/]+)/?$', $uri, $regs) ) 
+	    {
+	      $arg['object'] = 'MarksList';
+
+	      $arg['tag']    = $regs[1];
     
+	      // get une liste de tags publiques
+	    } else if ( ereg('^/tags/([^/]+)*/?\?service=feed', $uri, $regs) ) 
+	      {
+		
+		$arg['object'] = 'TagsList';
+		
+		$arg['tag']    = $regs[1];
+
+		// get une liste de tags privés
+	      } else if ( ereg('^/users/([^/]+)/tags/([^/]+)*/?\?service=feed',
+			       $uri, $regs) ) 
+		{
+		  $arg['user']   = $regs[1];
+		  
+		  $arg['object'] = 'TagsList';
+		  
+		  $arg['tag']    = $regs[2];
+    
+		  // get, put ou delete un tag privé
+		} else if ( ereg('^/users/([^/]+)/tags/\?tag_id=(.+)$)', $uri,
+				 $regs) ) 
+		  {
+		    
+		    $arg['user']   = $regs[1];
+		    
+		    $arg['object'] = 'Tag';
+		    
+		    $arg['tag']    = $resg[2];
+
+		    // get, put ou delete un tag publique
+		  } else if ( ereg('^/tags/\?tag_id=(.+)$)', $uri, $regs) ) 
+		    {
+		      $arg['object'] = 'Tag';
+		      
+		      $arg['tag']    = $resg[1];
+
+		      // poste un tag publique
+		    } else if ( ereg('^/tags/?$', $uri) ) 
+		      {
+			
+			$arg['object'] = 'Tag';
+      
+			// poste un tag prive
+		      } else if ( ereg('^/users/([^/]+)/tags/?$', $uri, 
+				       $regs) ) 
+			{
+			  $arg['object'] = 'Tag';
+			  
+			  $arg['user']   = $resg[1];
+
+			} else
+			  {
+			    return BlogMarks::raiseError('URI incorrecte',403);
+			  }
+
     // passe au filtre suivant ou renvoit le contexte
-    if ($this->_hasChild) {
-      $tmp =& $this->_childFilter;
-      return $tmp->execute($arg);
-    }
+    if ($this->_hasChild) 
+      {
+	$tmp =& $this->_childFilter;
+      
+	return $tmp->execute($arg);
+      }
   }
 }
+
 
 /**
  * Classe du filtre d'authentification. 
@@ -189,16 +239,13 @@ class AuthenticateFilter extends InterceptingFilter {
       
       // on récupère les informations du header
       $pattern  = 'Username="(.+)", PasswordDigest="(.+)",';
-      $pattern .= ' Nonce="(.+)", Created="(.+)"';
+      $pattern .= ' Nonce="(.+)", Created="(.+)", Expires="(.+)"';
       if (ereg($pattern, $auth_line, $regs)) {
-	$marker = new BlogMarks_Marker;
-	echo "authentifie ...\n";
-	$auth_str = $marker->authenticate($regs[1], $regs[2], 
-					 $regs[3], $regs[4]);
-	if (Blogmarks::isError($auth_str)) {
-	  echo "Error :".$auth_str->getMessage()."\n";
+	$auth = $arg['marker']->authenticate($regs[1], $regs[2], 
+					     $regs[3], $regs[4], false);
+       	if (Blogmarks::isError($auth)) {
+	  return $auth;
 	}
-	$arg['auth_str'] = $auth_str;
       } else
 	return BlogMarks::raiseError("Erreur à la ligne X-WSSE : $pattern ne vérfifie pas $auth_line", 400);
     }

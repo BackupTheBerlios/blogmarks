@@ -1,9 +1,7 @@
 <?php
 /** Déclaration des renderers pour le serveur Atom et de la factory
- * @version    $Id: Renderer.php,v 1.1 2004/03/31 16:01:01 mbertier Exp $
+ * @version    $Id: Renderer.php,v 1.2 2004/05/19 13:39:46 benfle Exp $
  */
-
-require_once '../Renderer.php';
 
 /** Factory de renderers Atom.
  * @package    Atom
@@ -69,24 +67,24 @@ class Renderer_Atom_Mark extends BlogMarks_Renderer {
 
     // on ajoute les éléments du Mark
 
-    // via et link, même combat
-    $links = array ('via', 'link');
-    foreach ( $links as $link ) {
-
-      // crée l'élément
-      $$link = $doc->create_element($link);
-
-      // l'ajoute à la racine
-      $$link = $root->append_child($$link);
-
-      // enregistre ses attributs
-      $$link->set_attribute('rel', $mark->$link->rel);
-      $$link->set_attribute('type', $mark->$link->type);
-      $$link->set_attribute('href', $mark->$link->href);
-      $$link->set_attribute('title', $mark->$link->title);
-      $$link->set_attribute('lang', $mark->$link->lang);
-    }
-
+    // via
+    $via = $doc->create_element('via');
+    $via = $root->append_child($via);
+    $via->set_attribute('rel', $mark->via->rel);
+    $via->set_attribute('type', $mark->via->type);
+    $via->set_attribute('href', $mark->via->href);
+    $via->set_attribute('title', $mark->via->title);
+    $via->set_attribute('lang', $mark->via->lang);
+    
+    // link
+    $link = $doc->create_element('link');
+    $link = $root->append_child($link);
+    $link->set_attribute('rel', $mark->link->rel);
+    $link->set_attribute('type', $mark->link->type);
+    $link->set_attribute('href', $mark->link->href);
+    $link->set_attribute('title', $mark->link->title);
+    $link->set_attribute('lang', $mark->link->lang);
+    
     // author
     $author = $doc->create_element('author');
     $author = $root->append_child($author);
@@ -123,20 +121,35 @@ class Renderer_Atom_Mark extends BlogMarks_Renderer {
 
     }
 
-    // la liste des tags, on ajoute a la racine l'arbre de la liste des tags
+    // la liste des tags
 
-    // on construit un renderer pour la liste des tags
-    $sub_renderer = new Renderer_Atom_TagsList();
-    $mark->tags->accept($sub_renderer);
-
-    // on construit l'arbre de la liste
-    $tagslist_doc = $sub_renderer->build_tree($mark->tags);
+    $tags = $doc->create_element('tags');
+    $tags = $doc->append_child($tags);
     
-    // on extrait l'élément racine (tags)
-    $tagslist = $tagslist_doc->document_element();
+    // on ajoute chaque tag
+    if ( $tagslist != NULL )
+      {
+	while (!$tagslist->end()) {
+     
+	  $tag = $tagslist;
 
-    // on l'ajoute à l'arbre du Mark
-    $tagslist = $root->append_child($tagslist);
+	  // on construit un renderer pour le tag
+	  $sub_renderer = new Renderer_Atom_Tag();
+	  
+	  // on construit l'arbre du tag
+	  $tag_doc = $sub_renderer->build_tree($tag);
+    
+	  // on extrait l'élément racine (tag)
+	  $tag_element = $tag_doc->document_element();
+
+	  // on l'ajoute à l'arbre de la liste
+	  $tag_element = $root->append_child($tag_element);
+
+	  // passe au tag suivant
+	  $tagslist->next();
+	}
+      }
+
     
     return $doc;
   }
@@ -217,26 +230,29 @@ class Renderer_Atom_TagsList extends BlogMarks_Renderer {
     $root = $doc->append_child($root);
     
     // on ajoute chaque tag
-    while (!$tagslist->end()) {
+    if ( $tagslist != NULL )
+      {
+	while (!$tagslist->end()) {
      
-      $tag = $tagslist;
+	  $tag = $tagslist;
 
-      // on construit un renderer pour le tag
-      $sub_renderer = new Renderer_Atom_Tag();
-      $tag->accept($sub_renderer);
+	  // on construit un renderer pour le tag
+	  $sub_renderer = new Renderer_Atom_Tag();
+	  $tag->accept($sub_renderer);
 
-      // on construit l'arbre du tag
-      $tag_doc = $sub_renderer->build_tree($tag);
+	  // on construit l'arbre du tag
+	  $tag_doc = $sub_renderer->build_tree($tag);
     
-      // on extrait l'élément racine (tag)
-      $tag_element = $tag_doc->document_element();
+	  // on extrait l'élément racine (tag)
+	  $tag_element = $tag_doc->document_element();
 
-      // on l'ajoute à l'arbre de la liste
-      $tag_element = $root->append_child($tag_element);
+	  // on l'ajoute à l'arbre de la liste
+	  $tag_element = $root->append_child($tag_element);
 
-      // passe au tag suivant
-      $tagslist->next();
-    }
+	  // passe au tag suivant
+	  $tagslist->next();
+	}
+      }
     return $doc;
   }
 }

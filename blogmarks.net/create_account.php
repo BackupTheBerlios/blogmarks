@@ -63,6 +63,8 @@ if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 
 <form method="POST">
 
+<!-- <fieldset> -->
+
 <label>Login</label>
 <input type="text" name="login" />
 <label>Password</label>
@@ -76,6 +78,8 @@ if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 <input type="hidden" name="create" value="1" />
 
 <input type="submit" value="Create account" />
+
+<!-- </fieldset> -->
 
 </form>
 

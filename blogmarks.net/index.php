@@ -65,7 +65,7 @@ $params['order_by']		=  array('created','DESC') ;
 
 
 // To clean
-if ( isset( $_GET['all']) AND ( $_GET['all'] == 1 ) )
+if ( ( isset( $_GET['all'] ) AND ( $_GET['all'] == 1 ) ) OR !$marker->userIsAuthenticated() )
 	$complete_tag = "all=1";
 else
 	$complete_tag = "private=1";
@@ -75,7 +75,9 @@ if ( isset( $_GET['include_tags'] ) AND strlen( $_GET['include_tags'] ) )  {
 	
 	$params['include_tags'] = explode( " " , $_GET['include_tags'] );
 
-	echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php?'.$complete_tag.'">reset</a>)</span> </h4>'."\r\n\r\n";
+// Duplicate with the field
+
+//echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php?'.$complete_tag.'">reset</a>)</span> </h4>'."\r\n\r\n";
 
 }
 

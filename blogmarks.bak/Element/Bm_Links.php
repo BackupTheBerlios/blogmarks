@@ -2,7 +2,7 @@
 /**
  * Table Definition for bm_Links
  */
-require_once 'blogmarks/Element.php';
+require_once 'Blogmarks/Element.php';
 
 
 /** Lien.
@@ -55,6 +55,7 @@ class Element_Bm_Links extends Blogmarks_Element
         // 1. D'apres un entete http
         if ( isset($url_info['content-type']) ) {
 
+            // eg. text/html; charset=utf8
             $pattern = '/^(\w+\/\w+)(;?.\w+=(.*))?/';
             if ( preg_match( $pattern, $url_info['content-type'], $matches ) ) {
                 $content_type = isset($matches[1]) ? $matches[1] : null;

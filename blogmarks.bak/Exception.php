@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Exception
- * @version    $Id: Exception.php,v 1.2 2004/03/05 11:40:27 mbertier Exp $
+ * @version    $Id: Exception.php,v 1.3 2004/03/31 14:08:20 mbertier Exp $
  */
 
 /** Objet dédié à la remontée d'erreurs
@@ -52,7 +52,7 @@ class Blogmarks_Exception {
     }
     
     /** Retourne le message d'erreur.
-     * @returns   string
+     * @return   string
      */
     function getMessage() {
         return $this->message;

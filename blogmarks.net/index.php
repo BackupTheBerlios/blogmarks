@@ -38,17 +38,22 @@ if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 
 	echo '<h2><a style="font-size:smaller" href="?all=1">Public marks</a> / Personal marks</h2>';
 
-	$params['user_login']	=  $marker->getUserInfo('login') ;
+	$temp_flag = 0;
 
+	$params['user_login']	=  $marker->getUserInfo('login') ;
 	$params['select_priv']	=  TRUE ;
 
 } elseif ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) {
+
+	$temp_flag = 1;
 	
 	echo '<h2>Public marks / <a style="font-size:smaller" href="?private=1">Personal marks</a></h2>';
 
 //	$params['select_priv']	=  TRUE ;
 
 } else {
+
+	$temp_flag = 1;
 	
 	echo "<h2>Public marks</h2>";
 
@@ -110,7 +115,7 @@ while ( $list->fetch() ) {
 
 		$owner = $list->getOwner();
 
-		if ( (!isset( $_GET['private'] ) ) OR ( isset( $_GET['all'] ) AND  $_GET['all'] == 1 ) )
+		if ( $temp_flag == 1 )
 			echo $owner . " - ";
 
 		$link = $list->getLink( 'href' );

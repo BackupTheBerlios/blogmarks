@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.10 2004/04/28 10:36:27 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.11 2004/04/28 14:47:05 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -668,11 +668,9 @@ class BlogMarks_Marker {
 
             // On vérifie que l'utilisateur existe
             $user =& Element_Factory::makeElement( 'Bm_Users' );
-            if ( ! $user->get( 'login', $cond['user_login'] ) ) return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
+            if ( ! $user->get( 'login', $cond['user_login'] ) ) 
+                return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
-            $user =& Element_Factory::makeElement( 'Bm_Users' );
-            $user->get( 'login', $cond['user_login'] );
-            
             $marks->bm_Users_id = $user->id;
         }
 
@@ -682,25 +680,35 @@ class BlogMarks_Marker {
 
         //
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $assocs->joinAdd( $marks );
+        $assocs->joinAdd( $marks );        
 
         // Sélection des Marks à exclure
-        if ( isset($cond['exclude_tags']) && is_array($cond['exclude_tags']) ) {
+        if ( isset($cond['exclude_tags']) && is_array($cond['exclude_tags']) && count($cond['exclude_tags']) ) {
 
-            foreach ( $cond['exclude_tags'] as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
+            // Debug info
+            $assocs->debug( 'Excluding '. count($cond['exclude_tags']) .' Tags...', __FUNCTION__, 1 );
 
-            while ( $assocs->fetch() ) { 
-                $excluded_marks[] = $mark->bm_Marks_id;
-                
-                // Dédoublonnage des résultats
-                $excluded_marks = array_unique( $excluded_marks );
+            // Constitution de la clause WHERE de la requête, à partir de la liste des Tags à ignorer
+            foreach ( $cond['exclude_tags'] as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'AND' );
+
+            if ( $assocs->find() ) {
+                while ( $assocs->fetch() ) { 
+                    $excluded_marks[] = $assocs->bm_Marks_id;
+                    
+                    // Dédoublonnage des résultats
+                    $excluded_marks = array_unique( $excluded_marks );
+                }
             }
-
         }
 
+        
         // Reset
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        //        $marks  =& Element_Factory::makeElement( 'Bm_Marks' );
+        $assocs->joinAdd();
+        $marks->joinAdd();
+        $marks->whereAdd();
+
+        //
         $marks->joinAdd( $assocs );
 
         // -- Sélection des Marks à inclure

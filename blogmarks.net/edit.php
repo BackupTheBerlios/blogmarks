@@ -66,6 +66,7 @@ $via  = $mark->getLink( 'via' );
 	<label>Tags</label>
 	<?php
 	$tags_id = $marker->getTags($mark->id);
+	$tags_title = array();
 	foreach ( $tags_id as $tag_id )
 	{
 		$tag = $mark->getTag ($tag_id);

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.9 2004/06/25 12:14:26 benfle Exp $
+ * @version    $Id: Auth.php,v 1.10 2004/06/26 16:41:56 benfle Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -97,7 +97,7 @@ class Blogmarks_Auth {
             $uid = ( isset($this->_connectedUserId) ? $this->_connectedUserId : null ); 
 
         // Si aucun utilisateur n'est connecté
-        if ( ! $uid ) return Blogmarks::raiseError( 'Aucun utilisateur connecté', 404 );
+        if ( ! $uid ) return Blogmarks::raiseError( 'Aucun utilisateur connecté', 401 );
 
         // Renvoi de l'objet correspondant à l'utilisateur
         $user =& Element_Factory::makeElement( 'Bm_Users' );

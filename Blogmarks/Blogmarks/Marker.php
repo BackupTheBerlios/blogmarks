@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.22 2004/06/25 12:14:26 benfle Exp $
+ * @version    $Id: Marker.php,v 1.23 2004/06/26 16:41:56 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -512,11 +512,19 @@ class BlogMarks_Marker {
      */
     function createTag( $props = array() ) {
 
-        // Permissions
-        $user =& $this->_slots['auth']->getConnectedUser();
+		// permissions
+		$user =& $this->_slots['auth']->getConnectedUser();
         if ( Blogmarks::isError($user) ) return $user;
-        if ( ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+		if ( ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
 
+		// si ce n'est pas un administrateur pour tag publique , il ne peut indiquer summary, issued et ico
+		if ( !$user->isAdmin() && $props['author'] == null ) 
+		{ 
+			unset ($props['issued']); 
+			unset ($props['summary']);
+			unset ($props['ico']);
+		}
+	
         $tag =& Element_Factory::makeElement( 'Bm_Tags' );
         
         // Si le tag existe déja -> erreur 500
@@ -544,7 +552,7 @@ class BlogMarks_Marker {
      * @return     mixed     L'instance du Bm_Tags créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPublicTag( $props = array() ) {
-		$props['author'] = NULL;
+		$props['author'] = null;
         return $this->createTag( $props );
     }
 
@@ -554,6 +562,8 @@ class BlogMarks_Marker {
      * @return     mixed     L'instance du Bm_Tags créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPrivateTag( $props = array() ) {
+
+		//
 		if ( !isset ( $props['author'] ) || $props['author'] == '' )
 			return Blogmarks::raiseError( "Ne peut créer un tag privé sans propriétaire.", 500 );
         return $this->createTag( $props );
@@ -577,20 +587,20 @@ class BlogMarks_Marker {
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( Blogmarks::isError($user) ) return $user;
-        if ( ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( $tag->isPrivate() && ! $user->owns($tag) 
+			|| $tag->isPublic() && ! $user->isAdmin() ) 
+		{
+			return Blogmarks::raiseError( "Permission denied", 401 );
+		}
 
         // Mise à jour des propriétés du Tag
         $tag->populateProps( $props );
         $tag->id = $id;
+		if ( $tag->isPrivate() )
+			$tag->author = $user->login;
+		$tag->modified = date("Ymd His");
         $res = $tag->update();
         if ( Blogmarks::isError($res) ) { return $res; }
-        
-        // Mise à jour de l'id du Tag et des associations Tag / Marks si l'id du Tag a changé
-        if ( $id != $props['id'] ) {
-            $tag->query( "UPDATE $tag->__table SET id='". $props['id'] ."' WHERE id='$id';" );
-            $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-            $assocs->query( "UPDATE $assocs->__table SET bm_Tags_id='". $props['id'] ."' WHERE bm_Tags_id='$id';" );
-        }
 
         return true;
     }
@@ -622,41 +632,52 @@ class BlogMarks_Marker {
         return true;        
     }
 
+    /** Renvoie la valeur d'un tag à partir de son titre et de son propriétaire pour les tags privés.
+     * @param      string         $title       Titre du tag recherché
+	 * @param      string         $user        Login du propriétaire si c'est un tag privé
+     * @return     mixed          Bm_Tags ou Blogmarks_Exception en cas d'erreur
+     */
+    function getTagId ($title, $user = null ) {
 
-	/** Renvoie l'id du tag privé en fonction de son nom.
-	 * @param   string     $title    Titre du tag
-	 * @perms   Pour avoir l'id il faut posséder le tag.
-	 */
-	function getPrivateTagId ( $title )
-	{
-		$user =& $this->userIsAuthenticated();
+        $tag =& Element_Factory::makeElement( 'Bm_Tags' );
 
-		if ( $user == false )
-			return Blogmarks::raiseError( "Permission denied", 400 );
-		
-		$tag =& Element_Factory::makeElement( 'Bm_Tags' );
+		// permission
+		if ( $user != null )
+		{
+			if ( $this->userIsAuthenticated() )
+			{
+				$rec_user = $this->_slots['auth']->getConnectedUser();
+				if ( Blogmarks::isError ($rec_user) )
+					return $rec_user;
+				if ( $user != $rec_user->login )
+					return BLogmarks::raiseError( "Permission denied", 401);
+			} else
+				return BLogmarks::raiseError( "Permission denied", 401);
+		}
+
+        // Récupération du tag
 		$tag->title = $title;
-		$tag->author = $user->login;
-		$tag->find();
+		$tag->author = $user;
+		if ( $tag->find() == 0 )
+			if ( $user == null )
+				return Blogmarks::raiseError( "Aucun tag public [$title] n'existe", 404);
+			else
+				return Blogmarks::raiseError( "Aucun tag privé [$title] n'existe pour [$user]", 404);
 		$tag->fetch();
+        return $tag->id;
+    }
 
-		return $tag->id;
-	}
-
-	/** Renvoie l'id du tag public en fonction de son nom.
-	 * @param   string     $title    Titre du tag
-	 * @perms   Pour avoir l'id il faut posséder le tag.
+	/** Renvoie la valeur d'un tag.
+	 * @param      int        $id     Identifiant du tag recherché.
+	 * @return     mixed      Bm_Tags ou Blogmarks_Exception en cas d'erreur
 	 */
-	function getPublicTagId ( $title )
-	{
-		$tag =& Element_Factory::makeElement( 'Bm_Tags' );
-		$tag->title = $title;
-		$tag->author = null;
-		$tag->find();
-		$tag->fetch();
+	 function getTag ($id) {
 
-		return $tag->id;
-	}
+		$tag =& Element_Factory::makeElement( 'Bm_Tags' );
+		$tag->get('id', $id);
+
+		return $tag;
+	 }
 
 	/** Renvoie la liste des tags d'un mark
 	* @param     int        $id     L'identifiant du mark dont on veut la liste de tags
@@ -747,6 +768,8 @@ class BlogMarks_Marker {
         $now = date( "Ymd His" );        
         $marks =& Element_Factory::makeElement( 'Bm_Marks' );
 
+		$cur_user =& $this->_slots['auth']->getConnectedUser();
+
         // Recherche au sein des Marks d'un utilisateur donné
         if ( isset($cond['user_login']) ) {
 
@@ -755,8 +778,10 @@ class BlogMarks_Marker {
             if ( ! $user->get( 'login', $cond['user_login'] ) ) 
                 return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
-            $cur_user =& $this->_slots['auth']->getConnectedUser();
-            $cond['select_priv'] = ( $cur_user->login == $user->login ) ? $cond['select_priv'] : false;
+			if ( $user->isAuthenticated() )
+				$cond['select_priv'] = true;
+			else
+				$cond['select_priv'] = false;
 
             $marks->author = $user->login;
         }
@@ -784,9 +809,12 @@ class BlogMarks_Marker {
             foreach ( $cond['exclude_tags'] as $tag_title ) 
 			{
 				if ( ereg ('^private:(.+)$', $tag_title, $regs) )
-					$tag_id = $this->getPrivateTagId ($regs[1]);
-				else
-					$tag_id = $this->getPublicTagId ($tag_title);
+				{
+					if ( Blogmarks::isError ($cur_user) )
+						return $cur_user;
+					$tag_id = $this->getTagId ($regs[1], $cur_user->login);
+				} else
+					$tag_id = $this->getTagId ($tag_title, null);
 
 				$assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'AND' );
 			}
@@ -816,9 +844,12 @@ class BlogMarks_Marker {
             foreach ( $cond['include_tags'] as $tag_title )
 			{
 				if ( ereg ('^private:(.+)$', $tag_title, $regs) )
-					$tag_id = $this->getPrivateTagId ($regs[1]);
-				else
-					$tag_id = $this->getPublicTagId ($tag_title);
+				{
+					if ( Blogmarks::isError ($cur_user) )
+						return $cur_user;
+					$tag_id = $this->getTagId ($regs[1], $cur_user->login );
+				} else
+					$tag_id = $this->getTagId ($tag_title, null);
 
 				$marks->whereAdd( "$assocs->__table.bm_Tags_id = '$tag_id'", 'OR' );
 			}

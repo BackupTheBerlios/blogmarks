@@ -71,7 +71,6 @@ class Element_Bm_Tags extends Blogmarks_Element
     /** Surcharge de Blogmarks_Element::populateProps(). */
     function populateProps( $props = array() ) {
 
-        $this->id          = isset($props['id'])            ? $props['id']          : null;
 		$this->title       = isset($props['title'])         ? $props['title']       : null;
         $this->author      = isset($props['author'])        ? $props['author']      : null;
 		$this->issued      = isset($props['issued'])        ? $props['issued']      : null;

@@ -122,21 +122,6 @@ class Element_Bm_Marks extends Blogmarks_Element
         else return Blogmarks::raiseError( "Le Tag [$tag_id] n'est pas associé au Mark [$this->id]", 404 );
     }
 
-    /** Renvoie la valeur d'un tag.
-     * @param      int         id       Identifiant du tag
-     * @return     mixed       String ou Blogmarks_Exception en cas d'erreur
-     */
-    function getTag( $id ) {
-
-        $tag =& Element_Factory::makeElement( 'Bm_Tags' );
-
-        // Récupération du tag
-        if ( ! $tag->get('id', $id) )
-            return Blogmarks::raiseError( "Aucun tag avec l'id [$id] n'existe.", 404 );
-        
-        return $tag;
-    }
-
 # ------ LINKS
 
     /** Renvoie la liste des champs de la base de données qui correpondent à des Links

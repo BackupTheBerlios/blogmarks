@@ -1,12 +1,12 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.2 2004/04/05 09:37:11 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
 # -- Includes
 require_once 'PEAR.php';
-require_once 'Blogmarks/Blogmarks.php';
+require_once 'Blogmarks.php';
 require_once 'Blogmarks/Element/Factory.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
@@ -40,7 +40,7 @@ class BlogMarks_Marker {
     function &singleton() {
         static $instance;
 
-        if (!isset($instance)) {
+        if ( !isset($instance) ) {
             $instance = new Blogmarks_Marker;
         }
 

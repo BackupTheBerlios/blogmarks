@@ -20,10 +20,14 @@
   </maintainers>
   <release>
     <version>0.1</version>
-    <date>2004-03-31</date>
+    <date>2004-04-01</date>
     <license>GPL</license>
     <state>beta</state>
     <notes>first try</notes>
+    <deps>
+      <dep type="pkg" rel="ge" version="1.5.3" optional="no">DB_DataObject</dep>
+      <dep type="pkg" rel="ge" version="1.2" optional="no">HTTP_Request</dep>
+    </deps>
     <provides type="class" name="Blogmarks_Auth" />
     <provides type="function" name="Blogmarks_Auth::authenticate" />
     <provides type="class" name="Blogmarks_Element" extends="DB_DataObject" />
@@ -81,14 +85,14 @@
       <file role="php" baseinstalldir="/" md5sum="a9b74726fc4ef03c8cbe70fe9f03ccce" name="Blogmarks/Element/Bm_Tags.php"/>
       <file role="php" baseinstalldir="/" md5sum="045ade84023cda908549d3b648e481fd" name="Blogmarks/Element/Bm_Users.php"/>
       <file role="php" baseinstalldir="/" md5sum="543e0af40dba70a249d629f4801ec2bc" name="Blogmarks/Element/Factory.php"/>
-      <file role="data" baseinstalldir="/" md5sum="285f554c6459a2ff22f32fbd4186f960" name="Blogmarks/tutorials/Renderers/Renderers.pkg"/>
+      <file role="doc" baseinstalldir="/" md5sum="285f554c6459a2ff22f32fbd4186f960" name="Blogmarks/tutorials/Renderers/Renderers.pkg"/>
       <file role="php" baseinstalldir="/" md5sum="996af343c26e17dc80ac375591a0ee4d" name="Blogmarks.php"/>
     </filelist>
   </release>
   <changelog>
     <release>
       <version>0.1</version>
-      <date>2004-03-31</date>
+      <date>2004-04-01</date>
       <license>GPL</license>
       <state>beta</state>
       <notes>first try</notes>

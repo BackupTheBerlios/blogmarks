@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.26 2004/07/07 07:51:14 benfle Exp $
+ * @version    $Id: Marker.php,v 1.27 2004/07/07 08:04:38 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -8,9 +8,6 @@
 require_once 'PEAR.php';
 require_once 'Blogmarks.php';
 require_once 'Blogmarks/Element/Factory.php';
-
-# client XML-RPC pour les screenshots
-require_once 'Blogmarks/inc/IXR_Library.inc.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
  *

@@ -40,19 +40,40 @@
 
 include "includes/functions.inc.php";
 include "includes/config.inc.php";
+/*
+array( 'user' => $userlogin,
+         'date_in' => 'mysqldate'
+          'date_out => 'mysqldate',
+          'exclude_tags' => array(tagsàexclure),
+          'include_tags'  => array(tagsàinclure),
+          'select_priv'      => bool,
+          'order_by'          => array('field' ou array('fields'), DESC/ASC) );
+*/
 
-$list =& $marker->getMarksListOfUser( "znarf" );
+
+$params = array( 'user_login' => 'znarf',
+				 'order_by' => 'created DESC',
+				// 'include_tags' => array( 'blog') ,
+				 'select_priv' => true );
+
+$list =& $marker->getMarksList( $params );
+
+if ( Blogmarks::isError($list) ) die( $list->getMessage() );
+
+if ( DB::isError($list) ) die( $list->getMessage() );
 
  while ( $list->fetch() ) {
 		
 		echo '<li>';
+
+	//	print_r( $list );
 
 	//	print_r( $list->getHref() );
 
 		echo '<a href="' .  $list->getHref() . '">' . $list->title . '</a>' . ' : ' . $list->summary;
        // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
 
-	   //echo ' (' . $list->created . ')';
+		echo ' (' . $list->created . ')';
         
         echo " [ ";
         foreach ( $list->getTags() as $tag ) echo "$tag ";

@@ -9,13 +9,15 @@ if ( ! Blogmarks::isError( $auth ) ) {
 	$array_tags = explode( " " , $_POST['tags'] );
 
     echo "Connexion OK!\n";
-    $uri =& $marker->createMark( array( 'href'		=> $_POST['url'] ,
+
+	$params = array( 'href'		=> $_POST['url'] ,
                                         'title'		=> $_POST['title'] ,
 										'summary'	=> $_POST['description'],
 										'via'		=> $_POST['via'],
 										'tags'		=> $array_tags
-								      )
-								);
+								      );
+	print_r( $params );
+    $uri =& $marker->createMark( $params );
 
     if ( Blogmarks::isError($uri) ) {
 		

@@ -59,15 +59,15 @@ class Element_Bm_Users extends Blogmarks_Element
      * @param      array       $include_tags    Ids de Tags, seuls les Marks correspondants aux Tags listés ici seront sélectionnés
      * @param      array       $exclude_tags    Ids de Tags, les Marks correspondants à ces Tags ne seront pas sélectionnés
      * @param      bool        $private         Si true, recherche aussi parmi les Tags privés
-     * @return     mixed       DB_DataObject_Result ou Blogmarks_Exception en cas d'erreur
+     * @return     mixed       DB_DataObject_Result (itérateur de Bm_Element_Marks) ou Blogmarks_Exception en cas d'erreur
      */
     function getMarksList( $include_tags = null, $exclude_tags = null, $private = false) {
 
         $now = date( "Ymd His" );
+        $mark   =& Element_Factory::makeElement( 'Bm_Marks' );
 
         // ---- Sélection simple
         if ( ! $include_tags && ! $exclude_tags ) {
-            $mark   =& Element_Factory::makeElement( 'Bm_Marks' );
             $mark->bm_Users_id = $this->id;
             
             // Par défaut, on ne récupère que les Tags publics
@@ -76,7 +76,7 @@ class Element_Bm_Users extends Blogmarks_Element
                 $mark->whereAdd( "issued < '$now'" );
             }
 
-            return ( $mark->find() > 0 ? $mark : Blogmarks::raiseError( "Aucun Mark disponible pour l'utilisateur [$this->login]." ) );
+            return ( $mark->find() > 0 ? $mark : Blogmarks::raiseError( "Aucun Mark disponible pour l'utilisateur [$this->login].", 404 ) );
         }
         
         // ---- Sélection conditionnelle
@@ -85,10 +85,12 @@ class Element_Bm_Users extends Blogmarks_Element
         // INNER JOIN entre bm_Marks_has_Tags et Bm_Marks
         $assocs->joinAdd( $mark );
 
+        // Constitution de la liste des Marks à exclure
         if ( is_array($exclude_tags) && count($exclude_tags) ) {
-            // -- Constitution de la liste des Marks à exclure
+
             foreach ( $exclude_tags as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
             $assocs->find();
+
             while ( $assocs->fetch() ) { 
                 $excluded_marks[] = $assocs->bm_Marks_id;
                 
@@ -98,30 +100,31 @@ class Element_Bm_Users extends Blogmarks_Element
         }
 
 
-        // Reset de $assocs
+        // Reset
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $assocs->joinAdd( $mark );
+        $marks   =& Element_Factory::makeElement( 'Bm_Marks' );
+        $marks->joinAdd( $assocs );
 
 
         // -- Marks à inclure
         // Selon un Tag les décrivant
         if ( is_array($include_tags) && count($include_tags) ) {
-            foreach ( $include_tags as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
+            foreach ( $include_tags as $tag_id ) $marks->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
         }
 
         // On ne sélectionne pas les Marks dont le Tag est exclu
         if ( is_array($excluded_marks) && count($excluded_marks) ) {
-            foreach ( $excluded_marks as $mark_id ) $assocs->whereAdd( "bm_Marks_id != '$mark_id'", 'AND' );
+            foreach ( $excluded_marks as $mark_id ) $marks->whereAdd( "bm_Marks_id != '$mark_id'", 'AND' );
         }
         
         // Par défaut, on ne sélectionne que les Marks publics
-            // Par défaut, on ne récupère que les Tags publics
-            if ( ! $private ) { 
-                $mark->whereAdd( "issued != 0 ",  'AND' );
-                $mark->whereAdd( "issued < '$now'", 'AND' );
-            }        
-
-        return ( $assocs->find() > 0 ? $assocs : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.' ) );
+        // Par défaut, on ne récupère que les Tags publics
+        if ( ! $private ) { 
+            $marks->whereAdd( "issued != 0 ",  'AND' );
+            $marks->whereAdd( "issued < '$now'", 'AND' );
+        }        
+        
+        return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 404 ) );
     }
     
 

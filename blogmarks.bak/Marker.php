@@ -1,21 +1,10 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.10 2004/03/15 11:07:27 benfle Exp $
+ * @version    $Id: Marker.php,v 1.11 2004/03/16 10:03:05 mbertier Exp $
  */
 
 require_once 'PEAR.php';
 require_once 'Blogmarks.php';
-
-# -- CONFIGURATION
-
-
-# Dataobjects
-$config = parse_ini_file('/home/benoit/dev/BlogMarks/blogmarks/config.ini',TRUE);
-foreach( $config as $class => $values ) {
-    $options =& PEAR::getStaticProperty( $class, 'options' );
-    $options = $values;
-}
-
 
 # -- Includes
 require_once 'Element/Factory.php';
@@ -24,6 +13,8 @@ require_once 'Element/Factory.php';
  *
  * @package    Blogmarks
  * @uses       Element_Factory
+ * @uses       Blogmarks_Auth
+ *
  * @todo       Validation des paramètres dans les méthodes publiques (et les autres mêmes ;)
  * @todo       Fichier de conf dédié
  * @todo       Erreur 500 en cas de tentative de création d'un élément déja existant.
@@ -56,7 +47,7 @@ class BlogMarks_Marker {
      */
     function createMark( $props ) {
 
-        // permissions: Pour pouvoir créer un Mark, il faut êter authentifié
+        // permissions: Pour pouvoir créer un Mark, il faut être authentifié
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( $user && ! $user->isAuthenticated() ) return Blogmarks::raiseError( "Permission denied", 401 );
 
@@ -100,9 +91,11 @@ class BlogMarks_Marker {
             if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
 
         } 
-
+        
+        // Si le Mark existe déja -> erreur 500
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
+        $this->manageAssociations( $mark, $props['tags'] );
 
         // Récupération de l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -160,7 +153,6 @@ class BlogMarks_Marker {
         $mark->title    = $props['title'];
         $mark->summary  = $props['summary'];
         $mark->lang     = $props['lang'];
-        $mark->via      = $props['via'];
         
         // Dates
         $date = date("Ymd Hms");
@@ -212,6 +204,14 @@ class BlogMarks_Marker {
         return $uri;
     }
 
+
+    /** Gère les associations de Tags à un Mark.
+     * Si un tag passé en paramètre n'existe pas, il est automatiquement créé avec le status 'privé'
+     * @param      object Element_Bm_Marks      $mark
+     * @param      array                        $tags      Tableau d'identifiants de Tags
+     *
+     */
+    
 
 # ------- LINKS
 

@@ -1,17 +1,22 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.3 2004/03/15 11:07:27 benfle Exp $
+ * @version    $Id: Auth.php,v 1.4 2004/03/30 11:53:40 mbertier Exp $
  */
 
-require_once 'Blogmarks.php';
-require_once 'Element/Factory.php';
+require_once 'Blogmarks/Blogmarks.php';
+require_once 'Blogmarks/Element/Factory.php';
 
 
 /** Classe dédiée à la gestion des droits au sein de Blogmarks.
  * @package    Blogmarks
- * @todo       Cryptage des mots de passe dans la base
+ * @subpackage Auth
  */
 class Blogmarks_Auth {
+
+    /** Identifiant de l'utilisateur en cours.
+     * @var string */
+    var $_connectedUserId = null;
+
 
 # ------------------------ #
 # -- METHODES PUBLIQUES -- #
@@ -36,10 +41,11 @@ class Blogmarks_Auth {
      * @param      string      $cli_digest   Le digest du client, qui sera comparé au digest server.
      * @param      string      $nonce        Chaîne aléatoire utilisée par le client pour créer le digest.
      * @param      string      $timestamp    Utilisé par le client pour générer le digest.
+     * @param      bool        $make_session Créer une session (défaut: false)
      *
      * @return     mixed       True en cas de validation  ou Blogmarks_Exception en cas d'erreur.
      */
-    function authenticate( $login, $cli_digest, $nonce, $timestamp ) {
+    function authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session = false ) {
 
         // Recherche de l'utilisateur correpondant à $login
         $user =& Element_Factory::makeElement( 'Bm_Users' );
@@ -60,11 +66,17 @@ class Blogmarks_Auth {
             return Blogmarks::raiseError( 'Wrong credentials.', 401 );
         }
 
-        // Démarrage de la session
-        session_start();
+        // Création de session à la demande
+        if ( $make_session === true ) {
+            // Démarrage de la session
+            session_start();
+            
+            // On lie la session à l'utilisateur
+            $_SESSION['_BM']['user_id'] = $user->id;
+        } 
 
-        // On lie la session à l'utilisateur
-        $_SESSION['_BM']['user_id'] = $user->id;
+        // On se contente de stocker l'id utilisateur dans une propriété
+        else $this->_connectedUserId = $user->id;
 
 # --
         /* Apparemment le update est effectué avant l'insertion de la session
@@ -80,13 +92,21 @@ class Blogmarks_Auth {
         
     }
     
+
     /** Renvoie l'utilisateur en cours. 
+     * Cette information peut etre stockée soit en session, soit dans les propriétés de l'objet. 
+     * Si les deux locations sont renseignées, on donne priorité aux informations de session.
+     *
      * @return     object Element_Bm_Users
-    */
+     */
     function getConnectedUser() {
+
+        // Recherche de l'identifiant de l'utilisateur connecté
+        $uid = ( isset($this->_connectedUserId) ? $this->_connectedUserId : null );
+        $uid = ( isset($_SESSION['_BM']['user_id']) ? $_SESSION['_BM']['user_id'] : null );
         
         // Si aucun utilisateur n'est connecté
-        if ( ! isset($_SESSION) ) return false;
+        if ( ! $uid ) return Blogmarks::raiseError( 'Aucun utilisateur connecté', 404 );
 
         // Récupération de l'uid de l'utilisateur connecté
         $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
@@ -102,11 +122,14 @@ class Blogmarks_Auth {
 # ----------------------- #
 # -- METHODES PRIVEES  -- #
 # ----------------------- #
-    
+
+
+# --- CRYPT
+
     /***/
-    function _hex2bin($data) {
-        $len = strlen($data);
-        return pack("H" . $len, $data);
+    function _hex2bin( $data ) {
+        $len = strlen( $data );
+        return pack( "H" . $len, $data );
     }
 
 
@@ -117,8 +140,7 @@ class Blogmarks_Auth {
      * @return     string      Le digest
      */
     function _makeDigest( $pwd, $nonce, $timestamp  ) {
-        
-        $txt = sha1($nonce.$timestamp.$pwd);
+        $txt = sha1( $nonce . $timestamp . $pwd );
         $digest = base64_encode( $this->_hex2bin($txt) );
 
         return $digest;
@@ -163,6 +185,8 @@ class Blogmarks_Auth {
                 $sess->update();
             }
         }
+
+        return true;
         
     }
 
@@ -170,8 +194,13 @@ class Blogmarks_Auth {
     /** Destruction de la session */
     function _sessDestroy( $sess_id ) {
         $sess =& Element_Factory::makeElement( 'bm_Sessions' );
-        $sess->get( $sess_id );
-        $sess->delete();
+        if ( $sess->get( $sess_id ) ) {
+            $sess->delete();
+            return true;
+        }
+        
+        return false;
+        
     }
 
 

@@ -23,28 +23,36 @@ include "includes/start.inc.php";
 <?php
 
 if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
+	
+	$_POST['login']	= trim( $_POST['login'] );
+	$_POST['pwd1']	= trim( $_POST['pwd1'] );
+	$_POST['pwd2']	= trim( $_POST['pwd2'] );
 
-	if (
-		( strlen( $_POST['login'] ) > 5 )
-		AND
-		( strlen( $_POST['pwd1'] ) > 5 )
-		AND
-		( $_POST['pwd1'] == $_POST['pwd2'] )
-	   ) {
+	if ( strlen( $_POST['login'] ) < 4 ) {
+		echo '<p class="error">Login must be minimum 5 characters</p>';
+	}
+	elseif ( strlen( $_POST['pwd1'] ) < 4 ) {
+		echo '<p class="error">Pwd must be minimum 5 characters</p>';
+	}
+	elseif ( $_POST['pwd1'] != $_POST['pwd2'] ) {
+		echo '<p class="error">Password are not identics</p>';
+	} else {
 
-			$params = array(
-				'login'	=> trim( $_POST['login'] ) ,
-                'pwd'	=> trim( $_POST['pwd1'] ) ,
-			    'email'	=> trim( $_POST['email'] )
-			);
+		$params = array(
+			'login'	=> $_POST['login'] ,
+			'pwd'	=> $_POST['pwd1']  ,
+			'email'	=> $_POST['email']
+		);
 
-			//print_r( $params );
-			$result =& $marker->createUser( $params );
+		//print_r( $params );
+		$result =& $marker->createUser( $params );
 
-			if ( Blogmarks::isError($result) ) die( $result->getMessage() );
-			if ( DB::isError($result) ) die( $result->getMessage() );
+		if ( Blogmarks::isError($result) ) die( $result->getMessage() );
+		if ( DB::isError($result) ) die( $result->getMessage() );
 
-			echo "<p>Account created</p>";
+		echo '<p>Account successfully <b>' . $_POST['login']  . '</b>  created</p>';
+
+		echo '<p><a	href="index.php">Return home</a></p>';
 
 	}
 

@@ -6,7 +6,7 @@
 
 		<h2>Stop bookmarking. Start blogmarking !</h2>
 
-		<form id="search">
+		<form id="search" method="GET" >
 
 			<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
 
@@ -16,9 +16,21 @@
 
 			<b>In</b> : 
 
-			<input class="checkbox" type="radio" name="checkSearch" value="0"> Title
-			<input class="checkbox" type="radio" name="checkSearch" value="1"> Summary
-			<input class="checkbox" type="radio" name="checkSearch" value="2" checked="checked"> Both
+			<input class="checkbox" type="radio" name="checkSearch" value="0" <?php if ( isset( $_GET['checkSearch'] ) AND  $_GET['checkSearch'] == 0 ) echo 'checked="checked"'; ?> /> Title
+			<input class="checkbox" type="radio" name="checkSearch" value="1" <?php if ( isset( $_GET['checkSearch'] ) AND  $_GET['checkSearch'] == 1 ) echo 'checked="checked"'; ?> /> Summary
+			<input class="checkbox" type="radio" name="checkSearch" value="2" <?php if ( !isset( $_GET['checkSearch'] ) OR ( isset( $_GET['checkSearch'] ) AND ( $_GET['checkSearch'] == 2 ) ) ) echo 'checked="checked"'; ?>  /> Both
+
+			
+			
+			<?php
+
+			if ( isset( $_GET['private'] ) )
+				echo '<input type="hidden" name="private" value="' . $_GET['private'] . '" />';
+
+			if ( isset( $_GET['all'] ) )
+				echo '<input type="hidden" name="all" value="' . $_GET['all'] . '" />';
+
+			?>
 
 		</form>
 
@@ -32,11 +44,13 @@
 
 	if ( $marker->userIsAuthenticated() ) {
 
-		echo $marker->getUserInfo('login') ;
+		$USER = $marker->getUserInfo('login');
+
+		echo $USER ;
 
 		echo '<p><strong>Auth OK</strong></p>';
 
-		echo '<p>Lorem<br />Ipsum</p>';
+		//echo '<p>Lorem<br />Ipsum</p>';
 
 		echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 

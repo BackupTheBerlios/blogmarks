@@ -3,13 +3,36 @@
 include_once "includes/functions.inc.php";
 include "includes/start.inc.php";
 
-echo $_POST['id'];
-// AUTH OK :)
-if ( ! Blogmarks::isError( $auth ) ) {
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<title>Blogmarks.net</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" title="default" type="text/css" href="style.css" media="all"  />
 
-    echo "Connexion OK!\n";
-	
-	//if ( strlen( trim( $_POST['tags'] ) ) )
+</head>
+
+<?php
+
+if ( isset( $_GET['mini'] ) ) {
+	echo '<body onload="window.focus()" class="mini">';
+} else {
+	echo '<body>';
+}
+
+?>
+
+<div id="conteneur">
+
+<?php include 'includes/header.inc.php' ?>
+
+<h3>Update a bookmark</h3>
+
+<?php
+
+if ( $marker->userIsAuthenticated() ) {
+
 		$array_tags = explode( " " , trim( $_POST['tags'] ) );
 	
 		$params['href']		= trim( $_POST['url'] );
@@ -17,26 +40,37 @@ if ( ! Blogmarks::isError( $auth ) ) {
 		$params['summary']	= trim( $_POST['description'] );
 		$params['via']		= trim( $_POST['via'] );
 
-	//if ( isset( $array_tags ) )
+		//if ( isset( $array_tags ) )
 		$params['tags']		= $array_tags; 
 
-    $uri =& $marker->updateMark( $_POST['id'], $params );
+    $result =& $marker->updateMark( $_POST['id'], $params );
 
-    if ( Blogmarks::isError($uri) ) echo "<p><b>Erreur !!</b><br>code : ".$uri->getCode()."<br>message : ". $uri->getMessage() ."</p>\n";
-    else echo "Mark URI: $uri\n";
+
+	if ( Blogmarks::isError($result) ) die( $result->getMessage() );
+	if ( DB::isError($result) ) die( $result->getMessage() );
+	
+	echo '<p>Mark Sucessfully updated !</p>' . "\n";
+
+	echo '<p>URI:<br />' . $result . '</p>' . "\n";
 }
 
-// WRONG AUTH :(
-else {
-    echo "*** Erreur : " . $auth->getMessage() . "\n";
-}
+else echo "**error : Pas connecté";
 
 
-if ( $_POST['mini'] == '1' ) {
+if ( isset( $_GET['mini'] ) ) {
 
 	echo '<a onclick="window.close()" href="#">[close]</a>';
 
+} else {
+	
+	echo '<a href="index.php">Return Home</a>';
+
 }
 
-
 ?>
+
+<?php include 'includes/footer.inc.php' ?>
+
+</div> <!-- # conteneur -->
+
+</body></html>

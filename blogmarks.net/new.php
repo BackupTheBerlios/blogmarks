@@ -36,7 +36,7 @@ include "includes/header.inc.php";
 
 <h3>Add a bookmark</h3>
 
-<form method="POST" action="add.php">
+<form method="POST" action="add.php<?php if ( isset( $_GET['mini'] ) ) echo '?mini=1' ?>">
 	
 	
 	<label>title</label>

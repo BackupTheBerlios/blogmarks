@@ -36,22 +36,28 @@ array( 'user' => $userlogin,
 
 if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 
-	echo '<h2><a style="font-size:smaller" href="?all=1">All last public marks</a> / Your last marks</h2>';
+	echo '<h2><a style="font-size:smaller" href="?all=1">Public marks</a> / Personal marks</h2>';
 
 	$params['user_login']	=  $marker->getUserInfo('login') ;
 
+	$params['select_priv']	=  TRUE ;
+
 } elseif ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) {
 	
-	echo '<h2>All last public marks / <a style="font-size:smaller" href="?private=1">Your last marks</a></h2>';
+	echo '<h2>Public marks / <a style="font-size:smaller" href="?private=1">Personal marks</a></h2>';
+
+//	$params['select_priv']	=  TRUE ;
 
 } else {
 	
-	echo "<h2>All last public marks</h2>";
+	echo "<h2>Public marks</h2>";
+
+//	$params['select_priv']	=  TRUE ;
 
 }
 
 $params['order_by']		=  array('created','DESC') ;
-$params['select_priv']	=  TRUE ;
+
 
 if ( isset( $_GET['include_tags'] ))  {
 	
@@ -66,10 +72,12 @@ if ( isset( $_GET['q'] ) ) {
 	if ( ( $_GET['checkSearch'] == 0 ) OR ( $_GET['checkSearch'] == 2 )  )
 		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
 
-	if ( ( $_GET['checkSearch'] == 1 ) OR ( $_GET['checkSearch'] == 1 )   )
+	if ( ( $_GET['checkSearch'] == 1 ) OR ( $_GET['checkSearch'] == 2 )   )
 		$params['summary']	= array( '%'.$_GET['q'].'%', 'LIKE' );
 
 }
+
+//print_r( $params );
 
 $list =& $marker->getMarksList( $params );
 
@@ -90,7 +98,7 @@ while ( $list->fetch() ) {
 		$string_date = date( "j/m/Y" ,  $timestamp );
 
 		if ($string_date_prev != $string_date) {
-			if ( $i != 0 ) echo "</ul>"."\r\n";
+			if ( $i != 0 ) echo '</ul>' . "\r\n";
 			echo "\r\n".'<h3>' . $string_date . '</h3>'."\r\n\r\n";
 			echo '<ul>'."\r\n";
 		}
@@ -99,6 +107,11 @@ while ( $list->fetch() ) {
 		
 		
 		echo '<li>';
+
+		$owner = $list->getOwner();
+
+		if ( isset( $_GET['all'] )  AND  $_GET['all'] == 1 )
+			echo $list->getOwner() . " - ";
 
 		$link = $list->getLink( 'href' );
 
@@ -112,11 +125,15 @@ while ( $list->fetch() ) {
 			echo ' <a class="tag" href="?include_tags='. $tag .'">[' . $tag . ']</a> ';
 		}
 
-		echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
+		//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
 
-		echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
+		if ( $owner == $USER ) {
 
-		echo ' <a onclick="return confirmDelete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
+			echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
+
+			echo ' <a onclick="return Delete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
+
+		}
 
 		echo '</li>'."\r\n";
 

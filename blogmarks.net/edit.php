@@ -32,7 +32,7 @@ else
 
 <h3>Edit a bookmark</h3>
 
-<form method="POST" action="update.php">
+<form method="POST" action="update.php<?php if ( isset( $_GET['mini'] ) ) echo '?mini=1' ?>">
 
 <?php
 
@@ -55,19 +55,23 @@ $via  = $mark->getLink( 'via' );
 
 ?>
 	<input name="id" type="hidden" value="<?php echo $_GET['id'] ?>" />
+
 	<label>Title</label>
 	<input value="<?php echo $mark->title ?>" type="text"  name="title" size="65"  maxlength="255"  />
+
 	<label>URL</label>
 	<input value="<?php echo $link->href ?>" type="text"  name="url" size="65"  maxlength="255"  />
+
 	<label>Description</label>
 	<textarea name="description" rows="2" cols="60"><?php echo $mark->summary ?></textarea>
-<!-- 	<input value="<?php echo $mark->summary ?>" type="text"  name="description" size="65"  maxlength="255"  /> -->
+
 	<label>Tags</label>
 	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="65"  maxlength="255"  />
+
 	<label>Via</label>
 	<input value="<?php echo $via->href ?>" type="text"  name="via" size="65"  maxlength="255"  />
 
-	<input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  />
+	<!-- <input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  /> -->
 	
 	<input class="submit" type="submit" value="Update" />
 

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.17 2004/06/01 14:06:03 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.18 2004/06/01 14:12:34 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -894,11 +894,11 @@ class BlogMarks_Marker {
      * @return     mixed       array ou string
      */
     function getUserInfo( $field = null ) {
-        // Champs dont on a le droit de récupérer la valeurs
-        $info_fields = $user->getInfoFields();
-
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( Blogmarks::isError($user) ) return $user;
+
+        // Champs dont on a le droit de récupérer la valeurs
+        $info_fields = $user->getInfoFields();
 
         $ret = null;
 

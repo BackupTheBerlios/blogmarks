@@ -309,3 +309,12 @@ font-weight:bold;
 font-weight:bold;
 color:red;
 }
+
+
+#footer {
+font-size:xx-small;
+}
+
+#footer p {
+margin:2px 0 5px;padding:0;
+}

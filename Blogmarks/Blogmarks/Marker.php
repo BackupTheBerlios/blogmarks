@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.18 2004/06/01 14:12:34 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.19 2004/06/01 16:01:15 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -145,7 +145,7 @@ class BlogMarks_Marker {
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
         // Gestion des associations Mark / Tags
-        if ( is_array($props['tags']) ) {
+        if ( is_array($props['tags']) && count($props['tags']) ) {
             $res = $this->associateTagsToMark( $props['tags'], $mark );
             if ( Blogmarks::isError($res) ) return $res;
         }
@@ -874,6 +874,7 @@ class BlogMarks_Marker {
 
         return true;
     }
+
 
     /** Permet de savoir si l'utilisateur est authentifié.
      * @return      bool       true ou false

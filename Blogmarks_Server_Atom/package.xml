@@ -67,6 +67,7 @@
     <provides type="function" name="Renderer_Atom_MarksList::render" />
     <provides type="function" name="Renderer_Atom_MarksList::build_tree" />
     <filelist>
+      <file role="php" baseinstalldir="Blogmarks" md5sum="1ac192117b0a33ac0c6f1985c36d6f92" name="scripts/make_pkg.php"/>
       <file role="php" baseinstalldir="Blogmarks" md5sum="8d5e9ab6b3060a065de83ba9e42ade99" name="Server/Atom.php"/>
       <file role="php" baseinstalldir="Blogmarks" md5sum="46d22ef1ce06976284c45bbdedd65a87" name="Server/Atom/Controller.php"/>
       <file role="php" baseinstalldir="Blogmarks" md5sum="779041b13af457f016f86b5bafdef62b" name="Server/Atom/Filter.php"/>

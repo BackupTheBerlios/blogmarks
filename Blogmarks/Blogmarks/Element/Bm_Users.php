@@ -12,7 +12,7 @@ class Element_Bm_Users extends Blogmarks_Element
 
     /** Champs dont on peut renvoyer les valeurs sans danger.
      * @var array */
-    var $_info_fields;
+    var $_info_fields = array( 'login', 'email', 'permlevel' );
 
 
     ###START_AUTOCODE

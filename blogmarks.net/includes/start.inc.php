@@ -19,10 +19,16 @@ if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 
 	$auth = $marker->authenticate( trim( $_POST['login'] ) , $digest, $nonce, $time, TRUE );
 
-	if ( Blogmarks::isError( $auth ) ) die( $mark->getMessage() );
-	//if ( DB::isError( $auth ) ) die( $mark->getMessage() );
+	if ( Blogmarks::isError( $auth ) )
+		$auth_error = $auth->getMessage();
+	elseif ( DB::isError( $auth ) )
+		$auth_error = $auth->getMessage();
+	
+	//echo $auth_error;
+	//die();
 
-	header("Location: index.php");
+
+	//header("Location: index.php");
 
 }
 

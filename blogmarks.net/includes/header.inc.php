@@ -54,7 +54,11 @@
 
 		echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 
-	} else { ?>
+	} else {
+
+	if ( isset( $auth_error ) ) echo '<p class="error">' . $auth_error . '</p>';
+		
+	?>
 
 		<form method="POST" action="?connect=1">
 

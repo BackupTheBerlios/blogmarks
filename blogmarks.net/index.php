@@ -1,11 +1,16 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+<?php
+
+include "includes/functions.inc.php";
+include "includes/config.inc.php";
+
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <title>Blogmarks.net</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" title="default" type="text/css" href="style2.css" media="all"  />
-<script type="text/javascript" src="lib.js"></script>
+<link rel="stylesheet" title="default" type="text/css" href="style.css" media="all"  />
+<script type="text/javascript" src="behavior.js"></script>
 
 </head>
 
@@ -13,41 +18,10 @@
 
 <div id="conteneur">
 
-<div id="nav">
-
-<a href="index.php">Home</a> 
-				| <a href="/tags">Tags</a> 
-				| <a href="/invite">Invite</a> 
-				| <a href="/friends">Friends</a> 
-				| <a href="/search">Search</a> 
-				| <a href="/help">Help</a> 
-				| <a href="/logout">Log Out</a>
-
-</div> <!-- /#nav -->
-
-<h1>BlogMarks.net</h1>
-
-<h2>Stop bookmarking. Start blogmarking !</h2>
-
-<form id="search">
-<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
-<input class="checkbox" type="checkbox" name="checkTitle" value="1"> Title
-<input class="checkbox" type="checkbox" name="checkSummary" value="1"> Summary
-<input type="submit" value="Search" />
-</form>
+<?php include "includes/header.inc.php" ?>
 
 <?php
 
-echo
-
-?>
-
-
-
-<?php
-
-include "includes/functions.inc.php";
-include "includes/config.inc.php";
 /*
 array( 'user' => $userlogin,
          'date_in' => 'mysqldate'
@@ -59,30 +33,36 @@ array( 'user' => $userlogin,
 */
 
 
-$params = array( 
-			 'user_login' => 'znarf',
-			 'order_by' => array('created', 'DESC'),
-	//		'include_tags' => array( 'blog') ,
-				//'summary' => array( '%google%', 'LIKE' ) ,
-				 'select_priv' => true );
 
+if ( $marker->userIsAuthenticated() ) {
+
+	echo "<h2>Your last marks</h2>";
+
+	$params['user_login']	=  $marker->getUserInfo('login') ;
+
+} else {
 	
+	echo "<h2>All last public marks</h2>";
+
+}
+
+$params['order_by']		=  array('created','DESC') ;
+$params['select_priv']	=  TRUE ;
 
 if ( isset( $_GET['include_tags'] ))  {
 	
 	$params['include_tags'] = explode( ";" , $_GET['include_tags'] );
 
-		echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php">reset</a>)</span> </h4>';
-		echo '';
+	echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php">reset</a>)</span> </h4>'."\r\n\r\n";
 
 }
 
 if ( isset( $_GET['q'] ) ) {
 
-	if ( $_GET['checkTitle'] == 1 )
+	if ( ( $_GET['checkSearch'] == 0 ) OR ( $_GET['checkSearch'] == 2 )  )
 		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
 
-	if ( $_GET['checkSummary'] == 1 )
+	if ( ( $_GET['checkSearch'] == 1 ) OR ( $_GET['checkSearch'] == 1 )   )
 		$params['summary']	= array( '%'.$_GET['q'].'%', 'LIKE' );
 
 }
@@ -98,43 +78,45 @@ $i = 0;
 $string_date_prev = '';
 
 while ( $list->fetch() ) {
-
+		
+		// Date handling
 
 		$timestamp = dcdate2php( $list->created );
-
+	
 		$string_date = date( "j/m/Y" ,  $timestamp );
 
 		if ($string_date_prev != $string_date) {
-			if ( $i != 0 ) echo "</ul>";
-			echo "<h3>" . $string_date . "</h3><ul>";
+			if ( $i != 0 ) echo "</ul>"."\r\n";
+			echo "\r\n".'<h3>' . $string_date . '</h3>'."\r\n\r\n";
+			echo '<ul>'."\r\n";
 		}
+
 		$string_date_prev = $string_date;
+		
 		
 		echo '<li>';
 
-	//	print_r( $list );
-
-	//		print_r( $list->getHref() );
-		
-	//	$mark->getLinks( 'nomchamps' )
-
 		$link = $list->getLink( 'href' );
 
+		echo '<a href="' .  $link->href . '">' . $list->title . '</a>' ;
+		
+		if ( strlen($list->summary) ) echo ' : ' . $list->summary;
 
-		echo '<a href="' .  $link->href . '">' . $list->title . '</a>' . ' : ' . $list->summary;
-       // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
-
-	//	echo ' (' . dcdate2php( $list->created ) . ')';
+		//	echo ' (' . dcdate2php( $list->created ) . ')';
         
-        echo " [ ";
-        foreach ( $list->getTags() as $tag ) echo '<a href="?include_tags='. $tag .'">' . $tag . '</a> ';
-        echo "]\n";
+        foreach ( $list->getTags() as $tag ) {
+			
+			echo '<a class="tag" href="?include_tags='. $tag .'">' . $tag . '</a> ';
 
-		echo '<a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
-		echo ' ';
-		echo '<a onclick="return confirmDelete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
+		}
 
-		echo '</li>';
+		echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
+
+		echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
+
+		echo ' <a onclick="return confirmDelete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
+
+		echo '</li>'."\r\n";
 
 		$i ++;
     }
@@ -174,3 +156,4 @@ while ( $list->fetch() ) {
 </div> <!-- /#conteneur -->
 
 </body></html>
+

@@ -1,10 +1,15 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+<?php
+
+include "includes/functions.inc.php";
+include "includes/config.inc.php";
+
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <title>Blogmarks.net</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" title="default" type="text/css" href="style2.css" media="all"  />
+<link rel="stylesheet" title="default" type="text/css" href="style.css" media="all"  />
 
 </head>
 
@@ -23,11 +28,7 @@ else
 
 <div id="conteneur">
 
-<?php
-
-include "includes/header.inc.php";
-
-?>
+<?php include 'includes/header.inc.php' ?>
 
 <h3>Edit a bookmark</h3>
 
@@ -35,17 +36,14 @@ include "includes/header.inc.php";
 
 <?php
 
-include "includes/functions.inc.php";
-include "includes/config.inc.php";
-
-
 $mark =& $marker->getMark( $_GET['id'] );
 
+//print_r( $mark );
 
 $string_tags = implode(' ', $mark->getTags() ); 
 
 $link = $mark->getLink( 'href' );
-$via = $mark->getLink( 'href' );
+$via  = $mark->getLink( 'via' );
 
 //$href = $mark->getHref();
 
@@ -71,13 +69,7 @@ $via = $mark->getLink( 'href' );
 
 </form>
 
-<div id="footer">
-
-<hr />
-
-<p><strong>Powered by</strong> : Mbertier / Benfle / Znarf</p>
-
-</div>
+<?php include 'includes/footer.inc.php' ?>
 
 </div> <!-- # conteneur -->
 

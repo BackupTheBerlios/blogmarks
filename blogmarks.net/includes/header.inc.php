@@ -1,24 +1,67 @@
 <div id="header">
 
-<div id="nav">
+<div id="top">
 
-<a href="index.php">Home</a> 
-				| <a href="/tags">Tags</a> 
-				| <a href="/invite">Invite</a> 
-				| <a href="/friends">Friends</a> 
-				| <a href="/search">Search</a> 
-				| <a href="/help">Help</a> 
-				| <a href="/logout">Log Out</a>
+	<h1>BlogMarks.net</h1>
 
-</div>
+	<h2>Stop bookmarking. Start blogmarking !</h2>
 
-<h1>BlogMarks.net</h1>
+	<form id="search">
 
-<h2>Stop bookmarking. Start blogmarking !</h2>
+		<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
 
-<form id="search">
-<input type="text"  name="q" size="50" />
-<input type="submit" value="Search" />
-</form>
+		<input type="submit" value="Search" />
 
-</div>
+		<br />
+
+		<b>In</b> : 
+
+		<input class="checkbox" type="radio" name="checkSearch" value="0"> Title
+		<input class="checkbox" type="radio" name="checkSearch" value="1"> Summary
+		<input class="checkbox" type="radio" name="checkSearch" value="2" checked="checked"> Both
+
+	</form>
+
+</div> <!-- /#top -->
+
+<div id="login">
+
+<?php
+
+include_once "includes/functions.inc.php";
+include_once "includes/config.inc.php";
+
+if ( $marker->userIsAuthenticated() ) {
+
+	echo $marker->getUserInfo('login') ;
+
+	echo '<p><strong>Auth OK</strong></p>';
+
+	echo '<p><a href="?disconnect=1">Se déconnecter</a></p>';
+
+} else { ?>
+
+	<form method="POST">
+
+		<label>Username :</label>
+		<input type="text" name="login">
+		<label>Password : <span style="font-size:9px">(<a href="#">forgot?</a>)</span></label>
+		<input type="password" name="pwd">
+
+		<input type="hidden" name="signin" value="1">
+
+	<!-- 	<br /> -->
+
+		<input type="submit" value="Sign in" />
+
+<!-- 		<br /> -->
+
+		<a href="create_account.php">New User ?</a>
+
+	</form>
+
+<?php } ?>
+
+</div> <!-- /#login -->
+
+</div> <!-- /#header -->

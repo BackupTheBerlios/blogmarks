@@ -3,19 +3,29 @@
 include "includes/functions.inc.php";
 include "includes/config.inc.php";
 
+
+
 // AUTH OK :)
 if ( ! Blogmarks::isError( $auth ) ) {
 
-	$array_tags = explode( " " , $_POST['tags'] );
+	$array_tags = explode( " " , trim($_POST['tags']) );
+	
+	//include_once 'Snapbot.php';
+	
+	//$sn =& new Snapbot;
+	//$sn->setSavePath('../SnapBot/images/');
+	//$img_path = $sn->capture( array('url' => trim($_POST['url']) , 'width' => 1024 , 'height' => 768 , 'ratio' => 7 ) );
+	
+	//echo $img_path;
+	
 
     echo "Connexion OK!\n";
 
-	$params = array( 'href'		=> $_POST['url'] ,
-                                        'title'		=> $_POST['title'] ,
-										'summary'	=> $_POST['description'],
-										'via'		=> $_POST['via'],
-										'tags'		=> $array_tags
-								      );
+	$params = array( 'href'		=> trim( $_POST['url'] ) ,
+                     'title'	=> trim( $_POST['title'] ) ,
+					 'summary'	=> $_POST['description'],
+					 'via'		=> trim( $_POST['via'] ),
+					 'tags'		=> $array_tags );
 	//print_r( $params );
     $uri =& $marker->createMark( $params );
 

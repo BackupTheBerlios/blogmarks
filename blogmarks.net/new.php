@@ -4,7 +4,7 @@
 <head>
 <title>Blogmarks.net</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" title="default" type="text/css" href="style2.css" media="all"  />
+<link rel="stylesheet" title="default" type="text/css" href="style.css" media="all"  />
 
 </head>
 
@@ -35,11 +35,11 @@ include "includes/header.inc.php";
 	
 	
 	<label>title</label>
-	<input value="<?php if ( isset( $_GET['title'] ) ) echo $_GET['title'] ?>" style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
+	<input value="<?php if ( isset( $_GET['title'] ) ) echo utf8_encode( $_GET['title'] ) ?>" style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
 	<label>url</label>
 	<input value="<?php if ( isset( $_GET['url'] ) ) echo $_GET['url'] ?>"  style="display:block" type="text"  name="url" size="50"  maxlength="255"  />
 	<label>description</label>
-	<input value="<?php if ( isset( $_GET['summary'] ) ) echo $_GET['summary'] ?>" style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
+	<input value="<?php if ( isset( $_GET['summary'] ) ) echo utf8_encode( $_GET['summary'] ) ?>" style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
 	<label>tags</label>
 	<input style="display:block" type="text"  name="tags" size="50"  maxlength="255"  />
 	<label>via</label>

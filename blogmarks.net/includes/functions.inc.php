@@ -49,5 +49,17 @@ function dcdate2php($dcdate,$format='j/m/Y @ H:i') {
 
 }
 
+/** Ecris ds un fichier. */
+if (!function_exists('file_put_contents')) {
+    define('FILE_APPEND', 1);
+    function file_put_contents($filename, $content, $flags = 0) {
+        if (!($file = fopen($filename, ($flags & FILE_APPEND) ? 'a' : 'w')))
+            return false;
+        $n = fwrite($file, $content);
+        fclose($file);
+        return $n ? $n : false;
+    }
+ }
+
 
 ?>

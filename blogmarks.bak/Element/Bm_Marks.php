@@ -9,7 +9,6 @@ require_once 'blogmarks/Element.php';
  */
 class Element_Bm_Marks extends Blogmarks_Element 
 {
-
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 

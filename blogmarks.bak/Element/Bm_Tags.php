@@ -9,17 +9,17 @@ require_once 'blogmarks/Element.php';
  */
 class Element_Bm_Tags extends Blogmarks_Element 
 {
-
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
     var $__table = 'bm_Tags';                         // table name
-    var $id;                              // int(11)  not_null primary_key auto_increment
-    var $title;                           // string(255)  
+    var $id;                              // int(11)  not_null primary_key
+    var $title;                           // string(255)  not_null
+    var $subTagOf;                        // int(11)  not_null
+    var $bm_Users_id;                     // int(11)  not_null multiple_key
     var $summary;                         // blob(65535)  blob
     var $lang;                            // int(10)  unsigned
-    var $subTagOf;                        // string(255)  
-    var $status_2;                        // string(14)  set
+    var $status;                          // string(14)  set
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}

@@ -10,16 +10,16 @@ require_once 'blogmarks/Element.php';
  */
 class Element_Bm_Links extends Blogmarks_Element 
 {
-
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
     var $__table = 'bm_Links';                        // table name
     var $id;                              // int(11)  not_null primary_key auto_increment
     var $lang;                            // string(255)  
-    var $type_2;                          // string(255)  
+    var $type;                            // string(255)  
     var $href;                            // string(255)  
     var $title;                           // blob(65535)  blob
+    var $charset;                         // string(255)  
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}
@@ -39,9 +39,7 @@ class Element_Bm_Links extends Blogmarks_Element
      *   3. utf-8.
      *
      * @see      http://diveintomark.org/archives/2004/02/13/xml-media-types
-     * @todo     Error testing
-     * @todo     Régénérer la classe (+champs charset)
-     * @todo     Moteur d'expressions régulières
+     * @todo     Terminer la recherche d'infos
      */
     function fetchUrlInfo() {
 
@@ -73,7 +71,7 @@ class Element_Bm_Links extends Blogmarks_Element
             $charset = 'utf8';
         }
         // Mise à jour des propriétés de l'objet en fonction des informations obtenues
-        $this->type_2 = $content_type;
+        $this->type = $content_type;
         $this->charset = $charset;
 
         return true;

@@ -35,7 +35,7 @@ if ( $marker->userIsAuthenticated() ) {
 
 		$array_tags = explode( " " , trim( $_POST['tags'] ) );
 	
-		$params['href']		= trim( $_POST['url'] );
+		$params['related']  = trim( $_POST['url'] );
 		$params['title']	= trim( $_POST['title'] );
 		$params['summary']	= trim( $_POST['description'] );
 		$params['via']		= trim( $_POST['via'] );

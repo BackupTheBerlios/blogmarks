@@ -44,9 +44,7 @@ if ( DB::isError($mark) ) die( $mark->getMessage() );
 
 //print_r( $mark );
 
-$string_tags = implode(' ', $mark->getTags() ); 
-
-$link = $mark->getLink( 'href' );
+$link = $mark->getLink( 'related' );
 $via  = $mark->getLink( 'via' );
 
 //$href = $mark->getHref();
@@ -66,10 +64,20 @@ $via  = $mark->getLink( 'via' );
 	<textarea name="description" rows="2" cols="60"><?php echo $mark->summary ?></textarea>
 
 	<label>Tags</label>
-	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="65"  maxlength="255"  />
+	<?php
+	$tags_id = $marker->getTags($mark->id);
+	foreach ( $tags_id as $tag_id )
+	{
+		$tag = $mark->getTag ($tag_id);
+		if ( $tag->author != NULL )
+			$tag->title = 'private:' . $tag->title;
+		$tags_title[] = $tag->title;
+	}
+	?>
+	<input value="<?php echo implode(" ", $tags_title) ?>" type="text"  name="tags" size="65"  maxlength="255"  />
 
 	<label>Via</label>
-	<input value="<?php echo $via->href ?>" type="text"  name="via" size="65"  maxlength="255"  />
+	<input value="<?php if ( isset ( $via->href ) ) echo $via->href; ?>" type="text"  name="via" size="65"  maxlength="255"  />
 
 	<!-- <input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  /> -->
 	

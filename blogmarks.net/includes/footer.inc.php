@@ -16,6 +16,6 @@ $time_end = getmicrotime();
 
 $time = $time_end - $time_start;
 
-echo "<p>Durée d'execution : " . round( $time , 4 ) . " secondes</p>";
+echo "<p>execution : " . round( $time , 4 ) . " secondes</p>";
 
 ?>

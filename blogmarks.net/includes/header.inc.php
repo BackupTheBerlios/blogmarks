@@ -2,7 +2,7 @@
 
 	<div id="top">
 
-		<h1>BlogMarks.net</h1>
+		<h1><a href="http://www.blogmarks.net">BlogMarks.net</a></h1>
 
 		<h2>Stop bookmarking. Start blogmarking !</h2>
 
@@ -13,80 +13,57 @@
 			Tags : <input type="text" name="include_tags" size="40" value="<?php if ( isset($_GET['include_tags']) )  echo $_GET['include_tags'] ?>" />
 
 			<input type="submit" value="Search" />
-            
-            <!-- 
-
-			<br />
-
-			<b>In</b> : 
-
-			<input class="checkbox" type="radio" name="checkSearch" value="0" <?php if ( isset( $_GET['checkSearch'] ) AND  $_GET['checkSearch'] == 0 ) echo 'checked="checked"'; ?> /> Title
-			<input class="checkbox" type="radio" name="checkSearch" value="1" <?php if ( isset( $_GET['checkSearch'] ) AND  $_GET['checkSearch'] == 1 ) echo 'checked="checked"'; ?> /> Summary
-			<input class="checkbox" type="radio" name="checkSearch" value="2" <?php if ( !isset( $_GET['checkSearch'] ) OR ( isset( $_GET['checkSearch'] ) AND ( $_GET['checkSearch'] == 2 ) ) ) echo 'checked="checked"'; ?>  /> Both
-            
-            -->
-
-            <input type="hidden" name="checkSearch" value="2" <?php if ( !isset( $_GET['checkSearch'] ) OR ( isset( $_GET['checkSearch'] ) AND ( $_GET['checkSearch'] == 2 ) ) ) echo 'checked="checked"'; ?>  />
-
-			
-			
-			<?php
-
-			if ( isset( $_GET['private'] ) )
-				echo '<input type="hidden" name="private" value="' . $_GET['private'] . '" />';
-
-			if ( isset( $_GET['all'] ) )
-				echo '<input type="hidden" name="all" value="' . $_GET['all'] . '" />';
-
-			?>
+		
+			<input type="hidden" name="section" value="<?php if ( isset ( $_GET['section'] ) ) echo $_GET['section']; else echo 'PublicMarks'; ?>" />
 
 		</form>
+
+		<a href="?section=AdvancedSearch" title="To specify more parameters">Advanced Search</a>
 
 	</div> <!-- /#top -->
 
 	<div id="login">
 
-	<?php
+		<?php
+		include_once "includes/functions.inc.php";
+		if ( $marker->userIsAuthenticated() ) {
 
-	include_once "includes/functions.inc.php";
+			$user = $marker->getUserInfo('login');
+			echo $user;
+			echo '<p><strong>Auth OK</strong></p>';
+			echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 
-   // echo "'".print_r( $marker->getuserinfo() ) . "'";
+		} else {
 
-	if ( $marker->userIsAuthenticated() ) {
+			if ( isset( $auth_error ) ) 
+				echo '<p class="error">' . $auth_error . '</p>';
+			?>
 
-   // if ( 1 == 1 ) {
+			<form method="POST" action="?connect=1">
 
-		$USER = $marker->getUserInfo('login');
+				<label>Username :</label>
+				<input type="text" name="login">
+				<label>Password : </label>
+				<input type="password" name="pwd">
 
-		echo $USER ;
+				<input type="submit" value="Sign in" />
 
-		echo '<p><strong>Auth OK</strong></p>';
+				<a href="create_account.php" title="Create a new account on Blogmarks.net">New User ?</a>
 
-		//echo '<p>Lorem<br />Ipsum</p>';
+			</form>
 
-		echo '<p><a href="?disconnect=1">Disconnect</a></p>';
-
-	} else {
-
-	if ( isset( $auth_error ) ) echo '<p class="error">' . $auth_error . '</p>';
-		
-	?>
-
-		<form method="POST" action="?connect=1">
-
-			<label>Username :</label>
-			<input type="text" name="login">
-			<label>Password : <span style="font-size:9px">(<a href="#">forgot?</a>)</span></label>
-			<input type="password" name="pwd">
-
-			<input type="submit" value="Sign in" />
-
-			<a href="create_account.php">New User ?</a>
-
-		</form>
+			<a href="#">Forgot Password</a>
 
 	<?php } ?>
 
 	</div> <!-- /#login -->
+
+	<div id="menu">
+		<ul>
+			<li><a href="index.php?section=PublicMarks" title="List of recent marks">PublicMarks</a></li>
+			<li><a href="index.php?section=MyMarks" title="Manage your marks">MyMarks</a></li>
+			<!-- <li><a href="index.php?section=MyHotlinks" title="Aggregation">MyHotlinks</a></li> !-->
+		</ul>
+	</div>
 
 </div> <!-- /#header -->

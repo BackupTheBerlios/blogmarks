@@ -22,160 +22,263 @@ include "includes/start.inc.php";
 
 <?php
 
-/*
-array( 'user' => $userlogin,
-         'date_in' => 'mysqldate'
-          'date_out => 'mysqldate',
-          'exclude_tags' => array(tagsàexclure),
-          'include_tags'  => array(tagsàinclure),
-          'select_priv'      => bool,
-          'order_by'          => array('field' ou array('fields'), DESC/ASC) );
-*/
 
 
 
-if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 
-	echo '<h2><a style="font-size:smaller" href="?all=1">Public marks</a> / Personal marks</h2>';
+if ( !isset ($_GET['section']) )
+	$_GET['section'] = 'PublicMarks';
 
-	$temp_flag = 0;
-
-	$params['user_login']	=  $marker->getUserInfo('login') ;
-	$params['select_priv']	=  TRUE ;
-
-} elseif ( $marker->userIsAuthenticated() AND ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) ) {
-
-	$temp_flag = 1;
-	
-	echo '<h2>Public marks / <a style="font-size:smaller" href="?private=1">Personal marks</a></h2>';
-
-//	$params['select_priv']	=  TRUE ;
-
-} else {
-
-	$temp_flag = 1;
-	
-	echo "<h2>Public marks</h2>";
-
-//	$params['select_priv']	=  TRUE ;
-
+if ( $_GET['section'] == 'AdvancedSearch' )
+{
+	echo '<h2>AdvancedSearch</h2>';
+	?>
+	<form id="advanced_earch" method="GET">
+		Search in : 
+		<select name="search_in" size="1">
+			<option value="PublicMarks">PublicMarks</option>
+			<option value="MyMarks">MyMarks</option>
+			<option value="MyHotlinks">MyHotlinks</option>
+		</select><br/>
+		Search : <input type="text" name="q" size="40" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" /><br/>
+		Blogmarker : <input type="text" name="author"/><br/>
+		Include Tags : <input type="text" name="include_tags" size="40" value="<?php if ( isset($_GET['include_tags']) )  echo $_GET['include_tags'] ?>" /><br/>
+		Exclude Tags : <input type="text" name="exclude_tags" size="40" value="<?php if ( isset($_GET['exclude_tags']) )  echo $_GET['exclude_tags'] ?>" /><br/>
+		Created before : <input type="text" name="date_in"/><br/>
+		Created after : <input type="text" name="date_out"/><br/>
+		language : 
+		<select name="lang" size="1">
+			<option value="fr">fr</option>
+			<option value="en">en</option>
+		</select><br/>
+		<br/>
+		Order by : 
+		<select name="order_by" size="1">
+			<option value="user">user</option>
+			<option value="issued">issued</option>
+			<option value="created">created</option>
+			<option value="modified">modified</option>
+			<option value="lang">lang</option>
+		</select><br/>
+		Order type :
+		<select name="order_type" size="1">
+			<option value="asc">asc</option>
+			<option value="desc">desc</option>
+		</select><br/>
+		<input type="submit" value="search"/>
+	</form>
+<?php
 }
-
-$params['order_by']		=  array('created','DESC') ;
-
-
-// To clean
-if ( ( isset( $_GET['all'] ) AND ( $_GET['all'] == 1 ) ) OR !$marker->userIsAuthenticated() )
-	$complete_tag = "all=1";
 else
-	$complete_tag = "private=1";
-//
+{
 
-if ( isset( $_GET['include_tags'] ) AND strlen( $_GET['include_tags'] ) )  {
+	/*
+
+	On remplit le tableau a passer a getMarksList 
+
+	array(	'user'          => $userlogin,
+   	    	'date_in'       => 'mysqldate'
+       		'date_out       => 'mysqldate',
+       		'exclude_tags'  => array(tagsàexclure),
+       		'include_tags'  => array(tagsàinclure),
+       		'select_priv'   => bool,
+       		'order_by'      => array('field' ou array('fields'), DESC/ASC) );
+	*/
+
+	switch ( $_GET['section'] )
+	{
+		case 'MyMarks':
+			echo '<h2>MyMarks</h2>';
+
+			/* On construit le tableau de parametres a envoyer a getMarksList */
+
+			$login = $marker->getUserInfo('login');
+			if ( Blogmarks::isError ( $login ) )
+			{
+				echo $login->getMessage();
+			} else
+			{
+				$params['user_login']	=  $login;
+				if ( !isset ( $uri ) )
+					$uri = '?user_login=' . $login;
+				else
+					$uri .= '&user_login=' . $login;
+			}
+
+			$params['select_priv']	=  TRUE ;
+			if ( !isset ( $uri ) )
+				$uri = '?select_priv=1';
+			else
+				$uri .= '&select_priv=1';
+
+			$params['order_by']		=  array('created','DESC') ;
+			if ( !isset ( $uri ) )
+				$uri = '?order_by=created&order_type=desc';
+			else
+				$uri .= '&order_by=created&order_type=desc';
+			break;
+
+		case 'MyHotlinks':
+			echo '<h2>MyHotlinks</h2>';
+			break;
 	
-	$params['include_tags'] = explode( " " , $_GET['include_tags'] );
+		case 'PublicMarks':
+			echo '<h2>PublicMarks</h2>';
 
-// Duplicate with the field
-
-//echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php?'.$complete_tag.'">reset</a>)</span> </h4>'."\r\n\r\n";
-
-}
-
-if ( isset( $_GET['q'] ) AND strlen( $_GET['q'] ) ) {
-
-	if ( ( $_GET['checkSearch'] == 0 ) OR ( $_GET['checkSearch'] == 2 )  )
-		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
-
-	if ( ( $_GET['checkSearch'] == 1 ) OR ( $_GET['checkSearch'] == 2 )   )
-		$params['summary']	= array( '%'.$_GET['q'].'%', 'LIKE' );
-
-}
-
-print_r( $params );
-
-$list =& $marker->getMarksList( $params );
-
-if ( Blogmarks::isError($list) ) {
-
-	echo '<p>' . $list->getMessage() . '</p>';
-
-	if ( $list->getCode() == '444' ) {
-
-		if ( !isset( $_GET['q'] ) )
-			echo "<p>Your BlogMark account seems to be empty :-)</p>";
-		else 
-			echo "<p>Aucun BlogMark ne correspond aux termes de recherche spécifiés</p>";
-
+			$params['order_by']		=  array('created','DESC') ;
+			if ( !isset ( $uri ) )
+				$uri = '?order_by=created&order_type=desc';
+			else
+				$uri .= '&order_by=created&order_type=desc';
 	}
 
-	//die(  $list->getCode() . ' ' .  $list->getMessage() );
+	/* On ajoute des parametres de recherche si nécessaire */
 
-}
+	/* recherche de texte parmis le titre et la description du mark */
 
-elseif ( DB::isError($list) )
-	
-die( $list->getMessage() );
+	if ( isset( $_GET['q'] ) AND strlen( $_GET['q'] ) ) 
+	{
+		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
+		$params['summary']	= array( '%'.$_GET['q'].'%', 'LIKE' );
+	}
 
-else {
+	/* inclure des tags */
+
+	if ( isset( $_GET['include_tags'] ) AND strlen( $_GET['include_tags'] ) )
+	{
+		$params['include_tags'] = explode( " " , $_GET['include_tags'] );
+
+		if ( !isset ( $uri ) )
+			$uri = '?include_tags=' . $_GET['include_tags'];
+		else
+			$uri .= '&include_tags=' . $_GET['include_tags'];
+	}
+
+	//print_r( $params );
 
 
-// To clean
-$i = 0;
-$string_date_prev = '';
-//
 
-while ( $list->fetch() ) {
-		
-		// Date handling
 
-		$timestamp = dcdate2php( $list->created );
-	
-		$string_date = date( "j/m/Y" ,  $timestamp );
+	/* On effectue la recherche */
 
-		if ($string_date_prev != $string_date) {
-			if ( $i != 0 ) echo '</ul>' . "\r\n";
-			echo "\r\n".'<h3>' . $string_date . '</h3>'."\r\n\r\n";
-			echo '<ul>'."\r\n";
+	$list =& $marker->getMarksList( $params );
+
+
+
+/*
+$uri = 'http://localhost/blogmarks.atom/search' . $uri;
+echo '<a href="' . $uri . '">' . $uri . '</a><br/>';
+*/
+?>
+<!--
+<form name="add_hotlinks" method="GET">
+<input type="hidden" name="href" value="<?php echo $uri; ?>"/>
+<input type="submit" value="AddInMyHotlinks"/>
+</form>
+!-->
+
+<?php
+	/* On affiche le résultat */
+
+	if ( Blogmarks::isError($list) ) {
+
+		echo '<p>' . $list->getMessage() . '</p>';
+
+		if ( $list->getCode() == '444' ) {
+
+			if ( !isset( $_GET['q'] ) )
+				echo "<p>Your BlogMark account seems to be empty :-)</p>";
 		}
 
-		$string_date_prev = $string_date;
+		//die(  $list->getCode() . ' ' .  $list->getMessage() );
+
+	}
+	elseif ( DB::isError($list) )
+	{
+		die( $list->getMessage() );
+	}
+	else 
+	{
+		// To clean
+		$i = 0;
+		$string_date_prev = '';
+		//
+
+		while ( $list->fetch() ) 
+		{
+			// Date handling
+
+			$timestamp = dcdate2php( $list->created );
+	
+			$string_date = date( "j/m/Y" ,  $timestamp );
+
+			if ($string_date_prev != $string_date) {
+				if ( $i != 0 ) echo '</ul>' . "\r\n";
+				echo "\r\n".'<h3>' . $string_date . '</h3>'."\r\n\r\n";
+				echo '<ul>'."\r\n";
+			}
+
+			$string_date_prev = $string_date;
 		
 		
-		echo '<li>';
+			echo '<li>';
 
-		$owner = $list->getOwner();
+			$owner = $list->getOwner();
 
-		if ( $temp_flag == 1 )
-			echo $owner . " - ";
+			if ( $_GET['section'] == 'PublicMarks' )
+				echo $owner . " - ";
 
-		$link = $list->getLink( 'href' );
+			$link = $list->getLink( 'related' );
 
-		echo '<a href="' .  $link->href . '">' . $list->title . '</a>' ;
+			echo '<a href="' .  $link->href . '">' . $list->title . '</a>' ;
 		
-		if ( strlen($list->summary) ) echo ' : ' . $list->summary;
+			if ( strlen($list->summary) ) echo ' : ' . $list->summary;
 
-		//	echo ' (' . dcdate2php( $list->created ) . ')';
+			//	echo ' (' . dcdate2php( $list->created ) . ')';
         
-        foreach ( $list->getTags() as $tag ) {
-			echo ' <a class="tag" href="?include_tags='. $tag . '&amp;' . $complete_tag.'">[' . $tag . ']</a> ';
+			if ( isset( $login ) AND ( $owner == $login ) )
+				$private = true;
+			else
+				$private = false;
+
+
+			$tags_id = $marker->getTags($list->id);
+
+			if ( Blogmarks::isError ($tags_id) )
+			{
+				echo $tags_id->getMessage();
+			} else
+			{
+				foreach ( $marker->getTags($list->id) as $tag_id ) {
+					$tag = $list->getTag ($tag_id);
+					if ( $tag->author != NULL )
+					{
+						// tag privé
+						echo ' <a class="private_tag" href="?include_tags=private:'. $tag->title . '">[' . $tag->title . ']</a> ';
+					} else
+					{
+						// tag public
+						echo ' <a class="public_tag" href="?include_tags='. $tag->title . '">[' . $tag->title . ']</a> ';
+					}
+				}
+			}
+			//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
+
+			if ( isset( $login ) AND ( $owner == $login ) ) 
+			{
+				echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
+				echo ' <a onclick="return Delete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
+			}
+
+			echo '</li>'."\r\n";
+
+			$i ++;
 		}
 
-		//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
+	} // fin de si pas d'erreur
 
-		if ( isset( $USER ) AND ( $owner == $USER ) ) {
+} // fin de si pas Advanced Search
 
-			echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
-
-			echo ' <a onclick="return Delete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
-
-		}
-
-		echo '</li>'."\r\n";
-
-		$i ++;
-    }
-
-} // fin de si pas d'erreur
 ?>
 
 </ul>

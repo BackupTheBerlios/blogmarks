@@ -33,11 +33,6 @@ if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 	elseif ( DB::isError( $auth ) )
 		$auth_error = $auth->getMessage();
 	
-	//echo $auth_error;
-   // echo $auth;
-	//die();
-
-
 	//header("Location: index.php");
 
 }

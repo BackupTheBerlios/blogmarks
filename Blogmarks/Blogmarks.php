@@ -1,10 +1,10 @@
 <?php
 /** Déclaration de la classe Blogmarks
- * @version    $Id: Blogmarks.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Blogmarks.php,v 1.2 2004/04/29 10:45:52 mbertier Exp $
  */
 
 # --
-require_once 'Exception.php';
+require_once 'Blogmarks/Exception.php';
 
 /** Nom de la classe utilisée pour la génération d'erreur. */
 define( 'BM_ERROR_CLASS', 'Blogmarks_Exception' );

@@ -4,7 +4,7 @@
 <head>
 <title>Blogmarks.net</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<link rel="stylesheet" title="default" type="text/css" href="style.css" media="all"  />
+<link rel="stylesheet" title="default" type="text/css" href="style2.css" media="all"  />
 
 </head>
 
@@ -33,77 +33,74 @@
 <input type="submit" value="Search" />
 </form>
 
+<ul>
+
+<?php
+
+include "includes/functions.inc.php";
+include "includes/config.inc.php";
+
+$list =& $marker->getMarksListOfUser( "znarf" );
+
+ while ( $list->fetch() ) {
+		
+		echo '<li>';
+
+		echo '<a href="' . $list->bm_Links_id . '">' . $list->title . '</a>' . ' : ' . $list->summary;
+       // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
+
+	   //echo ' (' . $list->created . ')';
+        
+        echo " [ ";
+        foreach ( $list->getTags() as $tag ) echo "$tag ";
+        echo "]\n";
+
+		echo '<a href="EDIT">edit</a>';
+
+		echo '</li>';
+    }
+
+?>
+
+</ul>
+
+<h3>1er avril 2004</h3>
+
+<ul>
+<li>D</li>
+<li>fffd</li>
+<li>fdfdfg</li>
+<li>efdt</li>
+<li></li>
+</ul>
+
 <h3>12 mars 2004</h3>
 
-<div id="item7170" class="item">
+<ul>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ul>
 
-	<a href="http://www.gominosensei.org/mirror/kleptones/"><img class="scrsht" src="img/1074553219-3.png" alt="" /></a>
-	
+<hr />
 
+<h3>Add a bookmark</h3>
 
-	<p class="cmt"><strong>Yoshimi Battles the Hip-Hop Robots</strong><br />
-	<a href="?f=25">Steve Cook</a> : <em>So good, and I'm not even a big Flaming Lips fan.</em></p>
+<form method="POST" action="add/">
 
-	<p class="cmt"><strong>Yoshimi Battles the Hip-Hop Robots</strong><br />
-	<a href="?f=25">Steve Cook</a> : <em>So good, and I'm not even a big Flaming Lips fan.</em></p>
+	<label>title</label>
+	<input style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
+	<label>url</label>
+	<input style="display:block" type="text"  name="url" size="50"  maxlength="255"  />
+	<label>description</label>
+	<input style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
+	<label>via</label>
+	<input style="display:block" type="text"  name="via" size="50"  maxlength="255"  />
+	<input type="submit" value="Add" />
 
-		<p class="tags clear"><a href="#">CSS</a> , <a href="#">WebDevelopment</a> , <a href="#">TagSoup</a> </p>
-
-		<p class="url"><a href="http://www.gominosensei.org/mirror/kleptones/">http://www.gominosensei.org/mirror/kleptones/</a></p>
-
-</div>
-
-
-
-<div id="item7172" class="item">
-
-	<a href="http://www.photomatt.net/archives/2004/03/10/code-is-food/"><img class="scrsht" src="img/1078948933-0.png" alt="" /></a>
-
-	<h4>Photomatt: Code is Food</h4>
-
-	<p class="tags"><a href="#">CSS</a> , <a href="#">WebDevelopment</a> , <a href="#">TagSoup</a> </p>
-
-	<p class="cmt a">
-	<a href="?f=25">Adam Gessaman</a> : <em>It seems to me that this whole Lockergnome thing would be a great PR stunt, if they hadn’t botched the redesign so horribly. They are getting mentioned over and over again. On the other hand, they did manage to rewind the clock to about 1997 ?</em></p>
-
-	<p class="cmt b">
-	<a href="?f=25">Dan Cederholm</a> : <em>Matt Mullenweg's nice analogy of food and web standards</em></p>
-
-	<p class="cmt a">
-	<a href="?f=25">Paul Hammond</a> : <em>I think the Big Mac is a pretty good example of bad ingredients crappily presented. Bad markup and no CSS.</em></p>
-
-
-<!-- 	<p class="cmt b"><strong>Photo Matt : Code is Food</strong><br />
-	<a href="?f=25">Simon Willison</a> : <em>Why the Locker Gnome thing is upsetting.</em></p> -->
-
-	<p class="url">
-		<a href="http://www.photomatt.net/archives/2004/03/10/code-is-food/">
-			http://www.photomatt.net/archives/2004/03/10/code-is-food/
-		</a>
-	</p>
-
-</div>
-
-
-<h3>11 mars 2004</h3>
-
-<div id="item7171" class="item">
-
-	<a href="http://www.gominosensei.org/mirror/kleptones/"><img class="scrsht" src="img/1074549626-1.png" alt="" /></a>
-	
-	<p class="cmt"><strong>Yoshimi Battles the Hip-Hop Robots</strong><br />
-	<a href="?f=25">Steve Cook</a> : <em>So good, and I'm not even a big Flaming Lips fan.</em></p>
-
-	
-	<p class="url">
-		<a href="http://www.gominosensei.org/mirror/kleptones/">
-			http://www.gominosensei.org/mirror/kleptones/
-		</a>
-	</p>
-
-</div>
-
-<!--  -->
+</form>
 
 <hr />
 

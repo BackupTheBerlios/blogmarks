@@ -1,13 +1,13 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.11 2004/03/16 10:03:05 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.12 2004/03/17 14:12:32 mbertier Exp $
  */
 
 require_once 'PEAR.php';
-require_once 'Blogmarks.php';
+require_once 'Blogmarks/Blogmarks.php';
 
 # -- Includes
-require_once 'Element/Factory.php';
+require_once 'Blogmarks/Element/Factory.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
  *
@@ -17,8 +17,9 @@ require_once 'Element/Factory.php';
  *
  * @todo       Validation des paramètres dans les méthodes publiques (et les autres mêmes ;)
  * @todo       Fichier de conf dédié
- * @todo       Erreur 500 en cas de tentative de création d'un élément déja existant.
  * @todo       Mise en place de l'authentification dans toutes les méthodes
+ * @todo       Voir ce qui est le plus efficace, les slots ou l'appel a des méthodes statiques (notamment pour Element_Factory)
+ * @todo       _errorStack et méthodes associées
  */
 class BlogMarks_Marker {
 
@@ -88,14 +89,14 @@ class BlogMarks_Marker {
 
             // Insertion dans la base de données
             $res = $mark->insert();
-            if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
 
         } 
         
         // Si le Mark existe déja -> erreur 500
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
-        $this->manageAssociations( $mark, $props['tags'] );
+        // Gestion des associations Mark / Tags
+        $this->associateTagsToMark( $props['tags'], $mark );
 
         // Récupération de l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -107,10 +108,11 @@ class BlogMarks_Marker {
     /** Mise à jour d'un mark.
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
+     *                                La valeur de l'index 'mergetags' sera passée à Blogmarks_Marker::associateTagsToMark
      * @return    string    L'uri du mark mis à jour.
      */
     function updateMark( $id, $props ) {
-        $mark =& $this->_slots['ef']->makeElement( 'Bm_Marks' );
+        $mark =& Element_Factory::makeElement( 'Bm_Marks' );
 
         // Si le mark à mettre à jour n'existe pas -> erreur 404
         if ( ! $mark->get( $id ) ) {
@@ -158,7 +160,10 @@ class BlogMarks_Marker {
         $date = date("Ymd Hms");
         $mark->issued   = isset( $props['issued'] ) ? $props['issued'] : $mark->issued;
         $mark->modified = $date;
-        
+
+        // Tags
+        $this->associateTagsToMark( $props['tags'], $mark, $props['mergetags'] );
+
         // Insertion dans la base de données
         $res = $mark->update();
         if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
@@ -168,6 +173,7 @@ class BlogMarks_Marker {
 
         return $uri;
     }
+
 
     /** Suppression d'un mark.
      * @param     int      $id       URI identifiant le mark
@@ -193,32 +199,116 @@ class BlogMarks_Marker {
         return true;
     }
 
+
     /** Génération de l'URI d'un Mark
      * @param     object     Element_Bm_Marks     Une référence à un Mark.
      * @return   string     L'URI du Mark.
      */
     function getMarkUri( &$mark ) {
         $pattern = 'http://www.blogmarks.net/users/%s/?mark_id=%u';
-        $uri = sprintf( $pattern, "MOCK!", $mark->id );
+        
+        // Récupération du login du possesseur du Mark
+        $user =& Element_Factory::makeElement( 'Bm_Users' );
+        $user->get( $mark->bm_Users_id );
+
+        // Génération de l'uri
+        $uri = sprintf( $pattern, $user->login, $mark->id );
 
         return $uri;
     }
 
 
     /** Gère les associations de Tags à un Mark.
-     * Si un tag passé en paramètre n'existe pas, il est automatiquement créé avec le status 'privé'
-     * @param      object Element_Bm_Marks      $mark
+     * Règles de gestion :
+     *  - Tag déja associé             -> aucune action
+     *  - Tag existant non-associé     -> association du Tag au Mark
+     *  - Tag non-existant             -> création d'un Tag privé correpondant et association au Mark
+     * 
      * @param      array                        $tags      Tableau d'identifiants de Tags
+     * @param      object Element_Bm_Marks      $mark
+     * @param      bool                         $merge     Si true, on merge les Tags passés en paramètres avec les Tags associés déjà existants
+     * @return
      *
+     * @todo      Comportement à définir pour la gestion des erreurs : arret immédiat en cas d'erreur ?
      */
-    
+    function associateTagsToMark( $tags, $mark, $merge = false ) {
+
+        // permissions: il posséder le Mark ou être administrateur pour éditer les associations de Tags
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && 
+             (! $user->owns($mark) && ! $user->isAdmin()) ) return Blogmarks::raiseError( "Permission denied", 401 );
+
+        // Désassociations
+        if ( ! $merge ) {
+            $deprec_tags = array_diff( $mark->getTags(), $tags );
+            foreach ( $deprec_tags as $tag_id ) {
+                $mark->remTagAssoc( $tag_id );
+            }
+        }
+
+        // Associations
+        foreach ( $tags as $tag_name ) {
+            $tag =& Element_Factory::makeElement( 'Bm_Tags' );
+
+            // Tag non-existant
+            if ( ! $tag->get($tag_name) ) {
+                echo "$tag_name<br />";
+                // Utilisateur connecté
+                $user =& $this->_slots['auth']->getConnectedUser();
+
+                // Création d'un tag privé correspondant
+                $res =& $this->createPrivateTag( array('id'          => $tag_name,
+                                                       'bm_Users_id' => $user->id) );
+                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
+
+                // Association au Mark
+                //                $res =& $this->associateTagToMark( $tag, $mark );
+                $res =& $mark->addTagAssoc( $tag->id );
+                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
+                
+            }
+
+            // Tag déjà associé
+            if ( $tag->isAssociatedToMark($mark->id) ) { continue; }
+
+            // Tag existant non-associé
+            elseif ( ! $tag->isAssociatedToMark($mark->id) ) {
+                //                $res =& $this->associateTagToMark( $tag, $mark );
+                $res =& $mark->addTagAssoc( $tag->id );
+                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
+            }
+            
+        } # -- fin foreach
+    }
+
+
+    /** Associe un Tag à un Mark.
+     * @param      object Element_Bm_Tags      $tag
+     * @param      object Element_Bm_Marks     $mark
+     * @return     mixed      true ou Blogmarks_Exception en cas d'erreur.
+     */
+    function associateTagToMark( &$tag, &$mark ) {
+
+        // permissions: il posséder le Mark ou être administrateur pour éditer les associations de Tags
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && 
+             (! $user->owns($mark) && ! $user->isAdmin()) ) return Blogmarks::raiseError( "Permission denied", 401 );
+
+        // On vérifie si le Tag n'est pas déja associé au Mark
+        if ( $tag->isAssociatedToMark($mark->id) ) return Blogmarks::raiseError( "Le Tag [$tag->id] est déjà associé au Mark [$mark->id].", 500 );
+        
+        // Association
+        $res =& $mark->addTagAssoc( $tag->id );
+        if ( Blogmarks::isError($res) ) return $res;
+        else return true;
+    }
 
 # ------- LINKS
 
     /** Création d'un Link.
      * @param     string     href          URL désignant la ressource.
      * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
-     * @return   objet Element_Bm_Links   Le Links créé
+     * @return   objet Element_Bm_Links    Le Links créé
      */
     function createLink( $href, $autofetch = false ) {
         $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
@@ -240,7 +330,7 @@ class BlogMarks_Marker {
         if ( $autofetch === true ) { 
             $link->fetchUrlInfo(); 
             $res = $link->update();
-            if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+            if ( Blogmarks::isError($res) ) return $res;
         }
 
         return $link;
@@ -347,7 +437,6 @@ class BlogMarks_Marker {
 
         // Initialisation des propriétés de l'objet
         $tag->populateProps( $props );
-
         // Insertion dans la base de données
         $res = $tag->insert();
         if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
@@ -429,21 +518,6 @@ class BlogMarks_Marker {
     }
 
 
-    /** Renvoie un tableau comprenant tous les tags existants dans la base 
-     * de données similaires au tag passé en paramètre.
-     *
-     * Dans l'espoir d'éviter une multiplication intempestive des Tags.
-     *
-     * @param    string    $name     Le nom du Tag
-     * @return   array     Un tableau associatif de la forme: <pre>array( 'relevance', 'tag' )</pre>
-     * 
-     * @see      http://www.php.net/levenshtein
-     * @see      http://www.php.net/metaphone
-     *
-     */
-    function getSimilarTags( $name ) {}
-
-
 # ------- AUTH
 
     /** Authentification d'un utilisateur.
@@ -470,7 +544,7 @@ class BlogMarks_Marker {
     function _initSlots() {
 
         // Array( slot_name, array(class_name, class_file) );
-        $slots_info = array( 'ef'   => array( 'Element_Factory', 'Element/Factory.php' ),
+        $slots_info = array( 'ef'   => array( 'Element_Factory', 'Blogmarks/Element/Factory.php' ),
                              'auth' => array( 'Blogmarks_Auth',  'Auth.php' ) );
 
         foreach ( $slots_info as $slot_name => $class_info ) {

@@ -2,7 +2,7 @@
 
 <?php
 /** Génération du package PEAR
- * @version      $Id: make_pkg.php,v 1.3 2004/04/01 10:33:37 mbertier Exp $
+ * @version      $Id: make_pkg.php,v 1.4 2004/04/01 15:48:12 mbertier Exp $
  * @todo         Comprendre pourquoi le tableau que retourne getopt est aussi tarbiscoté ou étendre getopt
  */
 
@@ -59,9 +59,9 @@ $e = $pkgxml->setOptions( array( 'baseinstalldir'       => '/',
                                  'filelistgenerator'    => 'cvs',
                                  'state'                => 'beta',
                                  'notes'                => 'first try',
-                                 'ignore'               => array(),
+                                 'ignore'               => array('make_pkg.php'),
                                  'installexceptions'    => array(),
-                                 'dir_roles'            => array( 'tutorials' => 'doc' ),
+                                 'dir_roles'            => array( 'Blogmarks/tutorials' => 'doc' ),
                                  'exceptions'           => array()   ) );
 
 

@@ -117,10 +117,6 @@ else
 			else
 				$uri .= '&order_by=created&order_type=desc';
 			break;
-
-		case 'MyHotlinks':
-			echo '<h2>MyHotlinks</h2>';
-			break;
 	
 		case 'PublicMarks':
 			echo '<h2>PublicMarks</h2>';
@@ -250,16 +246,18 @@ echo '<a href="' . $uri . '">' . $uri . '</a><br/>';
 			} else
 			{
 				foreach ( $marker->getTags($list->id) as $tag_id ) {
-					$tag = $list->getTag ($tag_id);
+					$tag = $marker->getTag ($tag_id);
 					if ( $tag->author != NULL )
-					{
 						// tag privé
-						echo ' <a class="private_tag" href="?include_tags=private:'. $tag->title . '">[' . $tag->title . ']</a> ';
-					} else
-					{
+						$link = ' <a class="private_tag" href="?include_tags=private:'. $tag->title . '"';
+					else
 						// tag public
-						echo ' <a class="public_tag" href="?include_tags='. $tag->title . '">[' . $tag->title . ']</a> ';
-					}
+						$link = ' <a class="public_tag" href="?include_tags='. $tag->title . '"';
+
+					if ( isset ( $tag->summary ) && $tag->summary != '' )
+						$link .= ' title="'. $tag->summary .'"';
+					$link .= '>[' . $tag->title . ']</a> ';
+					echo $link;
 				}
 			}
 			//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';

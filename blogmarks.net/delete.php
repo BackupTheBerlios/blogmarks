@@ -49,7 +49,7 @@ if ( $marker->userIsAuthenticated() ) {
 
 		echo '<p>Blogmark successfully deleted !</p>';
 
-		if ( $_GET['mini'] == 1 ) {
+		if ( isset ($_GET['mini']) && $_GET['mini'] == 1 ) {
 			echo '<a onclick="window.close()" href="#">[close]</a>';
 		}
 

@@ -117,5 +117,20 @@ class Element_Bm_Marks extends Blogmarks_Element
         
         return $arr;
     }
+
+
+    /** Renvoie le href associé au Mark. 
+     * @return       mixed     Le href associé au Mark ou Blogmarks_Exception en cas d'erreur.
+     */
+    function getHref() {
+        require_once 'Blogmarks/Element/Factory.php';
+
+        $link =& Element_Factory::makeElement( 'Bm_Links' );
+        
+        if ( ! $link->get($this->Bm_Links_id) ) 
+            return Blogmarks::raiseError( "Aucun href n'est associé au Mark [$this->id].", 404 );
+
+        return $link->href;
+    }
 }
 ?>

@@ -1,15 +1,16 @@
-;; $Id: config.ini.dist,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+;; $Id: config.ini.dist,v 1.2 2004/05/19 10:02:29 mbertier Exp $
 
 [DB_DataObject]
 ;; @see    http://pear.php.net/manual/en/package.database.db-dataobject.intro-configuration.php
 
 database         = mysql://user:pass@host/Blogmarks
-schema_location  = /blogmarks/Element
-class_location   = /blogmarks/Element
-require_prefix   = blogmarks/Element/
 
 ;; Ces valeurs ne devraient pas avoir à être modifiées.
 class_prefix     = Element_
 extends_location = blogmarks/
 extends          = Element.php
+schema_location  = Blogmarks/Element
+class_location   = Blogmarks/Element
+require_prefix   = Blogmarks/Element/
+
 ignore_sequence_keys = "bm_Marks_has_bm_Tags,bm_Tags"

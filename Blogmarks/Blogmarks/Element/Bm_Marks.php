@@ -3,9 +3,12 @@
  * Table Definition for bm_Marks
  */
 require_once 'Blogmarks/Element.php';
+require_once 'Element/Factory.php';
 
 /** Mark.
  * @package     Elements
+ * @uses        Blogmarks_Element
+ * @uses        Element_Factory
  */
 class Element_Bm_Marks extends Blogmarks_Element 
 {
@@ -65,6 +68,16 @@ class Element_Bm_Marks extends Blogmarks_Element
      */
     function isPrivate() { return ! $this->isPublic(); }
 
+
+    /** Renvoie l'id du posseseur du Mark.
+     * @return      string      L'id du possesseur du mark
+     */
+    function getOwner() {
+        $user =& Element_Factory::makeElement( 'Bm_Users' );
+        $user->get( $this->bm_Users_id );
+
+        return $user->login;
+    }
 
 
 # ------ TAGS

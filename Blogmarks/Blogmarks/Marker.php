@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.6 2004/04/06 14:59:44 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.7 2004/04/07 13:30:44 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -353,6 +353,31 @@ class BlogMarks_Marker {
         $res =& $mark->addTagAssoc( $tag->id );
         if ( Blogmarks::isError($res) ) return $res;
         else return true;
+    }
+
+
+    /** Récupération d'un Mark.
+     * @param      int      $mark_id      L'identifiant du Mark dans la base de données
+     * @return     mixed    Element_bm_Marks ou Blogmarks_Exception en cas d'erreur.
+     */
+    function getMark( $mark_id ) {
+        
+        $mark =& Element_Factory::makeElement( 'Bm_Marks' );
+        
+        // Si le Mark n'existe pas -> erreur 404
+        if ( ! $mark->get($mark_id) ) return Blogmarks::raiseError( "Le Mark [$mark_id] n'existe pas.", 404 );
+
+        // permissions
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( Blogmarks::isError($user) ) {
+            if ( $mark->isPrivate() ) return Blogmarks::raiseError( "Permission denied", 401 );
+        }
+
+        else { 
+            if ( $mark->isPrivate() && ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        }
+            
+        return $mark;
     }
 
 

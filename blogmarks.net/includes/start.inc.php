@@ -45,4 +45,7 @@ if ( isset( $_GET['disconnect'] ) AND ( $_GET['disconnect'] == 1 ) ) {
 
 }
 
+if ( !isset ($_GET['section']) )
+	$_GET['section'] = 'PublicMarks';
+
 ?>

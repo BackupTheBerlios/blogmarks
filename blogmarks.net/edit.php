@@ -30,6 +30,8 @@ else
 
 <?php include 'includes/header.inc.php' ?>
 
+<div id="content">
+
 <h3>Edit a bookmark</h3>
 
 <form method="POST" action="update.php<?php if ( isset( $_GET['mini'] ) ) echo '?mini=1' ?>">
@@ -85,6 +87,8 @@ $via  = $mark->getLink( 'via' );
 	<input class="submit" type="submit" value="Update" />
 
 </form>
+
+</div> <!-- # content -->
 
 <?php include 'includes/footer.inc.php' ?>
 

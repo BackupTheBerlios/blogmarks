@@ -10,16 +10,23 @@ background-color:#666;
 }
 
 #conteneur {
-padding:2% 3%;
 background-color:white;
 border:1px solid black;
-width:680px;
+width:700px;
 margin:auto;
 }
 
 #header {
+background:url("style/texture.gif");
 border-bottom:solid 1px #ccc;
+color:white;
 }
+
+#content , #footer {
+padding:0 10px;
+}
+
+
 #menu {
 clear:both;
 }
@@ -55,6 +62,10 @@ h1 {
 font-size:x-large;
 margin:0px 0 10px;
 font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+h1 a {
+color:white;
 }
 
 h2 {
@@ -105,17 +116,24 @@ border:0;
 
 #top {
 /*border:1px solid lime;*/
-width:455px;
+width:425px;
 float:left;
-margin-bottom:25px;
+/*margin-bottom:10px;*/
+padding:10px;
+}
+
+#top a {
+color:white;
 }
 
 #login {
 border:1px solid #ccc;
 width:175px;
-margin-left:25px;
-float:left;
+margin:15px 15px 15px 0;
+float:right;
 padding:10px;
+color:black;
+background-color:white;
 }
 
 #login form {
@@ -135,7 +153,7 @@ padding:0;
 
 input, select, label, textarea {
 font-family:Verdana, Arial, sans-serif;
-font-size:small;
+font-size:x-small;
 margin-bottom:5px;
 padding:2px;
 }
@@ -223,7 +241,6 @@ div.item {
 clear:both;
 margin:10px 0;
 border:1px solid #ddd;
-/*width:60%;*/
 padding:10px;
 }
 
@@ -248,6 +265,8 @@ clear:both;
 clear:both;
 }
 
+/* --------------- */
+
 
 /* MINI */
 
@@ -264,12 +283,9 @@ display:none;
 display:none;
 }
 
-
 .mini h3 {
-/*border:1px solid red;*/
 margin:0 0 10px;
 }
-
 
 .mini label {
 }
@@ -279,13 +295,14 @@ font-family: Arial, sans-serif;
 font-size:x-small;
 }
 
-
 input.submit {
 margin:5px 0;
 display:block;
 font-size:x-small;
 font-weight:bold;
 }
+
+/* --------------- */
 
 
 .error {

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.7 2004/04/07 13:30:44 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.8 2004/04/28 09:44:31 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -40,9 +40,7 @@ class BlogMarks_Marker {
     function &singleton() {
         static $instance;
 
-        if ( !isset($instance) ) {
-            $instance = new Blogmarks_Marker;
-        }
+        if ( ! isset($instance) ) $instance = new Blogmarks_Marker;
 
         return $instance;
     }
@@ -170,10 +168,12 @@ class BlogMarks_Marker {
         if ( isset($props['href']) ) {
 
             // Récupération du Link associé
-            $link =& $mark->getLink( 'bm_Links_id', 'Bm_Links', 'id' );
+            $link =& Element_Factory::makeElement( 'Bm_Links' );
+            $link->get( $this->bm_Links_id );
+
 
             // L'URL doit être modifiée
-            if ( $link->href !== $props['href'] ) {
+            if ( $link && $link->href !== $props['href'] ) {
                 
                 // Si le Link existe déja, on se contente de modifier l'association
                 if ( $link->get('href', $props['href']) > 0 ) {
@@ -194,9 +194,10 @@ class BlogMarks_Marker {
         } // Fin if URL associée
 
         // Mise à jour des propriétés
-        $mark->title    = $props['title'];
-        $mark->summary  = $props['summary'];
-        $mark->lang     = $props['lang'];
+        $mark->title    = isset($props['title'])   ? $props['title']   : $mark->title;
+        $mark->summary  = isset($props['summary']) ? $props['summary'] : $mark->summary;
+        $mark->lang     = isset($props['lang'])    ? $props['lang']    : $mark->lang;
+        $mark->via      = isset($props['via'])     ? $props['via']     : $mark->via;
         
         // Dates
         $date = date("Ymd Hms");
@@ -289,6 +290,9 @@ class BlogMarks_Marker {
         if ( Blogmarks::isError($user) ) return $user;
         if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
+        // Suppression de caractères génants
+        array_walk( $tags, 'trim' );
+
         // Désassociations
         if ( ! $merge && is_array($tags) ) {
             $deprec_tags = array_diff( $mark->getTags(), $tags );
@@ -303,7 +307,6 @@ class BlogMarks_Marker {
 
             // Tag non-existant
             if ( ! $tag->get($tag_name) ) {
-                echo "$tag_name<br />";
                 // Utilisateur connecté
                 $user =& $this->_slots['auth']->getConnectedUser();
 
@@ -461,7 +464,7 @@ class BlogMarks_Marker {
 
         // Mise à jour de l'enregistrement dans la base de données
         $res = $link->update();
-        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+        if ( Blogmarks::isError($res) ) return $res;
 
         return $link;
     }
@@ -649,6 +652,76 @@ class BlogMarks_Marker {
         $res = $user->getMarksList( $include_tags, $exclude_tags, $include_priv );
 
         return $res;
+    }
+
+    /** Récupération d'une liste de Marks en fonction des critères passés en paramètre.
+     * @param      array      $cond      
+     * @return     
+     */
+    function getMarksList( $cond ) {
+        
+        $now = date( "Ymd His" );        
+        $mark =& Element_Factory::makeElement( 'Bm_Marks' );
+
+        // Recherche au sein des Marks d'un utilisateur donné
+        if ( isset($cond['user_login']) ) {
+
+            $user =& Element_Factory::makeElement( 'Bm_Users' );
+            $user->get( 'login', $cond['user_login'] );
+            
+            $mark->bm_Users_id = $user->id;
+        }
+
+        // Recherche au sein d'une plage de dates donnée
+        if ( isset($cond['date_in']) )  $mark->whereAdd( "created >= ". $cond['date_in'] );
+        if ( isset($cond['date_out']) ) $mark->whereAdd( "created <= ". $cond['date_out'] );
+
+        //
+        $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        $assocs->joinAdd( $mark );
+
+        // Sélection des Marks à exclure
+        if ( isset($cond['exclude_tags']) && is_array($cond['exclude_tags']) ) {
+
+            foreach ( $cond['exclude_tags'] as $tag_id ) $assocs->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
+
+            while ( $assocs->fetch() ) { 
+                $excluded_marks[] = $mark->bm_Marks_id;
+                
+                // Dédoublonnage des résultats
+                $excluded_marks = array_unique( $excluded_marks );
+            }
+
+        }
+
+        // Reset
+        $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        $marks  =& Element_Factory::makeElement( 'Bm_Marks' );
+        $marks->joinAdd( $assocs );
+
+        // -- Sélection des Marks à inclure
+        // Selon un Tag les décrivant
+        if ( isset($cond['include_tags']) && is_array($cond['include_tags']) ) {
+            foreach ( $cond['include_tags'] as $tag_id ) $marks->whereAdd( "bm_Tags_id = '$tag_id'", 'OR' );
+        }
+
+        // On ne sélectionne pas les Marks dont le Tag est exclu
+        if ( isset($excluded_marks) ) {
+            foreach ( $excluded_marks as $mark_id ) $marks->whereAdd( "bm_Marks_id != '$mark_id'", 'AND' );
+        }
+        
+        // Par défaut, on ne sélectionne que les Marks publics
+        if ( ! isset($cond['select_priv']) || $cond['select_priv'] == false ) {
+            $marks->whereAdd( "issued != 0 ",  'AND' );
+            $marks->whereAdd( "issued < '$now'", 'AND' );
+        }
+
+        // Tri des résultats
+        if ( isset($cond['order_by']) ) $marks->orderBy( $cond['order_by'] );
+
+        return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 404 ) );
+
+                   
     }
 
 

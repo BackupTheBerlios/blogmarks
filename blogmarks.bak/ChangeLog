@@ -1,0 +1,85 @@
+2004-03-04 16:30  mbertier
+
+	* Marker.php: Gestion correcte des dates issued / modified /
+	  created lors de la création de Marks
+
+2004-03-04 16:14  mbertier
+
+	* Marker.php: createMark : stable.  getMarkUri : stable.
+	  _initSlots : début de système de fonctionnement. instable
+
+2004-03-04 16:11  mbertier
+
+	* Element/Bm_Links.php: Links::fetchUrlInfo est stable. Pour le
+	  moment, il ne remplit que le 1. du contrat (voir dans les
+	  commentaires)
+
+2004-03-03 16:40  mbertier
+
+	* Exception.php: Import initial
+
+2004-03-02 17:29  mbertier
+
+	* Marker.php, Element/Factory.php: Implémentation et utilisation
+	  d'une Factory d'éléments.
+
+2004-03-01 17:35  mbertier
+
+	* Marker.php: Configuration des DataObjects.
+
+2004-03-01 16:36  mbertier
+
+	* config.ini.dist: Documentation Valeurs génériques
+
+2004-03-01 15:46  benfle
+
+	* User.php[DEAD]: [no log message]
+
+2004-03-01 15:12  mbertier
+
+	* Link.php[DEAD], Element/Mark.php[DEAD],
+	  Element/MarksList.php[DEAD], Element/Tag.php[DEAD]: Mise en place
+	  des DataObjects
+
+2004-03-01 15:08  mbertier
+
+	* Element.php, config.ini.dist, Element/Blogmarks.ini,
+	  Element/Bm_Links.php, Element/Bm_Marks.php,
+	  Element/Bm_Marks_has_bm_Tags.php, Element/Bm_Tags.php,
+	  Element/Bm_Users.php: Mise en place des DataObjects
+
+2004-03-01 13:21  benfle
+
+	* Element.php, Element/Mark.php, Element/MarksList.php: Mise à jour
+	  des variables de classe
+
+2004-03-01 13:20  benfle
+
+	* Element/Tag.php: [+] Implémentation de la classe Tag
+
+2004-03-01 13:19  benfle
+
+	* User.php: [+] Implémentation de la classe User
+
+2004-03-01 13:18  benfle
+
+	* Link.php: [+] implementation de la classe Link
+
+2004-02-26 13:37  mbertier
+
+	* Changelog, Element.php, INSTALL, Marker.php, README,
+	  Renderer.php, Server.php, Element/Mark.php,
+	  Element/MarksList.php, Renderer/XHTML/Alias.php,
+	  Renderer/XHTML/Folder.php, Renderer/XHTML/Mark.php,
+	  Renderer/XHTML/Separator.php, Server/Atom.php,
+	  tutorials/Renderers/Renderers.pkg: Import initial des sources
+
+2004-02-26 13:37  mbertier
+
+	* Changelog, Element.php, INSTALL, Marker.php, README,
+	  Renderer.php, Server.php, Element/Mark.php,
+	  Element/MarksList.php, Renderer/XHTML/Alias.php,
+	  Renderer/XHTML/Folder.php, Renderer/XHTML/Mark.php,
+	  Renderer/XHTML/Separator.php, Server/Atom.php,
+	  tutorials/Renderers/Renderers.pkg: Initial revision
+

@@ -44,6 +44,9 @@ $mark =& $marker->getMark( $_GET['id'] );
 
 $string_tags = implode(' ', $mark->getTags() ); 
 
+$link = $mark->getLink( 'href' );
+$via = $mark->getLink( 'href' );
+
 //$href = $mark->getHref();
 
 //print_r( $mark );
@@ -53,13 +56,13 @@ $string_tags = implode(' ', $mark->getTags() );
 	<label>title</label>
 	<input value="<?php echo $mark->title ?>" type="text"  name="title" size="50"  maxlength="255"  />
 	<label>url</label>
-	<input value="<?php echo $mark->getHref() ?>" type="text"  name="url" size="50"  maxlength="255"  />
+	<input value="<?php echo $link->href ?>" type="text"  name="url" size="50"  maxlength="255"  />
 	<label>description</label>
 	<input value="<?php echo $mark->summary ?>" type="text"  name="description" size="50"  maxlength="255"  />
 	<label>tags</label>
 	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="50"  maxlength="255"  />
 	<label>via</label>
-	<input value="<?php echo $mark->via ?>" type="text"  name="via" size="50"  maxlength="255"  />
+	<input value="<?php echo $via->href ?>" type="text"  name="via" size="50"  maxlength="255"  />
 
 	<input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  />
 	

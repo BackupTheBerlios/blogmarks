@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.2 2004/04/05 09:37:55 mbertier Exp $
  */
 
 require_once 'Blogmarks/Blogmarks.php';
@@ -46,7 +46,6 @@ class Blogmarks_Auth {
      * @return     mixed       True en cas de validation  ou Blogmarks_Exception en cas d'erreur.
      */
     function authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session = false ) {
-
         // Recherche de l'utilisateur correpondant à $login
         $user =& Element_Factory::makeElement( 'Bm_Users' );
         $user->login = $login;
@@ -55,12 +54,14 @@ class Blogmarks_Auth {
         if ( ! $user->find() ) return Blogmarks::raiseError( "L'utilisateur [$login] est inconnu.", 404 );
 
         // Récupération du mot de passe de l'utilisateur
-        $user->fetch();
+        $res = $user->fetch();
+        if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
+
         $pwd = $user->pwd;
 
         // Constitution d'un digest
         $digest = $this->_makeDigest( $pwd, $nonce, $timestamp );
-        
+
         // Si le mot de passe fourni est incorrect -> erreur 401
         if ( $digest !== $cli_digest ) {
             return Blogmarks::raiseError( 'Wrong credentials.', 401 );

@@ -1,7 +1,7 @@
 <?php
 
 include_once "includes/functions.inc.php";
-include_once "includes/config.inc.php";
+include "includes/start.inc.php";
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -22,7 +22,7 @@ include_once "includes/config.inc.php";
 
 <?php
 
-if ( $_POST['create'] == 1 ) {
+if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 
 	if (
 		( strlen( $_POST['login'] ) > 5 )
@@ -64,7 +64,7 @@ if ( $_POST['create'] == 1 ) {
 
 <input type="hidden" name="create" value="1" />
 
-<input type="submit" value="Créer le compte" />
+<input type="submit" value="Create account" />
 
 </form>
 

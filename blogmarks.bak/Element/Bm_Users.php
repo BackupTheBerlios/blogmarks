@@ -17,6 +17,7 @@ class Element_Bm_Users extends Blogmarks_Element
     var $login;                           // string(255)  
     var $pwd;                             // string(255)  
     var $email;                           // string(255)  
+    var $permlevel;                       // string(1)  not_null enum
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}

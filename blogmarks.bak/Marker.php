@@ -1,6 +1,7 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.13 2004/03/25 16:40:55 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.14 2004/03/26 12:34:55 mbertier Exp $
+ * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
 # -- Includes
@@ -39,14 +40,19 @@ class BlogMarks_Marker {
 
 # ------- MARKS
     
-    /** Création d'un mark. 
+    /** Création d'un mark.
+     * Dans $props, en plus des propriétés correspondants à la DB, on peux renseigner deux clés supplémentaires :
+     *    - $props['tags']      -> un tableau d'id de Tags à associer au Mark
+     *    - $props['public']    -> true, false, ou une date future (format mysql datetime) à laquelle le Mark deviendra public.
+     *
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
      * @return     mixed     L'URI du mark créé
+     * @perms      Pour pouvoir créer un Mark, il faut être authentifié.
      */
     function createMark( $props ) {
 
-        // permissions: Pour pouvoir créer un Mark, il faut être authentifié
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( $user && ! $user->isAuthenticated() ) return Blogmarks::raiseError( "Permission denied", 401 );
 
@@ -80,13 +86,19 @@ class BlogMarks_Marker {
             $mark->via      = $props['via'];
 
             // Dates
-            $date = date("Ymd Hms");
+            $date = date("Ymd HIs");
             $mark->created  = $date;
-            $mark->issued   = isset( $props['issued'] ) ? $props['issued'] : $date;
-            $mark->modified = 0;
+            $mark->modified = $date;
+
+            // Public / privé
+            if ( $props['public'] === true  ) $pub = $date;
+            if ( $props['public'] === false ) $pub = 0;
+            else $pub = $props['public'];
+            $mark->issued   = $pub;
 
             // Insertion dans la base de données
             $res = $mark->insert();
+            if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
 
         } 
         
@@ -94,7 +106,8 @@ class BlogMarks_Marker {
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
         // Gestion des associations Mark / Tags
-        $this->associateTagsToMark( $props['tags'], $mark );
+        $res = $this->associateTagsToMark( $props['tags'], $mark );
+        if ( Blogmarks::isError($res) ) return $res;
 
         // Récupération de l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -103,11 +116,12 @@ class BlogMarks_Marker {
     }
     
 
-    /** Mise à jour d'un mark.
+    /** Mise à jour d'un Mark.
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
      *                                La valeur de l'index 'mergetags' sera passée à Blogmarks_Marker::associateTagsToMark
      * @return    string    L'uri du mark mis à jour.
+     * @perms     Pour mettre à jour un Mark, il faut le posséder
      */
     function updateMark( $id, $props ) {
         $mark =& Element_Factory::makeElement( 'Bm_Marks' );
@@ -117,11 +131,10 @@ class BlogMarks_Marker {
             return Blogmarks::raiseError( "Le Mark [$id]  n'existe pas.", 404 );
         }
 
-        // permissions: Pour mettre à jour un Mark, il faut le posséder
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) &&  ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
-        
         // Si l'URL associée au Mark doit être modifiée
         if ( isset($props['href']) ) {
 
@@ -156,8 +169,13 @@ class BlogMarks_Marker {
         
         // Dates
         $date = date("Ymd Hms");
-        $mark->issued   = isset( $props['issued'] ) ? $props['issued'] : $mark->issued;
         $mark->modified = $date;
+
+        // Public / privé
+        if ( $props['public'] === true  ) $pub = $date;
+        if ( $props['public'] === false ) $pub = 0;
+        else $pub = $props['public'];
+        $mark->issued   = $pub;
 
         // Tags
         $this->associateTagsToMark( $props['tags'], $mark, $props['mergetags'] );
@@ -174,25 +192,24 @@ class BlogMarks_Marker {
 
 
     /** Suppression d'un mark.
-     * @param     int      $id       URI identifiant le mark
-     * @return   mixed    true ou Blogmarks_Exception en cas d'erreur.
+     * @param      int      $id       URI identifiant le mark
+     * @return     mixed    true ou Blogmarks_Exception en cas d'erreur.
+     * @perms      Pour effacer un Mark, il faut le posséder
      */
     function deleteMark( $id ) {
         $mark =& Element_Factory::makeElement( 'Bm_Marks' );
         
         // Si le mark à effacer n'existe pas -> erreur 404
-        if ( ! $mark->get( $id ) ) {
-            return Blogmarks::raiseError( "Le mark [$id] n'existe pas.", 404 );
-        }
+        if ( ! $mark->get( $id ) ) return Blogmarks::raiseError( "Le mark [$id] n'existe pas.", 404 );
 
-        // permissions: Pour effacer un Mark, il faut le posséder
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) && ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
 
         // Suppression du Mark
         $res = $mark->delete();
-        if ( Blogmarks::isError($res) ) { return $res; }
+        if ( Blogmarks::isError($res) ) return $res;
 
         return true;
     }
@@ -226,15 +243,17 @@ class BlogMarks_Marker {
      * @param      object Element_Bm_Marks      $mark
      * @param      bool                         $merge     Si true, on merge les Tags passés en paramètres avec les Tags associés déjà existants
      * @return
+     * @perms      il faut posséder le Mark pour éditer les associations de Tags
      *
      * @todo      Comportement à définir pour la gestion des erreurs : arret immédiat en cas d'erreur ?
      */
     function associateTagsToMark( $tags, $mark, $merge = false ) {
 
-        // permissions: il posséder le Mark ou être administrateur pour éditer les associations de Tags
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && 
-             (! $user->owns($mark) && ! $user->isAdmin()) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( isset($user) && ! $user->owns($mark) ) {
+            return Blogmarks::raiseError( "Permission denied", 401 );
+        }
 
         // Désassociations
         if ( ! $merge ) {
@@ -262,7 +281,7 @@ class BlogMarks_Marker {
                 // Association au Mark
                 //                $res =& $this->associateTagToMark( $tag, $mark );
                 $res =& $mark->addTagAssoc( $tag->id );
-                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res;
+                if ( Blogmarks::isError($res) ) $this->_errorStack[] =& $res; // _errorStack ne va pas durer.....
                 
             }
 
@@ -284,13 +303,15 @@ class BlogMarks_Marker {
      * @param      object Element_Bm_Tags      $tag
      * @param      object Element_Bm_Marks     $mark
      * @return     mixed      true ou Blogmarks_Exception en cas d'erreur.
+     * @perms      Il faut posséder le Mark pour éditer les associations de Tags
      */
     function associateTagToMark( &$tag, &$mark ) {
 
-        // permissions: il posséder le Mark ou être administrateur pour éditer les associations de Tags
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && 
-             (! $user->owns($mark) && ! $user->isAdmin()) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( isset($user) && ! $user->owns($mark) ) {
+            return Blogmarks::raiseError( "Permission denied", 401 );
+        }
 
         // On vérifie si le Tag n'est pas déja associé au Mark
         if ( $tag->isAssociatedToMark($mark->id) ) return Blogmarks::raiseError( "Le Tag [$tag->id] est déjà associé au Mark [$mark->id].", 500 );
@@ -307,12 +328,13 @@ class BlogMarks_Marker {
     /** Création d'un Link.
      * @param     string     href          URL désignant la ressource.
      * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
-     * @return   objet Element_Bm_Links    Le Links créé
+     * @return    objet Element_Bm_Links    Le Links créé
+     * @perms     Pour créer un Link, il faut être authentifié
      */
     function createLink( $href, $autofetch = false ) {
         $link =& Element_Factory::makeElement( 'Bm_Links' );
 
-        // permissions: Pour créer un Link, il faut être authentifié
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
         
@@ -336,15 +358,18 @@ class BlogMarks_Marker {
         
     }
 
+
     /** Mise à jour d'un Link.
      * @param     int      $id              L'identifiant du Link.
      * @param     array    $props           Un tableau associatif de la forme : <pre>array( 'label_champs_db' => 'valeur' )</pre>
-     * @param     bool     $autofetch       (optionnel) Si vrai, appel automatique de Element_Bm_Links::fetchUrlInfo() (au cas ou l'url du link change) (defaut: false)
+     * @param     bool     $autofetch       (optionnel) Si vrai, appel automatique de Element_Bm_Links::fetchUrlInfo()
+     *                                      (au cas ou l'url du link change) (defaut: false)
      * @return    object Element_Bm_Links   Le Link mis à jour
+     * @perms     Pour mettre à jour un Link, il faut être authentifié
      */
     function updateLink( $id, $props = array(), $autofetch = false ) {
         
-        // permissions: Pour mettre à jour un Link, il faut être authentifié
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) && ! $user->isAuthenticated() )  return Blogmarks::raiseError( "Permission denied", 401 );
 
@@ -384,11 +409,12 @@ class BlogMarks_Marker {
 
     /** Suppression d'un Link. 
      * @param    int      L'identifiant du Link dans la base de données
-     * @return   
+     * @return   mixed    true ou Blogmarks_Eception en cas d'erreur
+     * @perms    Pour effacer un Link, il faut être authentifié
      */
     function deleteLink( $id ) {
 
-        // permissions: Pour effacer un Link, il faut être authentifié
+        // permissions: 
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
 
@@ -409,8 +435,8 @@ class BlogMarks_Marker {
 
 
     /** Génération de l'URI d'un Link.
-     * @param    object Element_Bm_Links     Une référence au Link dont on veut obtenir l'URI
-     * @return   string     L'URI du Link
+     * @param    object Element_Bm_Links     $link      Une référence au Link dont on veut obtenir l'URI
+     * @return   string                      L'URI du Link
      */
     function getLinkUri( &$link ) {
         $pattern = 'http://www.blogmarks.net/links/?link_id=%u';
@@ -424,11 +450,12 @@ class BlogMarks_Marker {
 
     /** Création d'un nouveau Tag.
      * @param      array      $props     Un tableau associatif décrivant les propriétés du Tag
-     * @return     string     L'uri du tag créé
+     * @return     mixed      L'uri du tag créé ou Blogmarks_Exception en cas d'erreur
+     * @perms      Pour créer un Tag, il faut être authentifié
      */
     function createTag( $props = array() ) {
 
-        // permissions: Pour créer un Tag, il faut être authentifié
+        // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
         if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
 
@@ -436,13 +463,14 @@ class BlogMarks_Marker {
         
         // Si le tag existe déja -> erreur 500
         $tag->id = $props['id'];
-        if ( $tag->find() ) { return Blogmarks::raiseError( "Le Tag [$tag->id] existe déjà.", 500 ); }
+        if ( $tag->find() ) return Blogmarks::raiseError( "Le Tag [$tag->id] existe déjà.", 500 );
 
         // Initialisation des propriétés de l'objet
         $tag->populateProps( $props );
+
         // Insertion dans la base de données
         $res = $tag->insert();
-        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+        if ( Blogmarks::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
         
         // On renvoie l'uri du nouveau tag
         $uri = $this->getTagUri( $tag );
@@ -452,27 +480,29 @@ class BlogMarks_Marker {
  
     /** Création d'un Tag public.
      * @param      array     $props
-     * @return
+     * @return     mixed      L'uri du tag créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPublicTag( $props = array() ) {
         $props['status'] = 'public';
         return $this->createTag( &$props );
     }
 
+
     /** Création d'un Tag privé.
      * @param      array     $props
-     * @return
+     * @return     mixed      L'uri du tag créé ou Blogmarks_Exception en cas d'erreur
      */
     function createPrivateTag( $props = array() ) {
         $props['status'] = 'private';
         return $this->createTag( &$props );
     }
+
     
     /** Mise à jour d'un Tag.
      * @param      string    $id     L'identifiant du Tag dans la base de données
      * @param      array     $props  Un tableau associatif décrivant les propriétés à mettre à jour
      * @return     string    L'uri du Tag mis à jour
-     * @todo  perms
+     * @perms      Pour mettre à jour un Tag, il faut le posséder
      */
     function updateTag( $id, $props ) {
         $tag =& Element_Factory::makeElement( 'Bm_Tags' );
@@ -480,6 +510,10 @@ class BlogMarks_Marker {
         // Si le Tag n'existe pas -> erreur 404
         $tag->id = $id;
         if ( ! $tag->find() ) { Blogmarks::raiseError( "Le tag [$id] n'existe pas.", 404 ); }
+
+        // Permissions
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Mise à jour des propriétés du Tag
         $tag->populateProps( $props );
@@ -494,17 +528,19 @@ class BlogMarks_Marker {
 
     /** Suppression d'un tag.
      * @param     string    $id    L'identifiant du Tag dans la base de données.
-     * @todo  perms
+     * @perms     Pour effacer un Tag, il faut le posséder
      */
     function deleteTag( $id ) {
         $tag =& Element_Factory::makeElement( 'Bm_Tags' );
 
         // Si le Link à effacer n'existe pas -> erreur 404
-        if ( ! $tag->get($id) ) {
-            return Blogmarks::raiseError( "Le Tag [$id] n'existe pas.", 404 );
-        }
+        if ( ! $tag->get($id) ) return Blogmarks::raiseError( "Le Tag [$id] n'existe pas.", 404 );
 
-        // Suppression du Link
+        // Permissions
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
+
+        // Suppression du Tag
         $tag->delete();
 
         return true;        

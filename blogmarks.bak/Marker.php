@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.14 2004/03/26 12:34:55 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.15 2004/03/27 08:58:31 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -8,7 +8,6 @@
 require_once 'PEAR.php';
 require_once 'Blogmarks/Blogmarks.php';
 require_once 'Blogmarks/Element/Factory.php';
-
 
 /** Classe "métier". Effectue tous les traitements et opérations.
  *
@@ -613,22 +612,23 @@ class BlogMarks_Marker {
      */
     function _initSlots() {
 
-        // Array( slot_name, array(class_name, class_file) );
-        $slots_info = array( 'ef'   => array( 'Element_Factory', 'Blogmarks/Element/Factory.php' ),
-                             'auth' => array( 'Blogmarks_Auth',  'Auth.php' ) );
-
-        foreach ( $slots_info as $slot_name => $class_info ) {
-            // Inclusion de la déclaration de la classe
-            require_once $class_info[1];
-
-            // Instanciation
-            $obj =& new $class_info[0];
-            
-            $this->_slots[$slot_name] = $obj;
-            
-        }
-
-        return true;
+      // Array( slot_name, array(class_name, class_file) );
+      $slots_info = array( 'ef'   => array( 'Element_Factory', 
+					    'Element/Factory.php' ),
+			   'auth' => array( 'Blogmarks_Auth',  'Auth.php' ) );
+      
+      foreach ( $slots_info as $slot_name => $class_info ) {
+	// Inclusion de la déclaration de la classe
+	require_once $class_info[1];
+	
+	// Instanciation
+	$obj =& new $class_info[0];
+	
+	$this->_slots[$slot_name] = $obj;
+	
+      }
+      
+      return true;
         
     }
 }

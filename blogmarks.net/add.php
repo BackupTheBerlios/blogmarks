@@ -16,7 +16,7 @@ if ( ! Blogmarks::isError( $auth ) ) {
 										'via'		=> $_POST['via'],
 										'tags'		=> $array_tags
 								      );
-	print_r( $params );
+	//print_r( $params );
     $uri =& $marker->createMark( $params );
 
     if ( Blogmarks::isError($uri) ) {

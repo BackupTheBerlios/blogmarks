@@ -57,7 +57,7 @@ $params = array(
 	//		'include_tags' => array( 'blog') ,
 				 'select_priv' => true );
 
-if ( isset( $_GET['include_tags'] ))  $params['include_tags'] = array( $_GET['include_tags'] );
+if ( isset( $_GET['include_tags'] ))  $params['include_tags'] = explode( ";" , $_GET['include_tags'] );
 
 $list =& $marker->getMarksList( $params );
 
@@ -87,14 +87,19 @@ while ( $list->fetch() ) {
 	//	print_r( $list );
 
 	//		print_r( $list->getHref() );
+		
+	//	$mark->getLinks( 'nomchamps' )
 
-		echo '<a href="' .  $list->getHref() . '">' . $list->title . '</a>' . ' : ' . $list->summary;
+		$link = $list->getLink( 'href' );
+
+
+		echo '<a href="' .  $link->href . '">' . $list->title . '</a>' . ' : ' . $list->summary;
        // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
 
 	//	echo ' (' . dcdate2php( $list->created ) . ')';
         
         echo " [ ";
-        foreach ( $list->getTags() as $tag ) echo "$tag ";
+        foreach ( $list->getTags() as $tag ) echo '<a href="?include_tags='. $tag .'">' . $tag . '</a> ';
         echo "]\n";
 
 		echo '<a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';

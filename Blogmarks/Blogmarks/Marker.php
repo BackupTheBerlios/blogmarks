@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.8 2004/04/28 09:44:31 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.9 2004/04/28 10:21:45 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -661,7 +661,7 @@ class BlogMarks_Marker {
     function getMarksList( $cond ) {
         
         $now = date( "Ymd His" );        
-        $mark =& Element_Factory::makeElement( 'Bm_Marks' );
+        $marks =& Element_Factory::makeElement( 'Bm_Marks' );
 
         // Recherche au sein des Marks d'un utilisateur donné
         if ( isset($cond['user_login']) ) {
@@ -669,16 +669,16 @@ class BlogMarks_Marker {
             $user =& Element_Factory::makeElement( 'Bm_Users' );
             $user->get( 'login', $cond['user_login'] );
             
-            $mark->bm_Users_id = $user->id;
+            $marks->bm_Users_id = $user->id;
         }
 
         // Recherche au sein d'une plage de dates donnée
-        if ( isset($cond['date_in']) )  $mark->whereAdd( "created >= ". $cond['date_in'] );
-        if ( isset($cond['date_out']) ) $mark->whereAdd( "created <= ". $cond['date_out'] );
+        if ( isset($cond['date_in']) )  $marks->whereAdd( "created >= ". $cond['date_in'] );
+        if ( isset($cond['date_out']) ) $marks->whereAdd( "created <= ". $cond['date_out'] );
 
         //
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $assocs->joinAdd( $mark );
+        $assocs->joinAdd( $marks );
 
         // Sélection des Marks à exclure
         if ( isset($cond['exclude_tags']) && is_array($cond['exclude_tags']) ) {
@@ -696,7 +696,7 @@ class BlogMarks_Marker {
 
         // Reset
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $marks  =& Element_Factory::makeElement( 'Bm_Marks' );
+        //        $marks  =& Element_Factory::makeElement( 'Bm_Marks' );
         $marks->joinAdd( $assocs );
 
         // -- Sélection des Marks à inclure

@@ -1,9 +1,10 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.5 2004/03/04 16:30:36 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.6 2004/03/05 11:41:05 mbertier Exp $
  */
 
 require_once 'PEAR.php';
+require_once 'Blogmarks.php';
 
 # -- CONFIGURATION
 
@@ -19,8 +20,8 @@ foreach( $config as $class => $values ) {
 require_once 'blogmarks/Element/Factory.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
- * @package    BlogMarks
- * @uses       Elements
+ * @package    Blogmarks
+ * @uses       Element_Factory
  * @todo       Validation des paramètres dans les méthodes publiques (et les autres mêmes ;)
  */
 class BlogMarks_Marker {
@@ -96,21 +97,54 @@ class BlogMarks_Marker {
     
 
     /** Mise à jour d'un mark.
-     * @param      string   $uri      URI identifiant le mark
+     * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
-     * @returns    
+     * @returns    string   L'uri du mark mis à jour.
      */
-    function updateMark( $uri, $props ) {
-        $e =& $this->slots['ef']->makeElement( 'Mark' );
+    function updateMark( $id, $props ) {
+        $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
+        
+        // Si le mark à mettre à jour n'existe pas -> erreur 404
+        if ( ! $mark->get( $id ) ) {
+            return Blogmarks::raiseError( 404 );
+        }
+        
+        // Mise à jour des propriétés
+        $mark->title    = $props['title'];
+        $mark->summary  = $props['summary'];
+        $mark->lang     = $props['lang'];
+        $mark->via      = $props['via'];
+        
+        // Dates
+        $date = date("Ymd Hms");
+        $mark->issued   = isset( $props['issued'] ) ? $props['issued'] : $mark->issued;
+        $mark->modified = $date;
+        
+        // Insertion dans la base de données
+        $mark->update();
+        
+        // On renvoie l'URI du Mark
+        $uri = $this->getMarkUri( $mark );
 
+        return $uri;
     }
 
     /** Suppression d'un mark.
-     * @param     string   $uri      URI identifiant le mark
-     * @param     array    $props    Un tableau de propriétés à mettre à jour.    
+     * @param     int      $id       URI identifiant le mark
+     * @returns   mixed    true ou Blogmarks_Exception en cas d'erreur.
      */
-    function deleteMark( $uri, $props ) {
+    function deleteMark( $id ) {
+        $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
         
+        // Si le mark à effacer n'existe pas -> erreur 404
+        if ( ! $mark->get( $id ) ) {
+            return Blogmarks::raiseError( "Le mark [$id] n'existe pas.", 404 );
+        }
+
+        // Suppression du Mark
+        $mark->delete();
+
+        return true;
     }
 
     /** Génération de l'URI d'un Mark
@@ -129,6 +163,7 @@ class BlogMarks_Marker {
 # ----------------------- #
 
     /** Initialisation des slots. 
+     * @access    private
      */
     function _initSlots() {
 

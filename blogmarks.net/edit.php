@@ -71,7 +71,7 @@ $via  = $mark->getLink( 'via' );
 	$tags_title = array();
 	foreach ( $tags_id as $tag_id )
 	{
-		$tag = $mark->getTag ($tag_id);
+		$tag = $marker->getTag ($tag_id);
 		if ( $tag->author != NULL )
 			$tag->title = 'private:' . $tag->title;
 		$tags_title[] = $tag->title;

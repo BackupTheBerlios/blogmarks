@@ -2,7 +2,7 @@
 /**
  * Table Definition for bm_Marks_has_bm_Tags
  */
-require_once 'blogmarks/Element.php';
+require_once 'Blogmarks/Element.php';
 
 
 /** Relation.
@@ -15,7 +15,7 @@ class Element_Bm_Marks_has_bm_Tags extends Blogmarks_Element
 
     var $__table = 'bm_Marks_has_bm_Tags';            // table name
     var $bm_Marks_id;                     // int(11)  not_null primary_key multiple_key
-    var $bm_Tags_id;                      // int(11)  not_null primary_key
+    var $bm_Tags_id;                      // string(255)  not_null primary_key
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}
@@ -25,5 +25,6 @@ class Element_Bm_Marks_has_bm_Tags extends Blogmarks_Element
 
     /* the code above is auto generated do not remove the tag below */
     ###END_AUTOCODE
+
 }
 ?>

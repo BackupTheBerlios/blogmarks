@@ -1,0 +1,23 @@
+<refentry id="{@id}">
+ <refnamediv>
+  <refname>Créer de nouveaux Renderers</refname>
+  <refpurpose>C'est facile avec les Huiles Mérol !</refpurpose>
+ </refnamediv>
+ <refsynopsisdiv>
+  <authorgroup>
+   <author>
+    Tristan Rivoallan
+    <authorblurb>
+     {@link mailto:mbertier@alphanim.com mbertier@alphanim.com}
+    </authorblurb>
+   </author>
+  </authorgroup>
+ </refsynopsisdiv>
+ {@toc}
+ <refsect1 id="{@id intro}">
+  <title>Introduction</title>
+ </refsect1>
+ <refsect1 id="{@id apropos}">
+  <title>A propos de ce document</title>
+ </refsect1>
+</refentry>

@@ -8,7 +8,7 @@
 -- Table structure for table `bm_Links`
 --
 
-CREATE TABLE bm_Links (
+CREATE TABLE bm_links (
   id int(11) NOT NULL auto_increment,
   lang varchar(255) default NULL,
   type varchar(255) default NULL,
@@ -23,7 +23,7 @@ CREATE TABLE bm_Links (
 -- Table structure for table `bm_Marks`
 --
 
-CREATE TABLE bm_Marks (
+CREATE TABLE bm_marks (
   id int(11) NOT NULL auto_increment,
   title varchar(255) default NULL,
   issued datetime default '0000-00-00 00:00:00',
@@ -44,7 +44,7 @@ CREATE TABLE bm_Marks (
 -- Table structure for table `bm_Marks_has_bm_Tags`
 --
 
-CREATE TABLE bm_Marks_has_bm_Tags (
+CREATE TABLE bm_marks_has_bm_tags (
   bm_Marks_id int(11) NOT NULL default '0',
   bm_Tags_id int(11) NOT NULL default '0',
   PRIMARY KEY  (bm_Marks_id,bm_Tags_id),
@@ -56,7 +56,7 @@ CREATE TABLE bm_Marks_has_bm_Tags (
 -- Table structure for table `bm_Sessions`
 --
 
-CREATE TABLE bm_Sessions (
+CREATE TABLE bm_sessions (
   id varchar(255) NOT NULL default '',
   last_update timestamp(14) NOT NULL,
   data mediumtext NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE bm_Sessions (
 -- Table structure for table `bm_Tags`
 --
 
-CREATE TABLE bm_Tags (
+CREATE TABLE bm_tags (
   id int(11) NOT NULL auto_increment,
   title varchar(255) NOT NULL default '',
   author varchar(255) NOT NULL default '',
@@ -84,7 +84,7 @@ CREATE TABLE bm_Tags (
 -- Table structure for table `bm_Users`
 --
 
-CREATE TABLE bm_Users (
+CREATE TABLE bm_users (
   login varchar(255) default NULL,
   pwd varchar(255) default NULL,
   email varchar(255) default NULL,

@@ -14,6 +14,10 @@ class Element_Bm_Marks extends Blogmarks_Element
      * @var      array */
     var $_links_fields = array( 'href', 'via', 'source' );
 
+    /** Champs sur lesquels on peut effectuer une recherche
+     * @var      array */
+    var $_search_fields = array( 'href', 'title', 'summary' );
+
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
@@ -150,6 +154,13 @@ class Element_Bm_Marks extends Blogmarks_Element
      */
     function getLinksFields() { return $this->_links_fields; }
 
+
+# ------
+
+    /** Renvoie la liste des champs sur lesquels il est possible d'effectuer une recherche (Blogmarks_Marker::getMarksList())
+     * @return      array
+     */
+    function getSearchFields() { return $this->_search_fields; }
 
 }
 ?>

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Element
- * @version    $Id: Element.php,v 1.2 2004/04/28 14:48:23 mbertier Exp $
+ * @version    $Id: Element.php,v 1.3 2004/05/19 12:46:30 mbertier Exp $
  */
 
 include_once 'DB/DataObject.php';
@@ -43,6 +43,14 @@ class Blogmarks_Element extends DB_DataObject {
           }
       }
 
+  }
+
+
+  /** Implémentation de la pattern Visitor.
+   * @param      object Renderer      $v
+   */
+  function accept( &$v ) {
+      $v->visit( $this );
   }
   
 # ----------------------- #

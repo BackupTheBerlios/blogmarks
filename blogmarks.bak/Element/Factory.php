@@ -1,13 +1,13 @@
 <?php
 /** Déclaration de la classe Element_Factory
- * @version    $Id: Factory.php,v 1.2 2004/03/05 11:41:56 mbertier Exp $
+ * @version    $Id: Factory.php,v 1.3 2004/03/17 14:15:04 mbertier Exp $
  * @todo       Passer les define dans les fichiers de conf
  * @todo       Définir une liste d'éléments valides
  */
 
 
-define( BM_ELEM_LOCATION, 'blogmarks/Element' );
-define( BM_ELEM_PREFIX, 'Element_' );
+define( 'BM_ELEM_LOCATION', 'Blogmarks/Element' );
+define( 'BM_ELEM_PREFIX', 'Element_' );
 
 /** Factory d'elements (...)
  * @package    Elements
@@ -30,7 +30,7 @@ class Element_Factory {
      */
     function &makeElement( $elem_type, $params = array() ) {
 
-        if ( ! $this->isRegisteredElement($elem_type) ) { return false; }
+        //if ( ! $this->isRegisteredElement($elem_type) ) { return false; }
 
         // Inclusion de la classe
         require_once BM_ELEM_LOCATION . "/$elem_type.php";
@@ -42,16 +42,7 @@ class Element_Factory {
         $obj =& new $class_name;
 
         // Initialisation des propriétés
-        // (j'ai l'impression que c pas la bonne méthode).
-        $class_vars = get_class_vars( get_class($obj) );
-        foreach ( $params as $prop => $val ) {
-
-            // On ignore les paramètres ne correspondant pas à des propriétés existantes.
-            if ( array_key_exists($prop, $class_vars) ) {
-                $obj->$prop = $val;
-            }
-
-        }
+        $obj->populateProps( $params );
 
         return $obj;
     }

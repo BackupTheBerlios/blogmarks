@@ -18,7 +18,7 @@ class Element_Bm_Tags extends Blogmarks_Element
     var $bm_Users_id;                     // int(11)  not_null multiple_key
     var $summary;                         // blob(65535)  blob
     var $lang;                            // int(10)  unsigned
-    var $status;                          // string(14)  set
+    var $status;                          // string(14)  not_null set
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}
@@ -51,6 +51,7 @@ class Element_Bm_Tags extends Blogmarks_Element
 
     /** @return bool */
     function isPublic() { return ( $this->status == 'public' ) ? true : false; }
+
 
     /** @return bool */
     function isPrivate() { return ( $this->status == 'private' ) ? true : false; }

@@ -13,14 +13,12 @@ class Element_Bm_Users extends Blogmarks_Element
     /** Champs dont on peut renvoyer les valeurs sans danger.
      * @var array */
     var $_info_fields = array( 'login', 'email', 'permlevel' );
-
-
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
     var $__table = 'bm_Users';                        // table name
     var $id;                              // int(11)  not_null primary_key auto_increment
-    var $login;                           // string(255)  
+    var $login;                           // string(255)  multiple_key
     var $pwd;                             // string(255)  
     var $email;                           // string(255)  
     var $permlevel;                       // string(1)  not_null enum

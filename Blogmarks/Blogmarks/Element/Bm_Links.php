@@ -17,7 +17,7 @@ class Element_Bm_Links extends Blogmarks_Element
     var $id;                              // int(11)  not_null primary_key auto_increment
     var $lang;                            // string(255)  
     var $type;                            // string(255)  
-    var $href;                            // string(255)  
+    var $href;                            // string(255)  multiple_key
     var $title;                           // blob(65535)  blob
     var $charset;                         // string(255)  
 

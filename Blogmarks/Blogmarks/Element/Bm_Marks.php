@@ -128,7 +128,7 @@ class Element_Bm_Marks extends Blogmarks_Element
      * @return      array 
      * 
      * @todo     Devrait plutot renvoyer un itérateur, mais le retour d'array est utilisé ailleurs :
-     *           <code>./Marker.php:244:            $deprec_tags = array_diff( $mark->getTags(), $tags );</code>
+     *           <code>./Marker.php:            $deprec_tags = array_diff( $mark->getTags(), $tags );</code>
      */
     function getTags() {
 

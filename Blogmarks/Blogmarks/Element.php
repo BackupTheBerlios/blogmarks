@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Element
- * @version    $Id: Element.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Element.php,v 1.2 2004/04/28 14:48:23 mbertier Exp $
  */
 
 include_once 'DB/DataObject.php';
@@ -15,7 +15,13 @@ class Blogmarks_Element extends DB_DataObject {
 # ----------------------- #
   
   /** Constructeur. */
-  function BlogMarks_Element () {}
+  function BlogMarks_Element () {
+
+      $this->databaseStructure( 'Blogmarks',
+                                parse_ini_file( dirname(__FILE__) . '/Element/Blogmarks.ini', true ),
+                                parse_ini_file( dirname(__FILE__) . '/Element/Blogmarks.links.ini', true ) );
+
+  }
 
 
   /** Initialisation de propriétés en fonction d'un tableau associatif.

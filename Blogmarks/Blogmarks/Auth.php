@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.3 2004/04/06 10:45:29 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.4 2004/04/06 15:00:27 mbertier Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -117,6 +117,12 @@ class Blogmarks_Auth {
         else return Blogmarks::raiseError( "Aucun utilisateur connecté.", 404 );
        
     }
+
+
+    /** Suppression de la session de l'utilisateur. 
+     * @return      bool      */
+    function disconnectUser() { return session_write_close(); }
+
 
 # ----------------------- #
 # -- METHODES PRIVEES  -- #

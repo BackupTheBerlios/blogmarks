@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.24 2004/06/27 09:57:12 benfle Exp $
+ * @version    $Id: Marker.php,v 1.25 2004/06/27 18:31:50 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -287,6 +287,7 @@ class BlogMarks_Marker {
 
 
 		// Récupére l'info (si nécessaire), déassocie ou associe ensuite
+		$tags_id = array();
 
         foreach ( $tags as $tag_name ) 
 		{

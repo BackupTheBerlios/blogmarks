@@ -47,4 +47,5 @@ if ( $marker->userIsAuthenticated() ) {
 	echo '</FORM>';
 }
 
+print_r( $marker->getUserInfo() );
 ?>

@@ -1,9 +1,7 @@
 <?php
 /** Déclaration des différents controlleurs et de leur Factory.
- * @version    $Id: Controller.php,v 1.1 2004/05/19 13:21:36 mbertier Exp $
+ * @version    $Id: Controller.php,v 1.2 2004/05/19 14:17:47 benfle Exp $
  */
-
-require_once '../Marker.php';
 
 /** Classe parente des différents controlleurs.
  * @package    Atom
@@ -65,30 +63,28 @@ class MarkController {
 
   function execute ($args) {
 
-    $marker = new BlogMarks_marker;
+    $marker = $args['marker'];
 
     switch ($args['method']) {
 
     case 'GET':
       // renvoit un mark
-      return $marker->getMark($args['id'], $args['user'], $args['auth_str']);
+      return $marker->getMark($args['id']);
 
     case 'PUT':
       // met a jour un mark
-      $mark_array = $this->parseAtomMark($args['content']);
-      return $marker->updateMark($args['id'], $args['user'],
-				 $mark_array, $args['auth_str']);
+      $mark_array = $this->parseAtom($args['content']);
+      return $marker->updateMark($args['id'],
+				 $mark_array);
 
     case 'DELETE':
       // supprimme un mark
-      return $marker->deleteMark($args['id'], $args['user'], 
-				 $args['auth_str']);
+      return $marker->deleteMark($args['id']);
 
     case 'POST':
       // crée un mark
-      $mark_array = $this->parseAtomMark($args['content']);
-      return $marker->createMark($args['user'], $mark_array, 
-				 $args['auth_str']);     
+      $mark_array = $this->parseAtom($args['content']);
+      return $marker->createMark($mark_array);     
     }
   }
 
@@ -170,7 +166,7 @@ class TagController {
 
   function execute ($args) {
  
-    $marker = new BlogMarks_marker;
+    $marker = $args['marker'];
     
     switch ($args['method']) {
 
@@ -179,7 +175,7 @@ class TagController {
       if ( isset($args['user']) )
 
 	// renvoit un tag privé
-	return $marker->getTag($args['tag'], $args['user'], $args['auth_str']);
+	return $marker->getTag($args['tag'], $args['auth_str']);
 
       else
 
@@ -188,7 +184,7 @@ class TagController {
 
     case 'PUT':
 
-      $tag_array = $this->parseAtomTag($args['content']);
+      $tag_array = $this->parseAtom($args['content']);
 
       if ( isset($args['user']) )
 
@@ -206,7 +202,7 @@ class TagController {
       if ( isset($args['user']) )
 
 	// supprimme un tag privé
-	return $marker->deleteTag($args['tag'], $args['user'], 
+	return $marker->deleteTag($args['tag'], 
 				  $args['auth_str']);
 
       else
@@ -216,7 +212,7 @@ class TagController {
 
     case 'POST':
 
-      $tag_array = $this->parseAtomTag($args['content']);
+      $tag_array = $this->parseAtom($args['content']);
 
       if ( isset($args['user']) )
 
@@ -271,7 +267,7 @@ class MarksListController {
 
   function execute ($args) {
 
-    $marker = new BlogMarks_marker;
+    $marker = $args['marker'];
 
     if ( isset($args['user']) ) {
 
@@ -299,7 +295,7 @@ class TagsListController {
 
   function execute ($args) {
 
-    $marker = new BlogMarks_marker;
+    $marker = $args['marker'];
 
     if ( isset($args['user']) )
 

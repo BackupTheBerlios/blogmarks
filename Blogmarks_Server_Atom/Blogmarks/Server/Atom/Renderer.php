@@ -1,9 +1,7 @@
 <?php
 /** Déclaration des renderers pour le serveur Atom et de la factory
- * @version    $Id: Renderer.php,v 1.1 2004/05/19 13:21:36 mbertier Exp $
+ * @version    $Id: Renderer.php,v 1.2 2004/05/19 14:17:47 benfle Exp $
  */
-
-require_once '../Renderer.php';
 
 /** Factory de renderers Atom.
  * @package    Atom
@@ -46,19 +44,14 @@ class Renderer_Atom_Mark extends BlogMarks_Renderer {
    * Renvoit la représentation XML Atom d'un Mark
    */
   function render () {
-    
-    // on construit l'arbre du mark
-    $doc = $this->build_tree($this->_decorated);
-
-    // on le transforme en chaîne de caractères et on le renvoit
-    return $doc->dump_mem(true);
+    echo $this->_decoration;
   }
 
   /**
    * Construit l'arbre DOM d'un Mark.
    * @param object Mark
    */
-  function build_tree ($mark) {
+  function visit ($mark) {
 
     // on crée le document XML
     $doc = domxml_new_doc("1.0");
@@ -69,24 +62,24 @@ class Renderer_Atom_Mark extends BlogMarks_Renderer {
 
     // on ajoute les éléments du Mark
 
-    // via et link, même combat
-    $links = array ('via', 'link');
-    foreach ( $links as $link ) {
-
-      // crée l'élément
-      $$link = $doc->create_element($link);
-
-      // l'ajoute à la racine
-      $$link = $root->append_child($$link);
-
-      // enregistre ses attributs
-      $$link->set_attribute('rel', $mark->$link->rel);
-      $$link->set_attribute('type', $mark->$link->type);
-      $$link->set_attribute('href', $mark->$link->href);
-      $$link->set_attribute('title', $mark->$link->title);
-      $$link->set_attribute('lang', $mark->$link->lang);
-    }
-
+    // via
+    $via = $doc->create_element('via');
+    $via = $root->append_child($via);
+    $via->set_attribute('rel', $mark->via->rel);
+    $via->set_attribute('type', $mark->via->type);
+    $via->set_attribute('href', $mark->via->href);
+    $via->set_attribute('title', $mark->via->title);
+    $via->set_attribute('lang', $mark->via->lang);
+    
+    // link
+    $link = $doc->create_element('link');
+    $link = $root->append_child($link);
+    $link->set_attribute('rel', $mark->link->rel);
+    $link->set_attribute('type', $mark->link->type);
+    $link->set_attribute('href', $mark->link->href);
+    $link->set_attribute('title', $mark->link->title);
+    $link->set_attribute('lang', $mark->link->lang);
+    
     // author
     $author = $doc->create_element('author');
     $author = $root->append_child($author);
@@ -123,22 +116,25 @@ class Renderer_Atom_Mark extends BlogMarks_Renderer {
 
     }
 
-    // la liste des tags, on ajoute a la racine l'arbre de la liste des tags
+    // la liste des tags
 
-    // on construit un renderer pour la liste des tags
-    $sub_renderer = new Renderer_Atom_TagsList();
-    $mark->tags->accept($sub_renderer);
-
-    // on construit l'arbre de la liste
-    $tagslist_doc = $sub_renderer->build_tree($mark->tags);
+    $tags = $doc->create_element('tags');
+    $tags = $doc->append_child($tags);
     
-    // on extrait l'élément racine (tags)
-    $tagslist = $tagslist_doc->document_element();
+    // on ajoute chaque tag
+    if ( $tagslist != NULL )
+      {
+	while (!$tagslist->end()) {
+     
+	  $tag = $tagslist;
 
-    // on l'ajoute à l'arbre du Mark
-    $tagslist = $root->append_child($tagslist);
-    
-    return $doc;
+	  // A COPIER COLLER
+
+	  // passe au tag suivant
+	  $tagslist->next();
+	}
+      }
+    $this->decoration = $doc->dump_mem(true);
   }
 
 }
@@ -152,19 +148,14 @@ class Renderer_Atom_Tag extends BlogMarks_Renderer {
    * Renvoit la représentation XML Atom d'un Tag
    */
   function render () {
-    
-    // on construit l'arbre du tag
-    $doc = $this->build_tree($this->_decorated);
-
-    // on le transforme en chaîne de caractères et on le renvoit
-    return $doc->dump_mem(true);
+    echo $this->_decoration->dump_mem(true);
   }
 
   /**
    * Construit l'arbre DOM d'un Tag.
    * @param object Tag
    */
-  function build_tree ($tag) {
+  function visit ($tag) {
 
     // on crée le document XML
     $doc = domxml_new_doc("1.0");
@@ -185,7 +176,7 @@ class Renderer_Atom_Tag extends BlogMarks_Renderer {
       $text  = $$item->append_child($text);
     }
 
-    return $doc;
+    $this->_decoration = $doc;
   }
 
 }
@@ -199,15 +190,10 @@ class Renderer_Atom_TagsList extends BlogMarks_Renderer {
    * Renvoit la représentation XML Atom d'une liste de Tags
    */
   function render () {
-    
-    // on construit l'arbre de la liste
-    $doc = $this->build_tree($this->_decorated);
-
-    // on la transforme en chaîne de caractères et on le renvoit
-    return $doc->dump_mem(true);
+    echo $this->_decoration->dump_mem(true);
   }
 
-  function build_tree ($tagslist) {
+  function visit ($tagslist) {
 
     // on crée le document XML
     $doc = domxml_new_doc("1.0");
@@ -217,27 +203,19 @@ class Renderer_Atom_TagsList extends BlogMarks_Renderer {
     $root = $doc->append_child($root);
     
     // on ajoute chaque tag
-    while (!$tagslist->end()) {
+    if ( $tagslist != NULL )
+      {
+	while (!$tagslist->end()) {
      
-      $tag = $tagslist;
+	  $tag = $tagslist;
 
-      // on construit un renderer pour le tag
-      $sub_renderer = new Renderer_Atom_Tag();
-      $tag->accept($sub_renderer);
+	  // A COPIER COLLER
 
-      // on construit l'arbre du tag
-      $tag_doc = $sub_renderer->build_tree($tag);
-    
-      // on extrait l'élément racine (tag)
-      $tag_element = $tag_doc->document_element();
-
-      // on l'ajoute à l'arbre de la liste
-      $tag_element = $root->append_child($tag_element);
-
-      // passe au tag suivant
-      $tagslist->next();
-    }
-    return $doc;
+	  // passe au tag suivant
+	  $tagslist->next();
+	}
+      }
+    $this->_decoration = $doc;
   }
 }
 
@@ -250,15 +228,10 @@ class Renderer_Atom_MarksList extends BlogMarks_Renderer {
    * Renvoit la représentation XML Atom d'une liste de Marks
    */
   function render () {
-    
-    // on construit l'arbre de la liste
-    $doc = $this->build_tree($this->_decorated);
-
-    // on la transforme en chaîne de caractères et on le renvoit
-    return $doc->dump_mem(true);
+    echo $this->_decoration->dump_mem(true);
   }
 
-  function build_tree ($markslist) {
+  function visit ($markslist) {
 
     // on crée le document XML
     $doc = domxml_new_doc("1.0");
@@ -272,22 +245,11 @@ class Renderer_Atom_MarksList extends BlogMarks_Renderer {
      
       $mark = $markslist;
 
-      // on construit un renderer pour le mark
-      $sub_renderer = new Renderer_Atom_Mark();
-      $mark->accept($sub_renderer);
-
-      // on construit l'arbre du mark
-      $mark_doc = $sub_renderer->build_tree($mark);
-    
-      // on extrait l'élément racine (mark)
-      $mark_element = $mark_doc->document_element();
-
-      // on l'ajoute à l'arbre de la liste
-      $mark_element = $root->append_child($mark_element);
+      // A COPIER COLLER
 
       // passe au mark suivant
       $markslist->next();
     }
-    return $doc;
+    $this->_decoration = $doc;
   }
 }

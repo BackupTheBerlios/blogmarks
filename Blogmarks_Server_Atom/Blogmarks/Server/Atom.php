@@ -1,14 +1,17 @@
 <?php
+
 /** Déclaration de la classe Server_Atom
- * @version    $Id: Atom.php,v 1.1 2004/05/19 13:21:36 mbertier Exp $
+ * @version    $Id: Atom.php,v 1.2 2004/05/19 14:17:47 benfle Exp $
  */
-ini_set( 'include_path', ini_get('include_path') . ':/home/benoit/dev/' );
 
 require_once 'PEAR.php';
-require_once 'Blogmarks/Blogmarks.php';
-require_once 'Blogmarks/Server/Atom/Filter.php';
-require_once 'Blogmarks/Server/Atom/Controller.php';
-require_once 'Blogmarks/Server/Atom/Renderer.php';
+
+include_once 'Blogmarks/Marker.php';
+include_once 'Blogmarks/Renderer.php';
+
+include_once 'Atom/Filter.php';
+include_once 'Atom/Controller.php';
+include_once 'Atom/Renderer.php';
 
 /** Classe du serveur Atom de BlogMarks.
  * @package    Servers
@@ -24,29 +27,42 @@ class Server_Atom {
   function run () {
 
     // racine du serveur a enregistrer qq part (pour l'instant ici)
-    $root = '/blogmarks/servers/atom';
+
+    $root = '/blogmarks.atom';
 
     // On construit le tableau d'arguments pour les filtres
-    $args   = array();
-    // on extrait l'URI relative
-    $uri = $_SERVER['REQUEST_URI'];
 
-    //***** DEBUG echo $uri."<br/>".$root;
+    $args            = array();
 
-    $uri = ereg_replace($root, '', $uri);
-    $args['uri'] = $uri;
-    $args['method'] = $_SERVER['REQUEST_METHOD'];
+    $uri             = $_SERVER['REQUEST_URI'];
+
+    $uri             = ereg_replace($root, '', $uri);
+
+    $args['uri']     = $uri;
+
+    $args['method']  = $_SERVER['REQUEST_METHOD'];
+
     $args['content'] = $_GLOBALS['HTTP_RAW_POST_DATA'];
 
+    $args['marker']  =& new BlogMarks_Marker;
+
     // On filtre la requête
-    $filter = new FilterChainRoot(array(new ContextBuilderFilter(), 
-					new AuthenticateFilter()));
+
+    $filter = new FilterChainRoot ( array ( 
+					   new ContextBuilderFilter(), 
+					   new AuthenticateFilter() 
+					   ) 
+				    );
+
     $ret = $filter->execute(&$args);
+
     if ( BlogMarks::isError ($ret) ) {
       
       // erreur de filtre
-      echo $ret->getMessage();
-      return;
+      echo "Filter Error : " . $ret->getMessage() . "\n";
+
+      exit (1);
+
     }
 
     // **** DEBUG
@@ -55,38 +71,48 @@ class Server_Atom {
     echo "tag : ".$args['tag']."<br/>";
     echo "user : ".$args['user']."<br/>";
     echo "id : ".$args['id']."<br/>";
-    echo "auth_str :".$args['auth_str']."<br/>";
     // **********
 
     // On construit le controlleur selon le type d'objet de la requête
+
     $ctrlerFactory = new ControllerFactory();
+
     $ctrler        = $ctrlerFactory->createController($args['object']);
 
     if ( BlogMarks::isError ($ctrler) ) {
-      echo $ctrler->getMessage();
+
+      // GERER LA REPONSE HTTP
+
+      echo "ControllerFactory error : " . $ctrler->getMessage() . "\n";
+
       exit(1);
     }
-
+   
     // On lance le controlleur pour l'objet de la requête
+
     $response = $ctrler->execute($args);
+   
     if ( BlogMarks::isError($response) ) {
       
-      // erreur du controlleur de requête
-      return;
+      // GERER LA REPONSE HTTP
+      echo "Controller error : " . $response->getMessage() . "\n";
+
+      exit (1);
     }
 
     // On applique le renderer atom a la reponse et on la renvoit
-    $rendererFactory = new rendererFactory();
-    $renderer = $rendererFactory->createRenderer($args['object']);
+
+    $renderer =& rendererFactory::createRenderer($args['object']);
+
+    $response->accept( $renderer );
 
     // GERER LA REPONSE HTTP
-    echo "HTTP/1.1 200 Ok\n";
-    $response->accept($renderer);
-    echo $renderer->render();
-  }
-}
 
-/* code principal du serveur */
-$server = new Server_Atom('http://localhost/blogmarks/atom/server');
-$server->run();
+    echo "HTTP/1.1 200 Ok\n";
+    
+    $renderer->render();
+
+  }
+
+}
 ?>

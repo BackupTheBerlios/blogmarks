@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.16 2004/03/29 12:35:00 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.17 2004/03/30 11:52:20 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -27,9 +27,9 @@ class BlogMarks_Marker {
     var $_slots = array();
     
 
-# ----------------------- #f
-# -- METHODES PUBLIQUES --#
-# ----------------------- #
+# ------------------------ #
+# -- METHODES PUBLIQUES -- #
+# ------------------------ #
 
     /** Constructeur. */
     function BlogMarks_Marker () {
@@ -38,10 +38,12 @@ class BlogMarks_Marker {
 
         // Configuration des datatobjects
         $config = parse_ini_file( dirname(__FILE__) . '/config.ini', TRUE);
+
         foreach( $config as $class => $values ) {
             $options =& PEAR::getStaticProperty( $class, 'options' );
             $options = $values;
         }
+        
     }
 
 # ------- MARKS
@@ -342,7 +344,7 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( ! $user || ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
         
         $link->href = $href;
         
@@ -601,41 +603,40 @@ class BlogMarks_Marker {
      * @param      string      $cli_digest   Le digest du client, qui sera comparé au digest server.
      * @param      string      $nonce        Chaîne aléatoire utilisée par le client pour créer le digest.
      * @param      string      $timestamp    Utilisé par le client pour générer le digest.
+     * @param      bool        $make_session Créer une session (défaut: false)
      *
      * @return     mixed       True en cas de succès ou Blogmarks_Exception en cas d'erreur.
      */
-    function authenticate( $login, $cli_digest, $nonce, $timestamp ) {
+    function authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session = false ) {
         $res =& $this->_slots['auth']->authenticate( $login, $cli_digest, $nonce, $timestamp );
         return $res;
     }
 
                        
 # ----------------------- #
-# -- METHODES PRIVEES   --#
+# -- METHODES PRIVEES  -- #
 # ----------------------- #
 
     /** Initialisation des slots. 
      * @access    private
      */
     function _initSlots() {
-
-      // Array( slot_name, array(class_name, class_file) );
-      $slots_info = array( 'ef'   => array( 'Element_Factory', 
-					    'Element/Factory.php' ),
-			   'auth' => array( 'Blogmarks_Auth',  'Auth.php' ) );
-      
-      foreach ( $slots_info as $slot_name => $class_info ) {
-	// Inclusion de la déclaration de la classe
-	require_once $class_info[1];
-	
-	// Instanciation
-	$obj =& new $class_info[0];
-	
-	$this->_slots[$slot_name] = $obj;
-	
-      }
-      
-      return true;
+        
+        // Array( slot_name, array(class_name, class_file) );
+        $slots_info = array( 'auth' => array( 'Blogmarks_Auth',  'Blogmarks/Auth.php' ) );
+        
+        foreach ( $slots_info as $slot_name => $class_info ) {
+            // Inclusion de la déclaration de la classe
+            require_once $class_info[1];
+            
+            // Instanciation
+            $obj =& new $class_info[0];
+            
+            $this->_slots[$slot_name] = $obj;
+            
+        }
+        
+        return true;
         
     }
 }

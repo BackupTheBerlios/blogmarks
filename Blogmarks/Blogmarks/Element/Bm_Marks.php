@@ -17,7 +17,6 @@ class Element_Bm_Marks extends Blogmarks_Element
     /** Champs sur lesquels on peut effectuer une recherche
      * @var      array */
     var $_search_fields = array( 'href', 'title', 'summary' );
-
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
@@ -153,8 +152,8 @@ class Element_Bm_Marks extends Blogmarks_Element
         $link =& Element_Factory::makeElement( 'Bm_Links' );
 
         // Récupération du lien
-        if ( ! $link->get($field, $this->$field) )
-            return Blogmarks::raiseError( "Aucun Link associé au Mark [$this->id].", 404 );
+        if ( ! $link->get('id', $this->$field) )
+            return Blogmarks::raiseError( "Aucun Link [$field] associé au Mark [$this->id].", 404 );
         
         return $link;
     }

@@ -58,5 +58,3 @@ function Edit( url ) {
 		return false;
 
 }
-
-error(;08/06/2004

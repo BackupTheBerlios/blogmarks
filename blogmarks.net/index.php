@@ -43,7 +43,7 @@ if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 	$params['user_login']	=  $marker->getUserInfo('login') ;
 	$params['select_priv']	=  TRUE ;
 
-} elseif ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) {
+} elseif ( $marker->userIsAuthenticated() AND ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) ) {
 
 	$temp_flag = 1;
 	

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.4 2004/03/30 11:53:40 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.5 2004/03/30 12:35:17 mbertier Exp $
  */
 
 require_once 'Blogmarks/Blogmarks.php';
@@ -67,7 +67,8 @@ class Blogmarks_Auth {
         }
 
         // Création de session à la demande
-        if ( $make_session === true ) {
+        if ( $make_session ) {
+
             // Démarrage de la session
             session_start();
             
@@ -102,15 +103,12 @@ class Blogmarks_Auth {
     function getConnectedUser() {
 
         // Recherche de l'identifiant de l'utilisateur connecté
-        $uid = ( isset($this->_connectedUserId) ? $this->_connectedUserId : null );
         $uid = ( isset($_SESSION['_BM']['user_id']) ? $_SESSION['_BM']['user_id'] : null );
-        
-        // Si aucun utilisateur n'est connecté
-        if ( ! $uid ) return Blogmarks::raiseError( 'Aucun utilisateur connecté', 404 );
+        if ( ! $uid ) 
+            $uid = ( isset($this->_connectedUserId) ? $this->_connectedUserId : null ); 
 
-        // Récupération de l'uid de l'utilisateur connecté
-        $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
-        $uid = $_SESSION['_BM']['user_id'];
+           // Si aucun utilisateur n'est connecté
+        if ( ! $uid ) return Blogmarks::raiseError( 'Aucun utilisateur connecté', 404 );
 
         // Renvoi de l'objet correspondant à l'utilisateur
         $user =& Element_Factory::makeElement( 'Bm_Users' );

@@ -10,7 +10,7 @@ background-color:#666;
 }
 
 #conteneur {
-padding:3%;
+padding:2% 3%;
 background-color:white;
 border:1px solid black;
 width:750px;
@@ -110,6 +110,11 @@ display:block;
 }
 
 /* */
+
+form {
+margin:0;
+padding:0;
+}
 
 input, select, label, textarea {
 font-family:Verdana, Arial, sans-serif;

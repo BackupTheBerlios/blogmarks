@@ -5,7 +5,11 @@ include "includes/start.inc.php";
 
 
 // AUTH OK :)
-if ( ! Blogmarks::isError( $auth ) ) {
+
+//if ( Blogmarks::isError( $auth ) ) die( $mark->getMessage() );
+//if ( DB::isError( $auth ) ) die( $mark->getMessage() );
+
+if ( $marker->userIsAuthenticated() ) {
 
 	$array_tags = explode( " " , trim($_POST['tags']) );
 	
@@ -26,24 +30,19 @@ if ( ! Blogmarks::isError( $auth ) ) {
 					 'via'		=> trim( $_POST['via'] ),
 					 'tags'		=> $array_tags );
 	//print_r( $params );
-    $uri =& $marker->createMark( $params );
+    $result =& $marker->createMark( $params );
 
-    if ( Blogmarks::isError($uri) ) {
-		
-		echo "<p><b>Erreur !!</b><br>code : ".$uri->getCode()."<br>message : ". $uri->getMessage() ."</p>\n";
-	}
-    else echo "Mark URI: $uri\n";
-}
+	if ( Blogmarks::isError($result) ) die( $result->getMessage() );
+	if ( DB::isError($result) ) die( $result->getMessage() );
+	
+	echo "Mark URI: $result\n";
 
-// WRONG AUTH :(
-else {
-    echo "*** Erreur : " . $auth->getMessage() . "\n";
-}
+} else echo "pas conecté";
 
-if ( $_POST['from'] == 'popupbookmarklet' ) {
+//if ( $_POST['from'] == 'popupbookmarklet' ) {
 
 	echo '<a onclick="window.close()" href="#">[close]</a>';
 
-}
+//}
 
 ?>

@@ -1,66 +1,62 @@
 <div id="header">
 
-<div id="top">
+	<div id="top">
 
-	<h1>BlogMarks.net</h1>
+		<h1>BlogMarks.net</h1>
 
-	<h2>Stop bookmarking. Start blogmarking !</h2>
+		<h2>Stop bookmarking. Start blogmarking !</h2>
 
-	<form id="search">
+		<form id="search">
 
-		<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
+			<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
 
-		<input type="submit" value="Search" />
+			<input type="submit" value="Search" />
 
-		<br />
+			<br />
 
-		<b>In</b> : 
+			<b>In</b> : 
 
-		<input class="checkbox" type="radio" name="checkSearch" value="0"> Title
-		<input class="checkbox" type="radio" name="checkSearch" value="1"> Summary
-		<input class="checkbox" type="radio" name="checkSearch" value="2" checked="checked"> Both
+			<input class="checkbox" type="radio" name="checkSearch" value="0"> Title
+			<input class="checkbox" type="radio" name="checkSearch" value="1"> Summary
+			<input class="checkbox" type="radio" name="checkSearch" value="2" checked="checked"> Both
 
-	</form>
+		</form>
 
-</div> <!-- /#top -->
+	</div> <!-- /#top -->
 
-<div id="login">
+	<div id="login">
 
-<?php
+	<?php
 
-include_once "includes/functions.inc.php";
+	include_once "includes/functions.inc.php";
 
-if ( $marker->userIsAuthenticated() ) {
+	if ( $marker->userIsAuthenticated() ) {
 
-	echo $marker->getUserInfo('login') ;
+		echo $marker->getUserInfo('login') ;
 
-	echo '<p><strong>Auth OK</strong></p>';
+		echo '<p><strong>Auth OK</strong></p>';
 
-	echo '<p><a href="?disconnect=1">Disconnect</a></p>';
+		echo '<p>Lorem<br />Ipsum</p>';
 
-} else { ?>
+		echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 
-	<form method="POST" action="?connect=1">
+	} else { ?>
 
-		<label>Username :</label>
-		<input type="text" name="login">
-		<label>Password : <span style="font-size:9px">(<a href="#">forgot?</a>)</span></label>
-		<input type="password" name="pwd">
+		<form method="POST" action="?connect=1">
 
-		<!-- <input type="hidden" name="signin" value="1"> -->
+			<label>Username :</label>
+			<input type="text" name="login">
+			<label>Password : <span style="font-size:9px">(<a href="#">forgot?</a>)</span></label>
+			<input type="password" name="pwd">
 
-	<!-- 	<br /> -->
+			<input type="submit" value="Sign in" />
 
-		<input type="submit" value="Sign in" />
+			<a href="create_account.php">New User ?</a>
 
-<!-- 		<br /> -->
+		</form>
 
-		<a href="create_account.php">New User ?</a>
+	<?php } ?>
 
-	</form>
-
-<?php } ?>
-
-</div> <!-- /#login -->
+	</div> <!-- /#login -->
 
 </div> <!-- /#header -->

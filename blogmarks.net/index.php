@@ -34,13 +34,13 @@ array( 'user' => $userlogin,
 
 
 
-if ( $marker->userIsAuthenticated() AND ( $_GET['all'] != 1 ) ) {
+if ( $marker->userIsAuthenticated() AND !isset( $_GET['all'] ) ) {
 
 	echo '<h2><a style="font-size:smaller" href="?all=1">All last public marks</a> / Your last marks</h2>';
 
 	$params['user_login']	=  $marker->getUserInfo('login') ;
 
-} elseif ( $_GET['all'] == 1 ) {
+} elseif ( isset($_GET['all']) AND ( $_GET['all'] == 1 ) ) {
 	
 	echo '<h2>All last public marks / <a style="font-size:smaller" href="?private=1">Your last marks</a></h2>';
 

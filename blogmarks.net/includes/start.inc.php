@@ -2,14 +2,15 @@
 
 session_start();
 
-error_reporting( E_ALL ^ E_NOTICE );
+//error_reporting( E_ALL ^ E_NOTICE );
+error_reporting( E_ALL );
 
 require_once 'PEAR.php';
 include_once 'Blogmarks/Marker.php';
 
 $marker =& Blogmarks_Marker::singleton();
 
-if ( $_GET['connect'] == 1 ) {
+if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 
 	$nonce = microtime() / rand();
 	$time = date( "YMDHMS" );
@@ -17,6 +18,9 @@ if ( $_GET['connect'] == 1 ) {
 	$digest = makeDigest( trim( $_POST['pwd'] ) , $nonce, $time );
 
 	$auth = $marker->authenticate( trim( $_POST['login'] ) , $digest, $nonce, $time, TRUE );
+
+	if ( Blogmarks::isError( $auth ) ) die( $mark->getMessage() );
+	//if ( DB::isError( $auth ) ) die( $mark->getMessage() );
 
 	header("Location: index.php");
 

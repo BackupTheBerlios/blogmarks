@@ -9,12 +9,17 @@ require_once 'Blogmarks/Element.php';
  */
 class Element_Bm_Marks extends Blogmarks_Element 
 {
+
+    /** Champs correpondants à des Links.
+     * @var      array */
+    var $_links_fields = array( 'href', 'via', 'source' );
+
     ###START_AUTOCODE
     /* the code below is auto generated do not remove the above tag */
 
     var $__table = 'bm_Marks';                        // table name
     var $id;                              // int(11)  not_null primary_key auto_increment
-    var $bm_Links_id;                     // int(11)  not_null multiple_key
+    var $href;                            // int(11)  not_null multiple_key
     var $bm_Users_id;                     // int(11)  not_null multiple_key
     var $title;                           // string(255)  
     var $summary;                         // blob(65535)  blob
@@ -73,7 +78,10 @@ class Element_Bm_Marks extends Blogmarks_Element
         $assoc_def->bm_Tags_id  = $tag_id;
 
         // Insertion dans la base de données
-        if ( ! $assoc_def->find() ) $assoc_def->insert();
+        if ( ! $assoc_def->find() ) { 
+            $this->debug( "Insertion du le association [$this->id / $tag_id].", __FUNCTION__, 1 );
+            $assoc_def->insert();
+        }
         else return Blogmarks::raiseError( "Le Tag [$tag_id] est déjà associé au Mark [$this->id].", 500 );
 
         return true;
@@ -133,5 +141,15 @@ class Element_Bm_Marks extends Blogmarks_Element
 
         return $link->href;
     }
+
+
+# ------ LINKS
+
+    /** Renvoie la liste des champs de la base de données qui correpondent à des Links
+     * @return      array
+     */
+    function getLinksFields() { return $this->_links_fields; }
+
+
 }
 ?>

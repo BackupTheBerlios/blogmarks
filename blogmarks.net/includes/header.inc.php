@@ -36,7 +36,7 @@ if ( $marker->userIsAuthenticated() ) {
 
 	echo '<p><strong>Auth OK</strong></p>';
 
-	echo '<p><a href="?disconnect=1">Se déconnecter</a></p>';
+	echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 
 } else { ?>
 

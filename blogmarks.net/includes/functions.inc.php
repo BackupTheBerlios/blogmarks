@@ -17,6 +17,7 @@ function makeDigest( $pwd, $nonce, $timestamp  ) {
     
 }    
 
+// Retourne un Timestamp UTC à partir d'une date W3CDTF
 
 function dcdate2php($dcdate,$format='j/m/Y @ H:i') {
 
@@ -43,13 +44,14 @@ function dcdate2php($dcdate,$format='j/m/Y @ H:i') {
 
 	$timestamp = mktime( $hour , $minutes , $seconds , $month , $day , $year );
 
-	$time = date( $format , $timestamp);
+	//$time = date( $format , $timestamp);
 
 	return $timestamp;
 
 }
 
 /** Ecris ds un fichier. */
+// Inutile .... A deleter
 if (!function_exists('file_put_contents')) {
     define('FILE_APPEND', 1);
     function file_put_contents($filename, $content, $flags = 0) {

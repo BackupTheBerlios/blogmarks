@@ -9,3 +9,13 @@
 <p><a href="javascript:url=location.href;title=document.title;void( open('http://localhost/bm/blogmarks.net/new_popup.php?url='+escape(url)+'&title='+escape(title),'BlogMarks', 'location=no,toolbar=no,scrollbars=yes,width=325,height=400,left=75,top=175,status=no'));">Simple fuckin bookmarklet</a></p>
 
 </div>
+
+<?php
+
+$time_end = getmicrotime();
+
+$time = $time_end - $time_start;
+
+echo "<p>Durée d'execution : " . round( $time , 4 ) . " secondes</p>";
+
+?>

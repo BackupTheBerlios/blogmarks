@@ -8,7 +8,9 @@
 
 		<form id="search" method="GET" >
 
-			<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
+			Search : <input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
+			<br />
+			Tags : <input type="text" name="include_tags" size="50" value="<?php if ( isset($_GET['include_tags']) )  echo $_GET['include_tags'] ?>" />
 
 			<input type="submit" value="Search" />
 

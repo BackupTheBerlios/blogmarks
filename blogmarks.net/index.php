@@ -71,15 +71,15 @@ else
 	$complete_tag = "private=1";
 //
 
-if ( isset( $_GET['include_tags'] ))  {
+if ( isset( $_GET['include_tags'] ) AND strlen( $_GET['include_tags'] ) )  {
 	
-	$params['include_tags'] = explode( ";" , $_GET['include_tags'] );
+	$params['include_tags'] = explode( " " , $_GET['include_tags'] );
 
 	echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php?'.$complete_tag.'">reset</a>)</span> </h4>'."\r\n\r\n";
 
 }
 
-if ( isset( $_GET['q'] ) ) {
+if ( isset( $_GET['q'] ) AND strlen( $_GET['q'] ) ) {
 
 	if ( ( $_GET['checkSearch'] == 0 ) OR ( $_GET['checkSearch'] == 2 )  )
 		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
@@ -89,7 +89,7 @@ if ( isset( $_GET['q'] ) ) {
 
 }
 
-//print_r( $params );
+print_r( $params );
 
 $list =& $marker->getMarksList( $params );
 

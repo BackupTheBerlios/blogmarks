@@ -2,7 +2,7 @@
 /**
  * Table Definition for bm_Marks
  */
-require_once 'blogmarks/Element.php';
+require_once 'Blogmarks/Element.php';
 
 /** Mark.
  * @package     Elements
@@ -23,7 +23,7 @@ class Element_Bm_Marks extends Blogmarks_Element
     var $created;                         // datetime(19)  
     var $modified;                        // datetime(19)  not_null
     var $lang;                            // string(255)  
-    var $via;                             // string(255)  
+    var $via;                             // int(11)  
 
     /* ZE2 compatibility trick*/
     function __clone() { return $this;}
@@ -33,5 +33,60 @@ class Element_Bm_Marks extends Blogmarks_Element
 
     /* the code above is auto generated do not remove the tag below */
     ###END_AUTOCODE
+
+
+# -- Associations avec des Tags
+    
+    /** Associe le tag au Mark.
+     * @param      string      $tag_id
+     * @return     mixed       true ou Blogmarks_Exception en cas d'erreur
+     */
+    function addTagAssoc( $tag_id ) {
+
+        // Définition de l'association
+        $assoc_def =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        $assoc_def->bm_Marks_id = $this->id;
+        $assoc_def->bm_Tags_id  = $tag_id;
+
+        // Insertion dans la base de données
+        if ( ! $assoc_def->find() ) $assoc_def->insert();
+        else return Blogmarks::raiseError( "Le Tag [$tag_id] est déjà associé au Mark [$this->id].", 500 );
+
+        return true;
+
+    }
+
+
+    /** Supprime l'association entre le Tag et le Mark. 
+     * @param      string      $tag_id
+     * @return     mixed       true ou Blogmarks_Exception en cas d'erreur
+     */
+    function remTagAssoc( $tag_id ) {
+        $assoc_def =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        
+        $assoc_def->bm_Marks_id = $this->id;
+        $assoc_def->bm_Tags_id  = $tag_id;
+
+        if ( $assoc_def->find(true) ) {
+            $assoc_def->delete();
+            return true;
+        }
+
+        else return Blogmarks::raiseError( "Le Tag [$tag_id] n'est pas associé au Mark [$this->id]", 404 );
+    }
+
+
+    /** Renvoie la liste des Tags associés au Mark.
+     * @return      array */
+    function getTags() {
+        
+        $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
+        $assocs->bm_Marks_id = $this->id;
+        $assocs->find();
+
+        while ( $assocs->fetch() ) $arr[] = $assocs->bm_Tags_id;
+        
+        return $arr;
+    }
 }
 ?>

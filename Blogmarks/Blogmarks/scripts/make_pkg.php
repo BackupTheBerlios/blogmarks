@@ -2,7 +2,7 @@
 
 <?php
 /** Génération du package PEAR
- * @version      $Id: make_pkg.php,v 1.4 2004/04/01 15:48:12 mbertier Exp $
+ * @version      $Id: make_pkg.php,v 1.5 2004/04/28 15:00:28 mbertier Exp $
  * @todo         Comprendre pourquoi le tableau que retourne getopt est aussi tarbiscoté ou étendre getopt
  */
 
@@ -64,6 +64,9 @@ $e = $pkgxml->setOptions( array( 'baseinstalldir'       => '/',
                                  'dir_roles'            => array( 'Blogmarks/tutorials' => 'doc' ),
                                  'exceptions'           => array()   ) );
 
+# -- Roles
+$pkgxml->addRole( 'ini', 'php' );
+$pkgxml->addRole( 'dist', 'php' );
 
 # -- Maintainers
 $pkgxml->addMaintainer( 'mbertier', 

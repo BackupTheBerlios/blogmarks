@@ -109,9 +109,14 @@ die( $list->getMessage() );
 
 else {
 
-$i = 0;
 
+// To clean
+$i = 0;
 $string_date_prev = '';
+
+if ( isset( $_GET['all']) AND ( $_GET['all'] == 1 ) )
+	$complete_tag = "&amp;all=1";
+//
 
 while ( $list->fetch() ) {
 		
@@ -146,7 +151,7 @@ while ( $list->fetch() ) {
 		//	echo ' (' . dcdate2php( $list->created ) . ')';
         
         foreach ( $list->getTags() as $tag ) {
-			echo ' <a class="tag" href="?include_tags='. $tag .'">[' . $tag . ']</a> ';
+			echo ' <a class="tag" href="?include_tags='. $tag .$complete_tag.'">[' . $tag . ']</a> ';
 		}
 
 		//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';

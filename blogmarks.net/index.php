@@ -30,9 +30,17 @@
 <h2>Stop bookmarking. Start blogmarking !</h2>
 
 <form id="search">
-<input type="text"  name="q" size="50" />
+<input type="text" name="q" size="50" value="<?php if ( isset($_GET['q']) )  echo $_GET['q'] ?>" />
+<input class="checkbox" type="checkbox" name="checkTitle" value="1"> Title
+<input class="checkbox" type="checkbox" name="checkSummary" value="1"> Summary
 <input type="submit" value="Search" />
 </form>
+
+<?php
+
+echo
+
+?>
 
 
 
@@ -55,9 +63,29 @@ $params = array(
 			 'user_login' => 'znarf',
 			 'order_by' => array('created', 'DESC'),
 	//		'include_tags' => array( 'blog') ,
+				//'summary' => array( '%google%', 'LIKE' ) ,
 				 'select_priv' => true );
 
-if ( isset( $_GET['include_tags'] ))  $params['include_tags'] = explode( ";" , $_GET['include_tags'] );
+	
+
+if ( isset( $_GET['include_tags'] ))  {
+	
+	$params['include_tags'] = explode( ";" , $_GET['include_tags'] );
+
+		echo '<h4>Tags : ' .  $_GET['include_tags']  . ' <span class="smaller">(<a href="index.php">reset</a>)</span> </h4>';
+		echo '';
+
+}
+
+if ( isset( $_GET['q'] ) ) {
+
+	if ( $_GET['checkTitle'] == 1 )
+		$params['title']	= array( '%'.$_GET['q'].'%', 'LIKE' );
+
+	if ( $_GET['checkSummary'] == 1 )
+		$params['summary']	= array( '%'.$_GET['q'].'%', 'LIKE' );
+
+}
 
 $list =& $marker->getMarksList( $params );
 

@@ -44,7 +44,7 @@ function ConfirmSubmit( msg ) {
 function Edit( url ) {
 
 		url = url + '&mini=1&from=popupjs';
-		params = 'location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no';
+		params = 'location=no,toolbar=no,scrollbars=yes,width=325,height=400,left=75,top=175,status=no';
 		
 		window.open( url ,'BlogMarks', params );
 

@@ -91,6 +91,10 @@ margin-bottom:5px;
 padding:2px;
 }
 
+input[type=checkbox] , input.checkbox {
+vertical-align:-40%;
+}
+
 input[type=submit] {
 margin:0 0 7px;
 }
@@ -141,6 +145,11 @@ font-weight:bold;
 .tags {
 font-size:larger;
 font-weight:bold;
+}
+
+.smaller {
+font-size:11px;;
+font-weight:normal;
 }
 
 h3 {
@@ -205,7 +214,7 @@ margin:0 0 10px;
 .mini label {
 }
 
-.mini select, .mini input {
+.mini select, .mini input, .mini textarea {
 font-family: Arial, sans-serif;
 font-size:x-small;
 }

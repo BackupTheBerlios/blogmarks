@@ -54,15 +54,16 @@ $via = $mark->getLink( 'href' );
 ?>
 	<input name="id" type="hidden" value="<?php echo $_GET['id'] ?>" />
 	<label>title</label>
-	<input value="<?php echo $mark->title ?>" type="text"  name="title" size="50"  maxlength="255"  />
+	<input value="<?php echo $mark->title ?>" type="text"  name="title" size="65"  maxlength="255"  />
 	<label>url</label>
-	<input value="<?php echo $link->href ?>" type="text"  name="url" size="50"  maxlength="255"  />
+	<input value="<?php echo $link->href ?>" type="text"  name="url" size="65"  maxlength="255"  />
 	<label>description</label>
-	<input value="<?php echo $mark->summary ?>" type="text"  name="description" size="50"  maxlength="255"  />
+	<textarea name="description" rows="2" cols="61"><?php echo $mark->summary ?></textarea>
+<!-- 	<input value="<?php echo $mark->summary ?>" type="text"  name="description" size="65"  maxlength="255"  /> -->
 	<label>tags</label>
-	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="50"  maxlength="255"  />
+	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="65"  maxlength="255"  />
 	<label>via</label>
-	<input value="<?php echo $via->href ?>" type="text"  name="via" size="50"  maxlength="255"  />
+	<input value="<?php echo $via->href ?>" type="text"  name="via" size="65"  maxlength="255"  />
 
 	<input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  />
 	

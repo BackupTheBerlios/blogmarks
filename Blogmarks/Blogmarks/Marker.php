@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.16 2004/05/19 09:44:01 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.17 2004/06/01 14:06:03 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -160,7 +160,7 @@ class BlogMarks_Marker {
     /** Mise à jour d'un Mark.
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
-     *                                La valeur de l'index 'mergetags' sera passée à Blogmarks_Marker::associateTagsToMark
+     *                                La valeur de l'index 'mergetags' sera passée à Blogmarks_Marker::associateTagsToMark()
      * @return    string    L'uri du mark mis à jour.
      * @perms     Pour mettre à jour un Mark, il faut le posséder
      */
@@ -883,6 +883,32 @@ class BlogMarks_Marker {
         if ( Blogmarks::isError($user) ) return false;
         return $user->isAuthenticated();
         
+    }
+
+
+    /** Renvoie des informations à propos de l'utilisateur connecté.
+     * Renvoie un tableau associatif si la méthode est appelée sans paramètre, ou la valeur 
+     * du champs ($field) passé en paramètre.
+     *
+     * @param      string      $field      (optionnal) 
+     * @return     mixed       array ou string
+     */
+    function getUserInfo( $field = null ) {
+        // Champs dont on a le droit de récupérer la valeurs
+        $info_fields = $user->getInfoFields();
+
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( Blogmarks::isError($user) ) return $user;
+
+        $ret = null;
+
+        // Un seul champs est demandé
+        if ( $field ) $ret = $user->$field;
+
+        // Renvoi de toutes les infos
+        else foreach ( $info_fields as $field ) $ret[$field] = $user->$field;
+
+        return $ret;
     }
 
 

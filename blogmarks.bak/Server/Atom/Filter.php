@@ -1,7 +1,7 @@
 <?php
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.1 2004/03/10 16:59:15 benfle Exp $
+ * @version    $Id: Filter.php,v 1.2 2004/03/11 15:49:29 benfle Exp $
  */
 
 
@@ -93,6 +93,7 @@ class ContextBuilderFilter extends InterceptingFilter {
     $uri = $arg['uri'];
     unset($arg['uri']); // on n'en a plus besoin dans les arguments
     
+    // get, put ou delete un Mark
     if ( ereg('^/users/([^/]+)/\?mark_id=([0-9]+)$', $uri, $regs) ) {
       $arg['user']   = $regs[1];
       $arg['object'] = 'Mark';
@@ -100,42 +101,54 @@ class ContextBuilderFilter extends InterceptingFilter {
 
     } else if ( ereg('^/users/([^/]+)/?$', $uri, $regs) ) {
       $arg['user'] = $regs[1];
+
+      // poste un Mark
       if ( $arg['method'] == 'POST' ) 
 	$arg['object'] = 'Mark';
+
+      // get une liste de Marks prives
       if ( $arg['method'] == 'GET' ) 
 	$arg['object'] = 'MarksList';
 
+      // get une liste de Marks prives avec un tag
     } else if ( ereg('^/users/([^/]+)/tags/([^/]+)/?$', $uri, $regs) ) {
       $arg['user']   = $regs[1];
       $arg['object'] = 'MarksList';
       $arg['tag']    = $regs[2];
 
+      // get une liste de Marks avec un tag
     } else if ( ereg('^/tags/([^/]+)/?$', $uri, $regs) ) {
       $arg['object'] = 'MarksList';
       $arg['tag']    = $regs[1];
     
+      // get une liste de tags publiques
     } else if ( ereg('^/tags/([^/]+)*/?\?service=feed', $uri, $regs) ) {
       $arg['object'] = 'TagsList';
       $arg['tag']    = $regs[1];
 
+      // get une liste de tags privés
     } else if ( ereg('^/users/([^/]+)/tags/([^/]+)*/?\?service=feed', 
 		     $uri, $regs) ) {
       $arg['user']   = $regs[1];
       $arg['object'] = 'TagsList';
       $arg['tag']    = $regs[2];
     
+      // get, put ou delete un tag privé
     } else if ( ereg('^/users/([^/]+)/tags/\?tag_id=(.+)$)', $uri, $regs) ) {
       $arg['user']   = $regs[1];
       $arg['object'] = 'Tag';
       $arg['tag']    = $resg[2];
 
+      // get, put ou delete un tag publique
     } else if ( ereg('^/tags/\?tag_id=(.+)$)', $uri, $regs) ) {
       $arg['object'] = 'Tag';
       $arg['tag']    = $resg[1];
 
+      // poste un tag publique
     } else if ( ereg('^/tags/?$', $uri) ) {
       $arg['object'] = 'Tag';
       
+      // poste un tag prive
     } else if ( ereg('^/users/([^/]+)/tags/?$', $uri, $regs) ) {
       $arg['object'] = 'Tag';
       $arg['user']   = $resg[1];

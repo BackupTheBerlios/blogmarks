@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.12 2004/04/29 10:44:46 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.13 2004/04/29 16:00:32 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -74,6 +74,7 @@ class BlogMarks_Marker {
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
      * @return     mixed     L'URI du mark créé
      * @perms      Pour pouvoir créer un Mark, il faut être authentifié.
+     * @todo       check d'erreurs sur la création du Link via
      */
     function createMark( $props ) {
 
@@ -109,7 +110,16 @@ class BlogMarks_Marker {
             $mark->title    = $props['title'];
             $mark->summary  = $props['summary'];
             $mark->lang     = $props['lang'];
-            $mark->via      = $props['via'];
+
+            // Création d'un Link pour le via
+            // TODO -- check d'erreur
+            $link =& $this->createLink( $props['via'], true );
+            $mark->via = $link->id;
+
+            // Création d'un Link pour la source
+            // TODO -- check d'erreur
+            $link =& $this->createLink( $props['source'], true );
+            $mark->source = $link->id;
 
             // Dates
             $date = date("Ymd HIs");
@@ -630,15 +640,18 @@ class BlogMarks_Marker {
 
 
     /** Récupération d'une liste de Marks en fonction des critères passés en paramètre.
+     * La méthode attend un tableau associatif définissant les critères de sélection : 
+     *         - user_login    => recherche au sein des marks d'un utilisateur en particulier (sinon recherche globale)
+     *         - date_in       => date au format mysql. On ne recherche que les marks créés ultérieurement à cette date
+     *         - date_out      => date au format mysql. On ne recherche que les marks créés postérieurement à cette date
+     *         - exclude_tags  => tableau de tags. Les marks décrits par ces tags ne seront pas sélectionnés
+     *         - include_tags  => tableau de tags. Seuls les marks décrits par ces tags seront sélectionnés
+     *         - select_priv   => booléen. Si vrai, recherche aussi au sein des marks privés 
+     *                            (si niveau de permission suffisant).
+     *         - order_by      => array( string champs ou array(champs1, champs2, ...), string ASC / DESC )
+     *
      * @param      array      $cond      Tableau associatif définissant les critère de sélection des Marks
-     *                                     * user_login    => recherche au sein des marks d'un utilisateur en particulier (sinon recherche globale)
-     *                                     * date_in       => date au format mysql. On ne recherche que les marks créés ultérieurement à cette date
-     *                                     * date_out      => date au format mysql. On ne recherche que les marks créés postérieurement à cette date
-     *                                     * exclude_tags  => tableau de tags. Les marks décrits par ces tags ne seront pas sélectionnés
-     *                                     * include_tags  => tableau de tags. Seuls les marks décrits par ces tags seront sélectionnés
-     *                                     * select_priv   => booléen. Si vrai, recherche aussi au sein des marks privés 
-     *                                                        (si niveau de permission suffisant).
-     *                                     * order_by      => array( string champs ou array(champs1, champs2, ...), string ASC / DESC )
+     *                                     
      *                                    
      * @return     DB_DataObject ou Blogmarks_Exception en cas d'erreur.
      */
@@ -693,7 +706,7 @@ class BlogMarks_Marker {
         $marks->whereAdd();
 
         //
-        $marks->joinAdd( $assocs );
+        $marks->joinAdd( $assocs, 'LEFT' );
 
         // -- Sélection des Marks à inclure
         // Selon un Tag les décrivant
@@ -721,7 +734,10 @@ class BlogMarks_Marker {
 
             // Tri selon champs multiples
             if ( is_array($fields) ) {
+
+                // Constitution de la clause
                 foreach ( $fields as $f ) $str_order .= "$f,";
+
                 // Suppression de la virgule finale
                 $str_order = substr( $str_order, 0, strlen($str_order) - 1 );
             }

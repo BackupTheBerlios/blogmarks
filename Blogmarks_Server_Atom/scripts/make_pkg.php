@@ -2,7 +2,7 @@
 
 <?php
 /** Génération du package PEAR
- * @version      $Id: make_pkg.php,v 1.4 2004/05/19 13:11:23 mbertier Exp $
+ * @version      $Id: make_pkg.php,v 1.3 2004/05/19 13:18:07 mbertier Exp $
  * @todo         Comprendre pourquoi le tableau que retourne getopt est aussi tarabiscoté ou étendre getopt
  */
 

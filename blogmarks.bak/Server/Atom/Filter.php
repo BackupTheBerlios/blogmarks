@@ -1,13 +1,12 @@
 <?php
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.2 2004/03/11 15:49:29 benfle Exp $
+ * @version    $Id: Filter.php,v 1.3 2004/03/11 16:19:18 benfle Exp $
  */
 
 
 /** Classe racine représentant la chaîne des filtres à exécuter.
- * @package    Servers
- * @subpackage Atom
+ * @package    Atom
  */
 class FilterChainRoot
 {

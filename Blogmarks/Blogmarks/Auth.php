@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.7 2004/06/01 14:44:08 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.8 2004/06/01 15:07:16 mbertier Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -10,6 +10,8 @@ require_once 'Blogmarks/Element/Factory.php';
 /** Classe dédiée à la gestion des droits au sein de Blogmarks.
  * @package    Blogmarks
  * @subpackage Auth
+ * @uses       Blogmarks
+ * @uses       Element_Factory
  */
 class Blogmarks_Auth {
 

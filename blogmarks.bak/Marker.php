@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.4 2004/03/04 16:14:39 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.5 2004/03/04 16:30:36 mbertier Exp $
  */
 
 require_once 'PEAR.php';
@@ -71,17 +71,17 @@ class BlogMarks_Marker {
         // Si le Mark n'existe pas, on le crée
         if ( $mark->find(true) == 0 ) {
 
-            // DATETIME
-            $date = date("Ymd Hms");
-            
             // Définition des propriétés
             $mark->title    = $props['title'];
             $mark->summary  = $props['summary'];
             $mark->lang     = $props['lang'];
             $mark->via      = $props['via'];
-            $mark->issued   = $date;
+
+            // Dates
+            $date = date("Ymd Hms");
             $mark->created  = $date;
-            $mark->modified = $date;
+            $mark->issued   = isset( $props['issued'] ) ? $props['issued'] : $date;
+            $mark->modified = 0;
 
             // Insertion dans la base de données
             $mark->insert();

@@ -35,7 +35,30 @@ class Element_Bm_Marks extends Blogmarks_Element
     ###END_AUTOCODE
 
 
-# -- Associations avec des Tags
+# ------ AUTH
+    
+    /** Permet de savoir si le Mark est public.
+     * Comportement :
+     *   - issued < date(now)   -> public
+     *   - issued == 0          -> private
+     *   - issued > date(now)   -> private (pour publication programmée)
+     *
+     * @return       bool
+     */
+    function isPublic() {
+        $now = date("Y-m-d H:i:s");
+        if ( $this->issued != 0 && $this->issued < $now ) return true;
+        else return false;
+    }
+
+    /** Permet de savoir si un Mark est privé.
+     * @return      bool
+     */
+    function isPrivate() { return ! $this->isPublic(); }
+
+
+
+# ------ TAGS
     
     /** Associe le tag au Mark.
      * @param      string      $tag_id
@@ -77,7 +100,11 @@ class Element_Bm_Marks extends Blogmarks_Element
 
 
     /** Renvoie la liste des Tags associés au Mark.
-     * @return      array */
+     * @return      array 
+     * 
+     * @todo     Devrait plutot renvoyer un itérateur, mais le retour d'array est utilisé ailleurs :
+     *           <code>./Marker.php:244:            $deprec_tags = array_diff( $mark->getTags(), $tags );</code>
+     */
     function getTags() {
         
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );

@@ -1,13 +1,17 @@
 <?php
 
 /** Déclaration de la classe Server_Atom
- * @version    $Id: Atom.php,v 1.2 2004/05/19 13:39:46 benfle Exp $
+ * @version    $Id: Atom.php,v 1.3 2004/05/19 14:14:42 benfle Exp $
  */
 
 require_once 'PEAR.php';
-require_once 'Atom/Filter.php';
-require_once 'Atom/Controller.php';
-require_once 'Atom/Renderer.php';
+
+include_once 'Blogmarks/Marker.php';
+include_once 'Blogmarks/Renderer.php';
+
+include_once 'Atom/Filter.php';
+include_once 'Atom/Controller.php';
+include_once 'Atom/Renderer.php';
 
 /** Classe du serveur Atom de BlogMarks.
  * @package    Servers
@@ -98,9 +102,7 @@ class Server_Atom {
 
     // On applique le renderer atom a la reponse et on la renvoit
 
-    $rendererFactory = new rendererFactory();
-
-    $renderer =& $rendererFactory->createRenderer($args['object']);
+    $renderer =& rendererFactory::createRenderer($args['object']);
 
     $response->accept( $renderer );
 
@@ -108,7 +110,7 @@ class Server_Atom {
 
     echo "HTTP/1.1 200 Ok\n";
     
-    echo $renderer->render();
+    $renderer->render();
 
   }
 

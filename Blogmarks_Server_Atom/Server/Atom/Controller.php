@@ -1,9 +1,7 @@
 <?php
 /** Déclaration des différents controlleurs et de leur Factory.
- * @version    $Id: Controller.php,v 1.2 2004/05/19 13:39:46 benfle Exp $
+ * @version    $Id: Controller.php,v 1.3 2004/05/19 14:14:42 benfle Exp $
  */
-
-include_once 'Blogmarks/Marker.php';
 
 /** Classe parente des différents controlleurs.
  * @package    Atom

@@ -1,15 +1,14 @@
 <?php
-/** Déclaration de la classe BlogMarks_Element
- * @version    $Id: Element.php,v 1.3 2004/03/01 15:08:55 mbertier Exp $
+/** Déclaration de la classe Blogmarks_Element
+ * @version    $Id: Element.php,v 1.4 2004/03/05 10:21:05 mbertier Exp $
  */
 
 include_once 'DB/DataObject.php';
 
-/** Classe de base pour les éléments BlogMarks.
- * @package    BlogMarks
- * @subpackage Elements
+/** Classe de base pour les éléments Blogmarks.
+ * @package    Elements
  */
-class BlogMarks_Element extends DB_DataObject {
+class Blogmarks_Element extends DB_DataObject {
   
 # ----------------------- #
 # -- METHODES PUBLIQUES --#

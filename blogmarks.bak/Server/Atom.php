@@ -1,12 +1,14 @@
 <?php
 /** Déclaration de la classe Server_Atom
- * @version    $Id: Atom.php,v 1.5 2004/03/15 11:08:49 benfle Exp $
+ * @version    $Id: Atom.php,v 1.6 2004/03/29 10:00:48 benfle Exp $
  */
+ini_set( 'include_path', ini_get('include_path') . ':/home/benoit/dev/' );
 
 require_once 'PEAR.php';
-require_once '../Blogmarks.php';
-require_once 'Atom/Filter.php';
-require_once 'Atom/Controller.php';
+require_once 'Blogmarks/Blogmarks.php';
+require_once 'Blogmarks/Server/Atom/Filter.php';
+require_once 'Blogmarks/Server/Atom/Controller.php';
+require_once 'Blogmarks/Server/Atom/Renderer.php';
 
 /** Classe du serveur Atom de BlogMarks.
  * @package    Servers
@@ -22,12 +24,15 @@ class Server_Atom {
   function run () {
 
     // racine du serveur a enregistrer qq part (pour l'instant ici)
-    $root = 'http://localhost/blogmarks/servers/atom';
+    $root = 'http://benfle.dyndns.org/blogmarks/servers/atom';
 
     // On construit le tableau d'arguments pour les filtres
     $args   = array();
     // on extrait l'URI relative
     $uri = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+
+    //***** DEBUG echo $uri."<br/>".$root;
+
     $uri = ereg_replace($root, '', $uri);
     $args['uri'] = $uri;
     $args['method'] = $_SERVER['REQUEST_METHOD'];
@@ -44,6 +49,15 @@ class Server_Atom {
       return;
     }
 
+    // **** DEBUG
+    echo "objet : ".$args['object']."<br/>";
+    echo "method : ".$args['method']."<br/>";
+    echo "tag : ".$args['tag']."<br/>";
+    echo "user : ".$args['user']."<br/>";
+    echo "id : ".$args['id']."<br/>";
+    echo "auth_str :".$args['auth_str']."<br/>";
+    // **********
+
     // On construit le controlleur selon le type d'objet de la requête
     $ctrlerFactory = new ControllerFactory();
     $ctrler        = $ctrlerFactory->createController($args['object']);
@@ -55,7 +69,7 @@ class Server_Atom {
 
     // On lance le controlleur pour l'objet de la requête
     $response = $ctrler->execute($args);
-    if ( BlogMarks_isError($response) ) {
+    if ( BlogMarks::isError($response) ) {
       
       // erreur du controlleur de requête
       return;
@@ -64,8 +78,11 @@ class Server_Atom {
     // On applique le renderer atom a la reponse et on la renvoit
     $rendererFactory = new rendererFactory();
     $renderer = $rendererFactory->createRenderer($args['object']);
+
+    // GERER LA REPONSE HTTP
+    echo "HTTP/1.1 200 Ok\n";
     $response->accept($renderer);
-    return $renderer->render();
+    echo $renderer->render();
   }
 }
 

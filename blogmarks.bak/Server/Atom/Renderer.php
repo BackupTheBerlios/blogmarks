@@ -1,7 +1,9 @@
 <?php
 /** Déclaration des renderers pour le serveur Atom et de la factory
- * @version    $Id: Renderer.php,v 1.1 2004/03/12 10:37:44 benfle Exp $
+ * @version    $Id: Renderer.php,v 1.2 2004/03/29 10:00:48 benfle Exp $
  */
+
+require_once '../Renderer.php';
 
 /** Factory de renderers Atom.
  * @package    Atom

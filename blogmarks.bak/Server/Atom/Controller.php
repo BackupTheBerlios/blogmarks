@@ -1,6 +1,6 @@
 <?php
 /** Déclaration des différents controlleurs et de leur Factory.
- * @version    $Id: Controller.php,v 1.4 2004/03/15 11:08:49 benfle Exp $
+ * @version    $Id: Controller.php,v 1.5 2004/03/29 10:00:48 benfle Exp $
  */
 
 require_once '../Marker.php';
@@ -130,10 +130,10 @@ class MarkController {
     if ( !$issued = array() )
       $props['issued'] = $issued[0]->get_content();
 
-    // enregistre l'URI du site via
+    // enregistre le href de via
     $via = $root->get_elements_by_tagname('via');
-    if ( !$via = array() )
-      $props['via'] = $via[0]->get_content();   
+    if ( $via != array() )
+      $props['via'] = $via[0]->get_attribute('href');   
     
     // enregistre le tableau de tags
     $tags = $root->get_elements_by_tagname('tags');
@@ -168,7 +168,7 @@ class MarkController {
  */
 class TagController {
 
-  function execute () {
+  function execute ($args) {
  
     $marker = new BlogMarks_marker;
     
@@ -269,7 +269,7 @@ class TagController {
  */
 class MarksListController {
 
-  function execute () {
+  function execute ($args) {
 
     $marker = new BlogMarks_marker;
 
@@ -288,7 +288,7 @@ class MarksListController {
     }
     
     // sinon c'est une liste de tags publics
-    return $marker->getMarksListOfTag($args['tag'], $args['authstr']);
+    return $marker->getMarksListOfTag($args['tag'], $args['auth_str']);
   }
 }
 
@@ -297,7 +297,7 @@ class MarksListController {
  */
 class TagsListController {
 
-  function execute () {
+  function execute ($args) {
 
     $marker = new BlogMarks_marker;
 

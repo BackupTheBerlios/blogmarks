@@ -1,7 +1,7 @@
 <?php
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.5 2004/03/15 11:08:49 benfle Exp $
+ * @version    $Id: Filter.php,v 1.6 2004/03/29 10:00:48 benfle Exp $
  */
 
 
@@ -190,13 +190,17 @@ class AuthenticateFilter extends InterceptingFilter {
       // on récupère les informations du header
       $pattern  = 'Username="(.+)", PasswordDigest="(.+)",';
       $pattern .= ' Nonce="(.+)", Created="(.+)"';
-      if (ereg($pattern, $value, $regs)) {
+      if (ereg($pattern, $auth_line, $regs)) {
 	$marker = new BlogMarks_Marker;
-	$auth_str = $marker->autenticate($regs[1], $regs[2], 
+	echo "authentifie ...\n";
+	$auth_str = $marker->authenticate($regs[1], $regs[2], 
 					 $regs[3], $regs[4]);
+	if (Blogmarks::isError($auth_str)) {
+	  echo "Error :".$auth_str->getMessage()."\n";
+	}
 	$arg['auth_str'] = $auth_str;
       } else
-	return BlogMarks::raiseError('Erreur à la ligne <X-WSSE>', 400);
+	return BlogMarks::raiseError("Erreur à la ligne X-WSSE : $pattern ne vérfifie pas $auth_line", 400);
     }
 
     // passe au filtre suivant

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.23 2004/06/26 16:41:56 benfle Exp $
+ * @version    $Id: Marker.php,v 1.24 2004/06/27 09:57:12 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -737,6 +737,119 @@ class BlogMarks_Marker {
         return $arr;
 	}
 		
+
+#-------- TAGSLISTS
+
+	/** Récupération d'une liste de Tags en fonction des critères passés en paramètre.
+	 * La méthode attend un tableau associatif définissant les critères de sélection :
+	 *		- user_login	=> recherche au sein des tags privés d'un utilisateur (authentification obligatoire)
+	 *		- date_in		=> date au format mysql. On ne recherche que les marks créés ultérieirement à cette date.
+	 *		- date_out		=> date au format mysql. On ne recherche que les marks créés antérieurement à cette date.
+	 *		- order_by		=> array ( string champs ou array(champs1, champs2, ...)), string ASC|DESC )
+	 *
+     * La méthode accepte aussi des indexes nommés comme ceux que renvoie la méthode Bm_Tags::getSearchFields().
+     * Il sera effectuée une recherche sur le contenu de ces champs. Le paramètre prend la forme suivante :
+     *         - 'nomchamps' => array( '%%', 'LIKE' ) ou
+     *         - 'nomchamps' => array( '.*', 'REGEX')
+     *
+     * Pour la syntaxe de regex, ce référer à la documentation de MySQL : {@link http://dev.mysql.com/doc/mysql/en/Regexp.html}
+     *
+     * @param      array      $cond      Tableau associatif définissant les critère de sélection des Marks
+     *                                     
+     *                                    
+     * @return     DB_DataObject ou Blogmarks_Exception en cas d'erreur.
+     */
+	function getTagsList( $cond ) {
+		
+		$now = date( "Ymd His");
+		$tags =& Element_Factory::makeElement( 'Bm_Tags' );
+		 
+		// Recherche au sein des Marks d'un utilisateur donné
+		if ( isset($cond['user_login']) ) {
+
+			// On vérifie que l'utilisateur existe
+			$user =& Element_Factory::makeElement( 'Bm_Users' );
+			if ( ! $user->get( 'login', $cond['user_login'] ) ) 
+				return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
+			else
+			{
+				// permissions
+				$cur_user =& $this->_slots['auth']->getConnectedUser();
+				if ( Blogmarks::isError ( $cur_user ) )
+					return Blogmarks::raiseError( "Permission denied", 401 );
+				else if ( $cur_user->login == $user->login )
+					$tags->author = $cond['user_login'];
+				else
+					return Blogmarks::raiseError( "Permission denied", 401 );
+			}
+
+		} else
+			// on recherche parmis les tags publics
+			$tags->author = 'null';
+
+        // Recherche au sein d'une plage de dates donnée
+        if ( isset($cond['date_in']) )  $tags->whereAdd( "created >= ". $cond['date_in'] );
+        if ( isset($cond['date_out']) ) $tags->whereAdd( "created <= ". $cond['date_out'] );      
+
+		// Ajout des clauses de recherche
+        foreach ( $tags->getSearchFields() as $f ) {
+            // On doit rechercher sur un des champs
+            if ( isset($cond[$f]) && is_array($cond[$f]) ) {
+
+                /*
+                // Préfixage des champs de tables externes
+                if ( count(array_keys($marks->getLinksFields(), $f)) ) { 
+                    $links =& Element_Factory::makeElement( 'Bm_Links' );
+                    $field =  $links->__table .'.'. $f;
+                }
+                */
+
+                // Constitution du WHERE
+                // "nomchamps LIKE / REGEXP pattern"
+                $q = "$f ". $cond[$f][1] ." '". $marks->escape($cond[$f][0]). "'";
+
+				$tags->whereAdd( $q, 'OR' );
+            }
+        }
+
+
+        // Tri des résultats
+        if ( isset($cond['order_by']) ) {
+            
+            $fields = $cond['order_by'][0];
+            $dir = isset($cond['order_by'][1]) ? $cond['order_by'][1] : 'ASC';
+            $str_order = null;
+
+            // Tri selon champs multiples
+            if ( is_array($fields) ) {
+
+                // Constitution de la clause
+                foreach ( $fields as $f ) $str_order .= "$f,";
+
+                // Suppression de la virgule finale
+                $str_order = substr( $str_order, 0, strlen($str_order) - 1 );
+            }
+
+            // Tri selon un champs unique
+            elseif ( is_string($fields) ) {
+                $str_order = $fields;
+            }
+
+            // Direction du tri
+            $str_order = "$str_order $dir";
+
+            $tags->orderBy( $str_order );
+
+        }
+
+        // -- HACK: permet de ne pas avoir de doublons
+        $tags->groupBy( 'id' );
+
+        return ( $tags->find() > 0 ? $tags : Blogmarks::raiseError( 'Aucun Tag disponible avec ces critères.', 404 ) );
+
+	}
+
+
 # ------- MARKSLISTS
 
 
@@ -770,26 +883,28 @@ class BlogMarks_Marker {
 
 		$cur_user =& $this->_slots['auth']->getConnectedUser();
 
-        // Recherche au sein des Marks d'un utilisateur donné
-        if ( isset($cond['user_login']) ) {
+		// Recherche au sein des Marks d'un utilisateur donné
+		if ( isset($cond['user_login']) ) {
 
-            // On vérifie que l'utilisateur existe
-            $user =& Element_Factory::makeElement( 'Bm_Users' );
-            if ( ! $user->get( 'login', $cond['user_login'] ) ) 
-                return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
+			// On vérifie que l'utilisateur existe
+			$user =& Element_Factory::makeElement( 'Bm_Users' );
+			if ( ! $user->get( 'login', $cond['user_login'] ) ) 
+				return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
-			if ( $user->isAuthenticated() )
+			if ( Blogmarks::isError ( $cur_user ) )
+				$cond['select_priv'] = false;
+			
+			else if ( $cur_user->login == $user->login )
 				$cond['select_priv'] = true;
+
 			else
 				$cond['select_priv'] = false;
 
             $marks->author = $user->login;
-        }
 
-        else {
+        } else
             // -- HACK: Les recherches globales ne se font qu'au sein des marks publics.
             $cond['select_priv'] = false;
-        }
 
         // Recherche au sein d'une plage de dates donnée
         if ( isset($cond['date_in']) )  $marks->whereAdd( "created >= ". $cond['date_in'] );
@@ -929,7 +1044,7 @@ class BlogMarks_Marker {
         // -- HACK: permet de ne pas avoir de doublons
         $marks->groupBy( 'id' );
 
-        return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 444 ) );
+        return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 404 ) );
 
                    
     }

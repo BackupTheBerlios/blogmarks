@@ -9,6 +9,10 @@ require_once 'Blogmarks/Element.php';
  */
 class Element_Bm_Tags extends Blogmarks_Element 
 {
+	/** Champs sur lesquels on peut effectuer une recherche
+     * @var      array */
+    var $_search_fields = array( 'title', 'summary' );
+
 	###START_AUTOCODE
 	/* the code below is auto generated do not remove the above tag */
 
@@ -79,5 +83,13 @@ class Element_Bm_Tags extends Blogmarks_Element
         $this->lang        = isset($props['lang'])          ? $props['lang']        : null;
         $this->ico         = isset($props['ico'])           ? $props['ico']         : null;
     }
+
+# ------
+
+    /** Renvoie la liste des champs sur lesquels il est possible d'effectuer une recherche (Blogmarks_Marker::getTagsList())
+     * @return      array
+     */
+    function getSearchFields() { return $this->_search_fields; }
+
 }
 ?>

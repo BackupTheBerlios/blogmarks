@@ -2,7 +2,7 @@
 /**
  * Table Definition for bm_Users
  */
-require_once 'blogmarks/Element.php';
+require_once 'Blogmarks/Element.php';
 
 /** Utilisateur.
  * @package     Elements
@@ -46,7 +46,7 @@ class Element_Bm_Users extends Blogmarks_Element
      * @param      object Bm_Element
      * @return     bool
      */
-    function owns( &$element ) { print_r( $element );return ( $this->id == $element->bm_user_id ) ? true : false; }        
+    function owns( &$element ) { return ( $this->id == $element->bm_Users_id ) ? true : false; }        
 
 
 }

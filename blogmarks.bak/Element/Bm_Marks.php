@@ -106,7 +106,9 @@ class Element_Bm_Marks extends Blogmarks_Element
      *           <code>./Marker.php:244:            $deprec_tags = array_diff( $mark->getTags(), $tags );</code>
      */
     function getTags() {
-        
+
+        $arr = array();
+
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
         $assocs->bm_Marks_id = $this->id;
         $assocs->find();

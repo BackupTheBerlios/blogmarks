@@ -1,8 +1,14 @@
+;; $Id: config.ini.dist,v 1.2 2004/03/01 16:36:57 mbertier Exp $
+
 [DB_Dataobject]
-database         = mysql://root:edison@localhost/Blogmarks
-schema_location  = /home/mbertier/dev/PEAR_OVERLAY/blogmarks/Element
-class_location   = /home/mbertier/dev/PEAR_OVERLAY/blogmarks/Element
+;; @see    http://pear.php.net/manual/en/package.database.db-dataobject.intro-configuration.php
+
+database         = mysql://user:pass@host/Blogmarks
+schema_location  = /blogmarks/Element
+class_location   = /blogmarks/Element
 require_prefix   = blogmarks/Element/
+
+;; Ces valeurs ne devraient pas avoir à être modifiées.
 class_prefix     = Element_
 extends_location = blogmarks/
 extends          = Element.php

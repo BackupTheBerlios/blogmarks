@@ -4,6 +4,9 @@
  */
 require_once 'blogmarks/Element.php';
 
+/** Utilisateur.
+ * @package     Elements
+ */
 class Element_Bm_Users extends Blogmarks_Element 
 {
 

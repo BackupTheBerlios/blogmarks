@@ -4,6 +4,9 @@
  */
 require_once 'blogmarks/Element.php';
 
+/** Tag
+ * @package     Elements
+ */
 class Element_Bm_Tags extends Blogmarks_Element 
 {
 

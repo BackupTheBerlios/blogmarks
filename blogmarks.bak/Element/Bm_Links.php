@@ -4,6 +4,10 @@
  */
 require_once 'blogmarks/Element.php';
 
+
+/** Lien.
+ * @package     Elements
+ */
 class Element_Bm_Links extends Blogmarks_Element 
 {
 

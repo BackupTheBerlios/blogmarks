@@ -4,6 +4,10 @@
  */
 require_once 'blogmarks/Element.php';
 
+
+/** Relation.
+ * @package     Elements
+ */
 class Element_Bm_Marks_has_bm_Tags extends Blogmarks_Element 
 {
 

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package version="1.0">
+  <name>Blogmarks</name>
+  <summary>Stop bookmarking, start blogmarking</summary>
+  <description>Soon to come...</description>
+  <maintainers>
+    <maintainer>
+      <user>mbertier</user>
+      <name>Tristan Rivoallan</name>
+      <email>mbertier@parishq.net</email>
+      <role>lead</role>
+    </maintainer>
+    <maintainer>
+      <user>benfle</user>
+      <name>Benoit Fleury</name>
+      <email>benfle@tipic.com</email>
+      <role>developer</role>
+    </maintainer>
+  </maintainers>
+  <release>
+    <version>0.1</version>
+    <date>2004-04-05</date>
+    <license>GPL</license>
+    <state>beta</state>
+    <notes>first try</notes>
+    <deps>
+      <dep type="pkg" rel="ge" version="1.5.3" optional="no">DB_DataObject</dep>
+      <dep type="pkg" rel="ge" version="1.2" optional="no">HTTP_Request</dep>
+    </deps>
+    <provides type="class" name="Element_Bm_Links" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Links::staticGet" />
+    <provides type="function" name="Element_Bm_Links::fetchUrlInfo" />
+    <provides type="class" name="Element_Bm_Marks" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Marks::staticGet" />
+    <provides type="function" name="Element_Bm_Marks::isPublic" />
+    <provides type="function" name="Element_Bm_Marks::isPrivate" />
+    <provides type="function" name="Element_Bm_Marks::addTagAssoc" />
+    <provides type="class" name="Element_Bm_Marks_has_bm_Tags" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Marks_has_bm_Tags::staticGet" />
+    <provides type="class" name="Element_Bm_Sessions" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Sessions::staticGet" />
+    <provides type="class" name="Element_Bm_Tags" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Tags::staticGet" />
+    <provides type="function" name="Element_Bm_Tags::isAssociatedToMark" />
+    <provides type="function" name="Element_Bm_Tags::isPublic" />
+    <provides type="function" name="Element_Bm_Tags::isPrivate" />
+    <provides type="function" name="Element_Bm_Tags::populateProps" />
+    <provides type="class" name="Element_Bm_Users" extends="Blogmarks_Element" />
+    <provides type="function" name="Element_Bm_Users::staticGet" />
+    <provides type="function" name="Element_Bm_Users::isAdmin" />
+    <provides type="function" name="Element_Bm_Users::isAuthenticated" />
+    <provides type="function" name="Element_Bm_Users::owns" />
+    <provides type="function" name="Element_Bm_Users::getMarksList" />
+    <provides type="class" name="Element_Factory" />
+    <provides type="function" name="Element_Factory::makeElement" />
+    <provides type="class" name="Blogmarks_Auth" />
+    <provides type="function" name="Blogmarks_Auth::authenticate" />
+    <provides type="class" name="Blogmarks_Element" extends="DB_DataObject" />
+    <provides type="function" name="Blogmarks_Element::populateProps" />
+    <provides type="class" name="Blogmarks_Exception" />
+    <provides type="function" name="Blogmarks_Exception::setCode" />
+    <provides type="function" name="Blogmarks_Exception::setMessage" />
+    <provides type="function" name="Blogmarks_Exception::getCode" />
+    <provides type="function" name="Blogmarks_Exception::getMessage" />
+    <provides type="class" name="BlogMarks_Marker" />
+    <provides type="function" name="BlogMarks_Marker::singleton" />
+    <provides type="function" name="BlogMarks_Marker::createMark" />
+    <provides type="function" name="BlogMarks_Marker::updateMark" />
+    <filelist>
+      <file role="data" baseinstalldir="/" md5sum="223ca39ea435dada4263f48cd833a46a" name="Element/Blogmarks.ini"/>
+      <file role="php" baseinstalldir="/" md5sum="368f4af528f4add0ed84fd917b62c9c2" name="Element/Bm_Links.php"/>
+      <file role="php" baseinstalldir="/" md5sum="d14751726f995a220a99bdb9a4bea38e" name="Element/Bm_Marks.php"/>
+      <file role="php" baseinstalldir="/" md5sum="71c02054c7bf38e04b6804b587e93b96" name="Element/Bm_Marks_has_bm_Tags.php"/>
+      <file role="php" baseinstalldir="/" md5sum="137f19aebd929677f2e9cc30f7e56c41" name="Element/Bm_Sessions.php"/>
+      <file role="php" baseinstalldir="/" md5sum="a9b74726fc4ef03c8cbe70fe9f03ccce" name="Element/Bm_Tags.php"/>
+      <file role="php" baseinstalldir="/" md5sum="045ade84023cda908549d3b648e481fd" name="Element/Bm_Users.php"/>
+      <file role="php" baseinstalldir="/" md5sum="543e0af40dba70a249d629f4801ec2bc" name="Element/Factory.php"/>
+      <file role="data" baseinstalldir="/" md5sum="285f554c6459a2ff22f32fbd4186f960" name="tutorials/Renderers/Renderers.pkg"/>
+      <file role="php" baseinstalldir="/" md5sum="611ab452ac5c5159c4934a511061491b" name="Auth.php"/>
+      <file role="data" baseinstalldir="/" md5sum="368a506b9eec23b2e12f5610fe79f3bd" name="ChangeLog"/>
+      <file role="data" baseinstalldir="/" md5sum="e01e574e2c52cb347888b3790cef75a7" name="config.ini.dist"/>
+      <file role="php" baseinstalldir="/" md5sum="bb791b78e25b203199d0e2e574d80556" name="Element.php"/>
+      <file role="php" baseinstalldir="/" md5sum="e3eefe66b88abca7ac82db7c16d92007" name="Exception.php"/>
+      <file role="php" baseinstalldir="/" md5sum="dec17dc49828e9ee5663266e7f314261" name="Marker.php"/>
+    </filelist>
+  </release>
+  <changelog>
+    <release>
+      <version>0.1</version>
+      <date>2004-04-05</date>
+      <license>GPL</license>
+      <state>beta</state>
+      <notes>first try</notes>
+    </release>
+  </changelog>
+</package>

@@ -27,6 +27,8 @@ if ( isset( $_GET['mini'] ) ) {
 
 <?php include 'includes/header.inc.php' ?>
 
+<div id="content">
+
 <h3>Insert a bookmark</h3>
 
 <?php
@@ -69,6 +71,8 @@ if ( isset( $_GET['mini'] ) ) {
 }
 
 ?>
+
+</div> <!-- # content -->
 
 <?php include 'includes/footer.inc.php' ?>
 

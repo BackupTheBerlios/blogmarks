@@ -47,15 +47,20 @@
 	<div id="login">
 
 		<?php
-		include_once "includes/functions.inc.php";
-		if ( $marker->userIsAuthenticated() ) {
 
+		include_once "includes/functions.inc.php";
+
+		if ( $marker->userIsAuthenticated() ) {
+            
 			$user = $marker->getUserInfo('login');
+            $userIsAuthenticated = TRUE; //hack;
 			echo $user;
 			echo '<p><strong>Auth OK</strong></p>';
 			echo '<p><a href="?disconnect=1">Disconnect</a></p>';
 
 		} else {
+
+            $userIsAuthenticated = FALSE; //hack;
 
 			if ( isset( $auth_error ) ) 
 				echo '<p class="error">' . $auth_error . '</p>';
@@ -76,14 +81,18 @@
 
 			
 
-	<?php } ?>
+	<?php }
+    
+    ?>
 
 	</div> <!-- /#login -->
 
     <div id="menu">
 		<ul>
 			<li><a href="index.php?section=PublicMarks" title="List of recent marks">PublicMarks</a></li>
+            <?php if ( $userIsAuthenticated ) : ?>
 			<li><a href="index.php?section=MyMarks" title="Manage your marks">MyMarks</a></li>
+            <?php endif ?>
 			<!-- <li><a href="index.php?section=MyHotlinks" title="Aggregation">MyHotlinks</a></li> !-->
 		</ul>
 	</div> <!-- /#menu -->

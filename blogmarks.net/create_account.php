@@ -20,6 +20,9 @@ include "includes/start.inc.php";
 
 <?php include "includes/header.inc.php" ?>
 
+
+<div id="content">
+
 <?php
 
 if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
@@ -61,29 +64,37 @@ if ( isset($_POST['create']) AND $_POST['create'] == 1 ) {
 
 ?>
 
+<h3>Create an account</h3>
+
 <form method="POST">
 
 <!-- <fieldset> -->
 
 <label>Login</label>
-<input type="text" name="login" />
+<input type="text" name="login" size="35" />
 <label>Password</label>
-<input type="password" name="pwd1" />
+<input type="password" name="pwd1" size="35"  />
 <label>Repeat password</label>
-<input type="password" name="pwd2" />
+<input type="password" name="pwd2" size="35"  />
 
-<label>E-mail adress</label>
-<input type="text" name="email" />
+
+<label>E-mail address</label>
+<!-- <p><i>We hate spam, you too, trust us.s</i></p> -->
+<input type="text" name="email" size="35"  />
 
 <input type="hidden" name="create" value="1" />
 
-<input type="submit" value="Create account" />
+<br />
+
+<input class="submit" type="submit" value="Submit" />
 
 <!-- </fieldset> -->
 
 </form>
 
 <?php } ?>
+
+</div> <!-- /# content -->
 
 <?php include "includes/footer.inc.php" ?>
 

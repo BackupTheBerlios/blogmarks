@@ -7,6 +7,7 @@ padding:0; /* Opera */
 
 /*demo*/
 background-color:#666;
+min-height:800px;
 }
 
 #conteneur {
@@ -26,21 +27,8 @@ color:white;
 padding:0 10px;
 }
 
-
-#menu {
-clear:both;
-}
-#menu ul {
-margin:0;
-padding:0;
-background-color:#ccc;
-height:17px;
-}
-#menu li {
-font-weight:bold;
-float:left;
-list-style-type:none;
-margin-right:40px;
+#content {
+margin:25px;
 }
 
 #colA {
@@ -270,6 +258,10 @@ clear:both;
 
 /* MINI */
 
+body.mini {
+min-height:0;
+}
+
 .mini #conteneur {
 width:auto;
 font-size:xx-small;
@@ -288,6 +280,11 @@ margin:0 0 10px;
 }
 
 .mini label {
+}
+
+.mini #content {
+padding:5px 10px;
+margin:0;
 }
 
 .mini select, .mini input, .mini textarea {
@@ -316,5 +313,35 @@ font-size:xx-small;
 }
 
 #footer p {
-margin:2px 0 5px;padding:0;
+margin:2px 5px 5px;
+padding:0;
+}
+
+/* --------------- */
+
+label {
+font-weight:bold;
+}
+
+#menu {
+clear:both;
+padding:5px 10px;
+background-color:#ccc;
+}
+
+#menu ul {
+margin:0;
+padding:0;
+height:17px;
+}
+
+#menu li {
+font-weight:bold;
+float:left;
+list-style-type:none;
+margin-right:40px;
+}
+
+#footer {
+font-size:xx-small;
 }

@@ -16,11 +16,8 @@
 
 <?php
 
-$time_end = getmicrotime();
 
-$time = $time_end - $time_start;
-
-echo "<p>Exec. time : " . round( $time , 5 ) . " secondes</p>";
+echo "<p>Exec. time : " . round( ( getmicrotime() - $time_start ) , 3 ) . " s</p>";
 
 ?>
 

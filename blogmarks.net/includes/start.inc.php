@@ -19,6 +19,8 @@ include_once 'Blogmarks/Marker.php';
 
 $marker =& Blogmarks_Marker::singleton();
 
+//echo "<p>Exec. time : " . round( ( getmicrotime() - $time_start ) , 3 ) . " s</p>";
+
 if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 
 	$nonce = microtime() / rand();
@@ -33,7 +35,7 @@ if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 	elseif ( DB::isError( $auth ) )
 		$auth_error = $auth->getMessage();
 	
-	//header("Location: index.php");
+	header("Location: index.php");
 
 }
 

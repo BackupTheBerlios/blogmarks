@@ -34,6 +34,8 @@ include "includes/header.inc.php";
 
 ?>
 
+<div id="content">
+
 <h3>Add a bookmark</h3>
 
 <form method="POST" action="add.php<?php if ( isset( $_GET['mini'] ) ) echo '?mini=1' ?>">
@@ -54,6 +56,8 @@ include "includes/header.inc.php";
 	<input type="submit" value="Add" />
 
 </form>
+
+</div> <!-- # content -->
 
 <?php include 'includes/footer.inc.php' ?>
 

@@ -119,27 +119,11 @@ if ( $_GET['section'] == 'AdvancedSearch' ) {
 	//print_r( $params );
 
 
-
-
 	/* On effectue la recherche */
 
 	$list =& $marker->getMarksList( $params );
 
 
-
-/*
-$uri = 'http://localhost/blogmarks.atom/search' . $uri;
-echo '<a href="' . $uri . '">' . $uri . '</a><br/>';
-*/
-?>
-<!--
-<form name="add_hotlinks" method="GET">
-<input type="hidden" name="href" value="<?php echo $uri; ?>"/>
-<input type="submit" value="AddInMyHotlinks"/>
-</form>
-!-->
-
-<?php
 	/* On affiche le résultat */
 
 	if ( Blogmarks::isError($list) ) {
@@ -164,9 +148,10 @@ echo '<a href="' . $uri . '">' . $uri . '</a><br/>';
 		// To clean
 		$i = 0;
 		$string_date_prev = '';
+		$max = 25;
 		//
 
-		while ( $list->fetch() ) 
+		while ( $list->fetch() && $i <= $max ) 
 		{
 			// Date handling
 
@@ -233,8 +218,10 @@ echo '<a href="' . $uri . '">' . $uri . '</a><br/>';
 				echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
 				echo ' <a onclick="return Delete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
 			}
-
+            
 			echo '</li>'."\r\n";
+
+            
 
 			$i ++;
 		}

@@ -1,9 +1,15 @@
 <?php
-/**
- * Table Definition for bm_Sessions
+/** Table Definition for bm_Sessions
+ * @version  $Id: Bm_Sessions.php,v 1.3 2004/03/17 15:07:15 mbertier Exp $
  */
-require_once 'blogmarks/Element.php';
 
+/***/
+require_once 'Blogmarks/Element.php';
+
+/** Couche d'accès aux données de session.
+ * @package    Blogmarks
+ * @subpackage Auth
+ */
 class Element_Bm_Sessions extends Blogmarks_Element 
 {
     ###START_AUTOCODE

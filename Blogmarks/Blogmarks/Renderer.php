@@ -1,15 +1,12 @@
 <?php
 /** Déclaration de la classe BlogMarks_Renderer
- * @version    $Id: Renderer.php,v 1.1 2004/05/19 13:00:21 benfle Exp $
+ * @version    $Id: Renderer.php,v 1.2 2004/05/19 13:06:32 mbertier Exp $
  * @license    http://www.opensource.org/licenses/artistic-license.php
  */
 
 /** Classe abstraite définissant les méthodes
  *  à implémenter pour créer un renderer de BlogMarks.
  *
- *
- * @todo    Il serait surement possible d'autogénérer cette classe abstraite
- *          à partir des classes du package Elements.
  *
  * @package    Renderers
  * @author     BlogMarksTeam <dev@blogmarks.net>
@@ -36,8 +33,10 @@ class BlogMarks_Renderer {
   function BlogMarks_Renderer () {}
 
 
-  /** DECORATOR. */
-  function visit() {}
+  /** DECORATOR. 
+   * @param      object Blogmarks_Element      $element
+   */
+  function visit( &$element ) {}
     
 
   /** Affichage de l'élément. */

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.9 2004/04/28 10:21:45 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.10 2004/04/28 10:36:27 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -665,6 +665,10 @@ class BlogMarks_Marker {
 
         // Recherche au sein des Marks d'un utilisateur donné
         if ( isset($cond['user_login']) ) {
+
+            // On vérifie que l'utilisateur existe
+            $user =& Element_Factory::makeElement( 'Bm_Users' );
+            if ( ! $user->get( 'login', $cond['user_login'] ) ) return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
             $user =& Element_Factory::makeElement( 'Bm_Users' );
             $user->get( 'login', $cond['user_login'] );

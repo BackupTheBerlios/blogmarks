@@ -1,12 +1,13 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.8 2004/03/09 11:08:05 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.9 2004/03/12 16:53:21 mbertier Exp $
  */
 
 require_once 'PEAR.php';
 require_once 'Blogmarks.php';
 
 # -- CONFIGURATION
+
 
 # Dataobjects
 $config = parse_ini_file('/home/mbertier/dev/PEAR_OVERLAY/blogmarks/config.ini',TRUE);
@@ -26,12 +27,14 @@ require_once 'blogmarks/Element/Factory.php';
  * @todo       Validation des paramètres dans les méthodes publiques (et les autres mêmes ;)
  * @todo       Fichier de conf dédié
  * @todo       Erreur 500 en cas de tentative de création d'un élément déja existant.
+ * @todo       Mise en place de l'authentification dans toutes les méthodes
  */
 class BlogMarks_Marker {
 
     /** Tableau d'objets utilisés couramment par Marker.
-     * @var array */
-    var $slots = array();
+     * @var      array 
+     * @access   private  */
+    var $_slots = array();
     
 
 # ----------------------- #
@@ -49,24 +52,33 @@ class BlogMarks_Marker {
     /** Création d'un mark. 
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
-     * @return    string    L'URI du mark créé.
+     * @return     mixed     L'URI du mark créé
      */
     function createMark( $props ) {
 
+        // permissions: Pour pouvoir créer un Mark, il faut êter authentifié
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( $user && ! $user->isAuthenticated() ) return Blogmarks::raiseError( "Permission denied", 401 );
+
+
         // Instanciation et initialisation d'un Link
-        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
 
         // Si le lien n'est pas déjà enregistré, on le fait.
         if ( $link->get( 'href', $props['href'] ) == 0 ) {
             $link = $this->createLink( $props['href'], true );
+            if ( Blogmarks::isError($link) ) { return $link; }
         }
 
 
         // Création du Mark.
-        $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
+        $mark =& $this->_slots['ef']->makeElement( 'Bm_Marks' );
         
+        // Le possesseur du Mark est l'utilisateur connecté.
+        $u =& $this->_slots['auth']->getConnectedUser();
+        $mark->bm_Users_id = $u->id;
+
         $mark->bm_Links_id = $link->id;
-        $mark->bm_Users_id = 1;     // MOCK!
 
         // Si le Mark n'existe pas, on le crée
         if ( $mark->find(true) == 0 ) {
@@ -84,8 +96,12 @@ class BlogMarks_Marker {
             $mark->modified = 0;
 
             // Insertion dans la base de données
-            $mark->insert();
-        }
+            $res = $mark->insert();
+            if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+
+        } 
+
+        else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
 
         // Récupération de l'URI du Mark
@@ -101,12 +117,17 @@ class BlogMarks_Marker {
      * @return    string    L'uri du mark mis à jour.
      */
     function updateMark( $id, $props ) {
-        $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
-        
+        $mark =& $this->_slots['ef']->makeElement( 'Bm_Marks' );
+
         // Si le mark à mettre à jour n'existe pas -> erreur 404
         if ( ! $mark->get( $id ) ) {
             return Blogmarks::raiseError( "Le Mark [$id]  n'existe pas.", 404 );
         }
+
+        // permissions: Pour mettre à jour un Mark, il faut le posséder
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) &&  ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
+
         
         // Si l'URL associée au Mark doit être modifiée
         if ( isset($props['href']) ) {
@@ -120,14 +141,16 @@ class BlogMarks_Marker {
                 // Si le Link existe déja, on se contente de modifier l'association
                 if ( $link->get('href', $props['href']) > 0 ) {
                     $mark->bm_Links_id = $link->id;
-                    $mark->update();
+                    $res = $mark->update();
+                    if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
                 } 
 
                 // Aucun Link correspondant n'existe, on en crée un
                 else {
                     $link =& $this->createLink( $props['href'], true );
                     $mark->bm_Links_id = $link->id;
-                    $mark->update();
+                    $res = $mark->update();
+                    if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
                 }
             }
 
@@ -145,8 +168,9 @@ class BlogMarks_Marker {
         $mark->modified = $date;
         
         // Insertion dans la base de données
-        $mark->update();
-        
+        $res = $mark->update();
+        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+
         // On renvoie l'URI du Mark
         $uri = $this->getMarkUri( $mark );
 
@@ -158,15 +182,21 @@ class BlogMarks_Marker {
      * @return   mixed    true ou Blogmarks_Exception en cas d'erreur.
      */
     function deleteMark( $id ) {
-        $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
+        $mark =& $this->_slots['ef']->makeElement( 'Bm_Marks' );
         
         // Si le mark à effacer n'existe pas -> erreur 404
         if ( ! $mark->get( $id ) ) {
             return Blogmarks::raiseError( "Le mark [$id] n'existe pas.", 404 );
         }
 
+        // permissions: Pour effacer un Mark, il faut le posséder
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
+
+
         // Suppression du Mark
-        $mark->delete();
+        $res = $mark->delete();
+        if ( Blogmarks::isError($res) ) { return $res; }
 
         return true;
     }
@@ -191,10 +221,14 @@ class BlogMarks_Marker {
      * @return   objet Element_Bm_Links   Le Links créé
      */
     function createLink( $href, $autofetch = false ) {
-        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
+
+        // permissions: Pour créer un Link, il faut être authentifié
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
         
         $link->href = $href;
-
+        
         // Si le Link existe déja on se contente de renvoyer son URI
         if ( $link->find(true) ) { return  $link; }
 
@@ -205,7 +239,8 @@ class BlogMarks_Marker {
         // Récupération des informations de la page (si autofetch)
         if ( $autofetch === true ) { 
             $link->fetchUrlInfo(); 
-            $link->update();
+            $res = $link->update();
+            if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
         }
 
         return $link;
@@ -219,7 +254,12 @@ class BlogMarks_Marker {
      * @return    object Element_Bm_Links   Le Link mis à jour
      */
     function updateLink( $id, $props = array(), $autofetch = false ) {
-        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        
+        // permissions: Pour mettre à jour un Link, il faut être authentifié
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->isAuthenticated() )  return Blogmarks::raiseError( "Permission denied", 401 );
+
+        $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
         
         // Si le Link n'existe pas -> erreur
         if ( ! $link->get($id) ) { 
@@ -235,7 +275,7 @@ class BlogMarks_Marker {
         unset( $link );
         
         // Récupération du Link à mettre à jour
-        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
         $link->get( $id );
 
         // Mise à jour des propriétés de l'objet
@@ -246,7 +286,8 @@ class BlogMarks_Marker {
         if ( $link->href !== $props['href'] && $autofetch ) $link->fetchUrlInfo();
 
         // Mise à jour de l'enregistrement dans la base de données
-        $link->update();
+        $res = $link->update();
+        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
 
         return $link;
     }
@@ -257,7 +298,13 @@ class BlogMarks_Marker {
      * @return   
      */
     function deleteLink( $id ) {
-        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+
+        // permissions: Pour effacer un Link, il faut être authentifié
+        $user =& $this->_slots['auth']->getConnectedUser();
+        if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+
+
+        $link =& $this->_slots['ef']->makeElement( 'Bm_Links' );
 
         // Si le Link à effacer n'existe pas -> erreur 404
         if ( ! $link->get($id) ) {
@@ -265,7 +312,8 @@ class BlogMarks_Marker {
         }
 
         // Suppression du Link
-        $link->delete();
+        $res = $link->delete();
+        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
 
         return true;        
     }
@@ -290,13 +338,19 @@ class BlogMarks_Marker {
      * @return     string     L'uri du tag créé
      */
     function createTag( $props = array() ) {
-        $tag =& $this->slots['ef']->makeElement( 'Bm_Tag' );
+
+        $tag =& $this->_slots['ef']->makeElement( 'Bm_Tags' );
         
+        // Si le tag existe déja -> erreur 500
+        $tag->id = $props['id'];
+        if ( $tag->find() ) { return Blogmarks::raiseError( "Le Tag [$tag->id] existe déjà.", 500 ); }
+
         // Initialisation des propriétés de l'objet
         $tag->populateProps( $props );
 
         // Insertion dans la base de données
         $res = $tag->insert();
+        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
         
         // On renvoie l'uri du nouveau tag
         $uri = $this->getTagUri( $tag );
@@ -328,7 +382,20 @@ class BlogMarks_Marker {
      * @return     string    L'uri du Tag mis à jour
      */
     function updateTag( $id, $props ) {
+        $tag =& $this->_slots['ef']->makeElement( 'Bm_Tags' );
 
+        // Si le Tag n'existe pas -> erreur 404
+        $tag->id = $id;
+        if ( ! $tag->find() ) { Blogmarks::raiseError( "Le tag [$id] n'existe pas.", 404 ); }
+
+        // Mise à jour des propriétés du Tag
+        $tag->populateProps( $props );
+        $res = $tag->update();
+        if ( Blogmarks::isError($res) ) { return $res; }
+
+        // On retroune l'uri du Tag
+        $uri = $this->getTagUri( $tag );
+        return $uri;
     }
 
 
@@ -336,7 +403,7 @@ class BlogMarks_Marker {
      * @param     string    $id    L'identifiant du Tag dans la base de données.
      */
     function deleteTag( $id ) {
-        $tag =& $this->slots['ef']->makeElement( 'Bm_Tags' );
+        $tag =& $this->_slots['ef']->makeElement( 'Bm_Tags' );
 
         // Si le Link à effacer n'existe pas -> erreur 404
         if ( ! $tag->get($id) ) {
@@ -376,6 +443,22 @@ class BlogMarks_Marker {
      */
     function getSimilarTags( $name ) {}
 
+
+# ------- AUTH
+
+    /** Authentification d'un utilisateur.
+     * Les paramètres sont transmis à Blogmarks_Auth::authenticate()
+     * @param      string      $login        Le login de l'utilisateur.
+     * @param      string      $cli_digest   Le digest du client, qui sera comparé au digest server.
+     * @param      string      $nonce        Chaîne aléatoire utilisée par le client pour créer le digest.
+     * @param      string      $timestamp    Utilisé par le client pour générer le digest.
+     *
+     * @return     mixed       True en cas de succès ou Blogmarks_Exception en cas d'erreur.
+     */
+    function authenticate( $login, $cli_digest, $nonce, $timestamp ) {
+        $res = $this->_slots['auth']->authenticate( $login, $cli_digest, $nonce, $timestamp );
+        return $res;
+    }
                        
 # ----------------------- #
 # -- METHODES PRIVEES   --#
@@ -397,7 +480,7 @@ class BlogMarks_Marker {
             // Instanciation
             $obj =& new $class_info[0];
             
-            $this->slots[$slot_name] = $obj;
+            $this->_slots[$slot_name] = $obj;
             
         }
 

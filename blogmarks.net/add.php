@@ -57,7 +57,28 @@ if ( $marker->userIsAuthenticated() ) {
 
 	echo '<p>URI:<br />' . print_r( $result ) . '</p>' . "\n";
 
-} else echo "**Error : Pas connecté - to be customized";
+} else  {
+	
+	?>
+
+	<p>You are not logged !</p>
+
+	<form method="POST" action="add.php?connect=1">
+
+	<label>Username :</label>
+	<input type="text" name="login">
+	<label>Password : </label>
+	<input type="password" name="pwd">
+
+	<br />
+
+	<input type="submit" value="Sign in" />
+
+	</form>
+
+	<?php
+
+}
 
 
 if ( isset( $_GET['mini'] ) ) {

@@ -8,25 +8,26 @@
 
 </head>
 
-<body>
+<?php
+
+if ( isset( $_GET['mini'] ) ) 
+
+	echo '<body class="mini">';
+
+else
+
+	echo '<body>';
+
+?>
+
 
 <div id="conteneur">
 
-<div id="nav">
+<?php
 
-<a href="index.php">Home</a> 
-				| <a href="/tags">Tags</a> 
-				| <a href="/invite">Invite</a> 
-				| <a href="/friends">Friends</a> 
-				| <a href="/search">Search</a> 
-				| <a href="/help">Help</a> 
-				| <a href="/logout">Log Out</a>
+include "includes/header.inc.php";
 
-</div>
-
-<h1>BlogMarks.net</h1>
-
-<h2>Stop bookmarking. Start blogmarking !</h2>
+?>
 
 <h3>Edit a bookmark</h3>
 
@@ -50,23 +51,30 @@ $string_tags = implode(' ', $mark->getTags() );
 ?>
 	<input name="id" type="hidden" value="<?php echo $_GET['id'] ?>" />
 	<label>title</label>
-	<input value="<?php echo $mark->title ?>" style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
+	<input value="<?php echo $mark->title ?>" type="text"  name="title" size="50"  maxlength="255"  />
 	<label>url</label>
-	<input value="<?php echo $mark->getHref() ?>" style="display:block" type="text"  name="url" size="50"  maxlength="255"  />
+	<input value="<?php echo $mark->getHref() ?>" type="text"  name="url" size="50"  maxlength="255"  />
 	<label>description</label>
-	<input value="<?php echo $mark->summary ?>" style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
+	<input value="<?php echo $mark->summary ?>" type="text"  name="description" size="50"  maxlength="255"  />
 	<label>tags</label>
-	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" style="display:block" type="text"  name="tags" size="50"  maxlength="255"  />
+	<input value="<?php echo implode(" ", $mark->getTags() ) ?>" type="text"  name="tags" size="50"  maxlength="255"  />
 	<label>via</label>
-	<input value="<?php echo $mark->via ?>" style="display:block" type="text"  name="via" size="50"  maxlength="255"  />
-	<input type="submit" value="Update" />
+	<input value="<?php echo $mark->via ?>" type="text"  name="via" size="50"  maxlength="255"  />
+
+	<input value="<?php echo $_GET['mini'] ?>" type="hidden"  name="mini"  />
+	
+	<input class="submit" type="submit" value="Update" />
 
 </form>
+
+<div id="footer">
 
 <hr />
 
 <p><strong>Powered by</strong> : Mbertier / Benfle / Znarf</p>
 
 </div>
+
+</div> <!-- # conteneur -->
 
 </body></html>

@@ -29,6 +29,10 @@ else {
     echo "*** Erreur : " . $auth->getMessage() . "\n";
 }
 
+if ( $_POST['from'] == 'popupbookmarklet' ) {
 
+	echo '<a onclick="window.close()" href="#">[close]</a>';
+
+}
 
 ?>

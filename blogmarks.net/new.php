@@ -8,7 +8,18 @@
 
 </head>
 
-<body class="mini">
+<?php
+
+if ( isset( $_GET['mini'] ) ) 
+
+	echo '<body class="mini">';
+
+else
+
+	echo '<body>';
+
+?>
+
 
 <div id="conteneur">
 

@@ -11,18 +11,13 @@ if ( ! Blogmarks::isError( $auth ) ) {
 
 	$array_tags = explode( " " , $_POST['tags'] );
 
-    $uri =& $marker->updateMark( $_POST['id'], 
-								 
-								array(  'href'		=> $_POST['url'] ,
-                                        'title'		=> $_POST['title'] ,
-										'summary'	=> $_POST['description'],
-										'via'		=> $_POST['via'],
-										'tags'		=> $array_tags
-								      )
-								);
+    $result =& $marker->deleteMark( $_GET['id'] );
 
     if ( Blogmarks::isError($uri) ) echo "<p><b>Erreur !!</b><br>code : ".$uri->getCode()."<br>message : ". $uri->getMessage() ."</p>\n";
-    else echo "Mark URI: $uri\n";
+    else {
+		echo "DELETE OK:";
+		print_r( $result) ;
+	}
 }
 
 // WRONG AUTH :(
@@ -30,12 +25,18 @@ else {
     echo "*** Erreur : " . $auth->getMessage() . "\n";
 }
 
-
-if ( $_POST['mini'] == '1' ) {
+if ( $_GET['from'] == 'popupjs' ) {
 
 	echo '<a onclick="window.close()" href="#">[close]</a>';
 
 }
 
 
+
 ?>
+
+<script type="text/javascript">
+
+window.focus();
+
+</script>

@@ -17,15 +17,8 @@ width:750px;
 margin:auto;
 }
 
-.mini #conteneur {
-width:auto;
-font-size:xx-small;
-}
 
-.mini select, .mini input {
-font-family: Arial, sans-serif;
-font-size:x-small;
-}
+
 
 #colA {
 /*
@@ -54,7 +47,7 @@ font-size:large;
 }
 
 h3 {
-font-size:normal;s
+font-size:normal;
 }
 
 h4 {
@@ -185,3 +178,44 @@ font-size:larger;
 .clear {
 clear:both;
 }
+
+
+/* MINI */
+
+.mini #conteneur {
+width:auto;
+font-size:xx-small;
+}
+
+.mini #header {
+display:none;
+}
+
+.mini #footer {
+display:none;
+}
+
+
+.mini h3 {
+/*border:1px solid red;*/
+margin:0 0 10px;
+}
+
+
+.mini label {
+}
+
+.mini select, .mini input {
+font-family: Arial, sans-serif;
+font-size:x-small;
+}
+
+
+input.submit {
+margin:5px 0;
+display:block;
+font-size:x-small;
+font-weight:bold;
+}
+
+

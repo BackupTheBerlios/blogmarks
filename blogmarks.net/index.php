@@ -5,6 +5,7 @@
 <title>Blogmarks.net</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" title="default" type="text/css" href="style2.css" media="all"  />
+<script type="text/javascript" src="lib.js"></script>
 
 </head>
 
@@ -14,7 +15,7 @@
 
 <div id="nav">
 
-<a href="/">Home</a> 
+<a href="index.php">Home</a> 
 				| <a href="/tags">Tags</a> 
 				| <a href="/invite">Invite</a> 
 				| <a href="/friends">Friends</a> 
@@ -57,7 +58,9 @@ $list =& $marker->getMarksListOfUser( "znarf" );
         foreach ( $list->getTags() as $tag ) echo "$tag ";
         echo "]\n";
 
-		echo '<a href="edit.php?id=' . $list->id . '">edit</a>';
+		echo '<a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
+		echo ' ';
+		echo '<a onclick="return confirmDelete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';
 
 		echo '</li>';
     }
@@ -109,6 +112,12 @@ $list =& $marker->getMarksListOfUser( "znarf" );
 <hr />
 
 <p><strong>Powered by</strong> : Mbertier / Benfle / Znarf</p>
+
+<p><a href="javascript:Q='';docref='';if (document.all) Q = document.selection.createRange().text;else Q=window.getSelection();if (document.referrer) docref=escape(document.referrer);if (typeof(_ref)!= 'undefined') docref=escape(_ref);void(btw=window.open('http://localhost/bm/blogmarks.net/new_popup.php?&summary='+escape(Q)+'&url='+escape(location.href)+'&title='+escape(document.title)+'&via='+docref+'&mini=1','BlogTHIS','location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no'));">Advanced fuckin bookmarklet</a></p>
+
+<p><a href="javascript:url=location.href;title=document.title;void( open('http://localhost/bm/blogmarks.net/new_popup.php?url='+escape(url)+'&title='+escape(title),'BlogMarks', 'location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no'));">Simple fuckin bookmarklet</a></p>
+
+
 
 </div>
 

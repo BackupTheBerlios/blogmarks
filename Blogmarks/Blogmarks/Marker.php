@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.14 2004/04/30 13:49:25 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.15 2004/05/04 13:45:14 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -68,7 +68,7 @@ class BlogMarks_Marker {
     /** Création d'un mark.
      * Dans $props, en plus des propriétés correspondants à la DB, on peux renseigner deux clés supplémentaires :
      *    - $props['tags']      -> un tableau d'id de Tags à associer au Mark
-     *    - $props['public']    -> true, false, ou une date future (format mysql datetime) à laquelle le Mark deviendra public.
+     *    - $props['public']    -> true, false, ou une date future (timestamp) à laquelle le Mark deviendra public.
      *
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
@@ -653,6 +653,13 @@ class BlogMarks_Marker {
      *         - select_priv   => booléen. Si vrai, recherche aussi au sein des marks privés 
      *                            (si niveau de permission suffisant).
      *         - order_by      => array( string champs ou array(champs1, champs2, ...), string ASC / DESC )
+     * 
+     * La méthode accepte aussi des indexes nommés comme ceux que renvoie la méthode Bm_Marks::getSearchFields().
+     * Il sera effectuée une recherche sur le contenu de ces champs. Le paramètre prend la forme suivante :
+     *         - 'nomchamps' => array( '%%', 'LIKE' ) ou
+     *         - 'nomchamps' => array( '.*', 'REGEX')
+     *
+     * Pour la syntaxe de regex, ce référer à la documentation de MySQL : {@link http://dev.mysql.com/doc/mysql/en/Regexp.html}
      *
      * @param      array      $cond      Tableau associatif définissant les critère de sélection des Marks
      *                                     
@@ -672,6 +679,11 @@ class BlogMarks_Marker {
             if ( ! $user->get( 'login', $cond['user_login'] ) ) 
                 return Blogmarks::raiseError( "L'utilisateur [". $cond['user_login'] ."] n'existe pas", 404 );
 
+            // -- TODO: Vérification du niveau de permission
+            /*
+            $cur_user &= $this->_slots['auth']->getConnectedUser();
+            $cond['select_priv'] = ( $cur_user->id == $user->id ) ? $cond['select_priv'] : false;
+            */
             $marks->bm_Users_id = $user->id;
         }
 
@@ -679,7 +691,7 @@ class BlogMarks_Marker {
         if ( isset($cond['date_in']) )  $marks->whereAdd( "created >= ". $cond['date_in'] );
         if ( isset($cond['date_out']) ) $marks->whereAdd( "created <= ". $cond['date_out'] );
 
-        //
+        // INNER JOIN
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
         $assocs->joinAdd( $marks );        
 
@@ -709,7 +721,7 @@ class BlogMarks_Marker {
         $marks->joinAdd();
         $marks->whereAdd();
 
-        //
+        // LEFT JOIN (sinon les Marks non décrits par des Tags ne sont pas sélectionné)
         $marks->joinAdd( $assocs, 'LEFT' );
 
         // -- Sélection des Marks à inclure
@@ -727,6 +739,27 @@ class BlogMarks_Marker {
         if ( ! isset($cond['select_priv']) || $cond['select_priv'] == false ) {
             $marks->whereAdd( "issued != 0 ",  'AND' );
             $marks->whereAdd( "issued < '$now'", 'AND' );
+        }
+
+        // Ajout des clauses de recherche
+        foreach ( $marks->getSearchFields() as $f ) {
+            // On doit rechercher sur un des champs
+            if ( isset($cond[$f]) && is_array($cond[$f]) ) {
+                
+                // Constitution du WHERE
+                // "nomchamps LIKE / REGEXP pattern"
+                $q = "$f ". $cond[$f][1] ." '". $marks->escape($cond[$f][0]). "'";
+
+                // Le champs sur lequel on effectue la recherche se trouve dans une autre table
+                if ( count(array_keys($marks->getLinksFields(), $f)) ) {
+                    $links =& Element_Factory::makeElement( 'Bm_Links' );
+                    $marks->joinAdd( $links, 'LEFT' );
+                    //                    $marks->whereAdd( $q, 'AND' );
+                }
+
+                // Recherche simple
+                else $marks->whereAdd( $q, 'AND' );
+            }
         }
 
         // Tri des résultats

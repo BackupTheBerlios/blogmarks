@@ -46,7 +46,9 @@ $list =& $marker->getMarksListOfUser( "znarf" );
 		
 		echo '<li>';
 
-		echo '<a href="' . $list->bm_Links_id . '">' . $list->title . '</a>' . ' : ' . $list->summary;
+	//	print_r( $list->getHref() );
+
+		echo '<a href="' .  $list->getHref() . '">' . $list->title . '</a>' . ' : ' . $list->summary;
        // echo $list->title . "\t|>\t\t" . $list->summary . "\t" ;
 
 	   //echo ' (' . $list->created . ')';
@@ -55,7 +57,7 @@ $list =& $marker->getMarksListOfUser( "znarf" );
         foreach ( $list->getTags() as $tag ) echo "$tag ";
         echo "]\n";
 
-		echo '<a href="EDIT">edit</a>';
+		echo '<a href="edit.php?id=' . $list->id . '">edit</a>';
 
 		echo '</li>';
     }
@@ -88,7 +90,7 @@ $list =& $marker->getMarksListOfUser( "znarf" );
 
 <h3>Add a bookmark</h3>
 
-<form method="POST" action="add/">
+<form method="POST" action="add.php">
 
 	<label>title</label>
 	<input style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
@@ -96,6 +98,8 @@ $list =& $marker->getMarksListOfUser( "znarf" );
 	<input style="display:block" type="text"  name="url" size="50"  maxlength="255"  />
 	<label>description</label>
 	<input style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
+	<label>tags</label>
+	<input style="display:block" type="text"  name="tags" size="50"  maxlength="255"  />
 	<label>via</label>
 	<input style="display:block" type="text"  name="via" size="50"  maxlength="255"  />
 	<input type="submit" value="Add" />

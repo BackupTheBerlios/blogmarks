@@ -17,6 +17,16 @@ width:750px;
 margin:auto;
 }
 
+.mini #conteneur {
+width:auto;
+font-size:xx-small;
+}
+
+.mini select, .mini input {
+font-family: Arial, sans-serif;
+font-size:x-small;
+}
+
 #colA {
 /*
 width:60%;

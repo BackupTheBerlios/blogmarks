@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_MarksList
- * @version    $Id: MarksList.php,v 1.1 2004/02/26 13:37:34 mbertier Exp $
+ * @version    $Id: MarksList.php,v 1.2 2004/03/01 13:21:29 benfle Exp $
  */
 
 /** Liste d'éléments BlogMarks.
@@ -20,9 +20,9 @@ class BlogMarks_MarksList extends BlogMarks_Element {
     
     
     /** Ajout d'un élément à la liste. 
-     * @param    object BlogMarks_Element    L'élément à ajouter.
+     * @param    object Element_Mark    Le blogmark à ajouter.
      */
-    function addElement( &$element ) {}
+    function addMark( &$mark ) {}
     
 # ----------------------- #
 # -- METHODES PRIVEES   --#

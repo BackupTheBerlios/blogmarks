@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.4 2004/04/06 11:33:01 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.5 2004/04/06 14:00:40 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -361,7 +361,7 @@ class BlogMarks_Marker {
     /** Création d'un Link.
      * @param     string     href          URL désignant la ressource.
      * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
-     * @return    objet Element_Bm_Links    Le Links créé
+     * @return    object Element_Bm_Links   Le Links créé
      * @perms     Pour créer un Link, il faut être authentifié
      */
     function createLink( $href, $autofetch = false ) {
@@ -699,6 +699,17 @@ class BlogMarks_Marker {
         if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
 
         return true;
+    }
+
+    /** Permet de savoir si l'utilisateur est authentifié.
+     * @return      mixed       true ou false; ou Blogmarks_Exception en cas d'erreur.
+     */
+    function userIsAuthenticated() {
+        $user =& $this->_slots['auth']->getConnectedUser();
+
+        if ( Blogmarks::isError($user) ) return $user;
+        
+        return $user->isAuthenticated();
         
     }
 

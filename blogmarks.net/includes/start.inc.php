@@ -9,23 +9,16 @@ include_once 'Blogmarks/Marker.php';
 
 $marker =& Blogmarks_Marker::singleton();
 
-//print_r( $_POST );
-if ( $_POST['signin'] == 1 ) {
+if ( $_GET['connect'] == 1 ) {
 
-	//echo "tentative auth";
-
-	# -- CONFIGURATION
 	$nonce = microtime() / rand();
 	$time = date( "YMDHMS" );
-	//$user = 'znarf';
-	//$pwd = 'cuix84ds';
 
-	$user	= $_POST['login'];
-	$pwd	= $_POST['pwd'];
+	$digest = makeDigest( trim( $_POST['pwd'] ) , $nonce, $time );
 
-	$digest = makeDigest( $pwd, $nonce, $time );
+	$auth = $marker->authenticate( trim( $_POST['login'] ) , $digest, $nonce, $time, TRUE );
 
-	$auth = $marker->authenticate( $user, $digest, $nonce, $time, TRUE );
+	header("Location: index.php");
 
 }
 

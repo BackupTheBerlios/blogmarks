@@ -88,16 +88,17 @@ border:0;
 /* */
 
 #top {
-border:1px solid lime;
+/*border:1px solid lime;*/
 width:525px;
 float:left;
 }
 
 #login {
-border:1px solid red;
+border:1px solid #ccc;
 width:175px;
 margin-left:25px;
 float:left;
+padding:10px;
 }
 
 #login form {
@@ -169,14 +170,19 @@ font-weight:bold;
 }
 
 a.tag {
+/*
 padding:0px 10px;
 margin:2px;
 border:1px solid #ccc;
+*/
+color:#CC0000;
 text-decoration:none;
 }
 
 a.tag:hover {
+/*
 background-color:#eee;
+*/
 }
 
 .tags {

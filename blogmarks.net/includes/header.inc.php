@@ -29,7 +29,6 @@
 <?php
 
 include_once "includes/functions.inc.php";
-include_once "includes/config.inc.php";
 
 if ( $marker->userIsAuthenticated() ) {
 
@@ -41,14 +40,14 @@ if ( $marker->userIsAuthenticated() ) {
 
 } else { ?>
 
-	<form method="POST">
+	<form method="POST" action="?connect=1">
 
 		<label>Username :</label>
 		<input type="text" name="login">
 		<label>Password : <span style="font-size:9px">(<a href="#">forgot?</a>)</span></label>
 		<input type="password" name="pwd">
 
-		<input type="hidden" name="signin" value="1">
+		<!-- <input type="hidden" name="signin" value="1"> -->
 
 	<!-- 	<br /> -->
 

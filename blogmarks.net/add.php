@@ -1,8 +1,7 @@
 <?php
 
-include "includes/functions.inc.php";
-include "includes/config.inc.php";
-
+include_once "includes/functions.inc.php";
+include "includes/start.inc.php";
 
 
 // AUTH OK :)

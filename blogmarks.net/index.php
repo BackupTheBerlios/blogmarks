@@ -1,7 +1,7 @@
 <?php
 
-include "includes/functions.inc.php";
-include "includes/config.inc.php";
+include_once "includes/functions.inc.php";
+include "includes/start.inc.php";
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -34,11 +34,15 @@ array( 'user' => $userlogin,
 
 
 
-if ( $marker->userIsAuthenticated() ) {
+if ( $marker->userIsAuthenticated() AND ( $_GET['all'] != 1 ) ) {
 
-	echo "<h2>Your last marks</h2>";
+	echo '<h2><a style="font-size:smaller" href="?all=1">All last public marks</a> / Your last marks</h2>';
 
 	$params['user_login']	=  $marker->getUserInfo('login') ;
+
+} elseif ( $_GET['all'] == 1 ) {
+	
+	echo '<h2>All last public marks / <a style="font-size:smaller" href="?private=1">Your last marks</a></h2>';
 
 } else {
 	
@@ -105,9 +109,7 @@ while ( $list->fetch() ) {
 		//	echo ' (' . dcdate2php( $list->created ) . ')';
         
         foreach ( $list->getTags() as $tag ) {
-			
-			echo '<a class="tag" href="?include_tags='. $tag .'">' . $tag . '</a> ';
-
+			echo ' <a class="tag" href="?include_tags='. $tag .'">[' . $tag . ']</a> ';
 		}
 
 		echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
@@ -125,33 +127,7 @@ while ( $list->fetch() ) {
 
 </ul>
 
-<hr />
-
-<h3>Add a bookmark</h3>
-
-<form method="POST" action="add.php">
-
-	<label>title</label>
-	<input style="display:block" type="text"  name="title" size="50"  maxlength="255"  />
-	<label>url</label>
-	<input style="display:block" type="text"  name="url" size="50"  maxlength="255"  />
-	<label>description</label>
-	<input style="display:block" type="text"  name="description" size="50"  maxlength="255"  />
-	<label>tags</label>
-	<input style="display:block" type="text"  name="tags" size="50"  maxlength="255"  />
-	<label>via</label>
-	<input style="display:block" type="text"  name="via" size="50"  maxlength="255"  />
-	<input type="submit" value="Add" />
-
-</form>
-
-<hr />
-
-<p><strong>Powered by</strong> : Mbertier / Benfle / Znarf</p>
-
-<p><a href="javascript:Q='';docref='';if (document.all) Q = document.selection.createRange().text;else Q=window.getSelection();if (document.referrer) docref=escape(document.referrer);if (typeof(_ref)!= 'undefined') docref=escape(_ref);void(btw=window.open('http://localhost/bm/blogmarks.net/new_popup.php?&summary='+escape(Q)+'&url='+escape(location.href)+'&title='+escape(document.title)+'&via='+docref+'&mini=1','BlogTHIS','location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no'));">Advanced fuckin bookmarklet</a></p>
-
-<p><a href="javascript:url=location.href;title=document.title;void( open('http://localhost/bm/blogmarks.net/new_popup.php?url='+escape(url)+'&title='+escape(title),'BlogMarks', 'location=no,toolbar=no,scrollbars=yes,width=350,height=375,left=75,top=175,status=no'));">Simple fuckin bookmarklet</a></p>
+<?php include 'includes/footer.inc.php' ?>
 
 </div> <!-- /#conteneur -->
 

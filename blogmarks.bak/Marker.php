@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.17 2004/03/30 11:52:20 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.18 2004/03/30 12:34:58 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -62,7 +62,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( $user && ! $user->isAuthenticated() ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->isAuthenticated() ) return Blogmarks::raiseError( "Permission denied", 401 );
 
 
         // Instanciation et initialisation d'un Link
@@ -141,7 +142,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) &&  ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Si l'URL associée au Mark doit être modifiée
         if ( isset($props['href']) ) {
@@ -212,7 +214,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
 
         // Suppression du Mark
@@ -259,9 +262,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->owns($mark) ) {
-            return Blogmarks::raiseError( "Permission denied", 401 );
-        }
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Désassociations
         if ( ! $merge ) {
@@ -317,9 +319,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->owns($mark) ) {
-            return Blogmarks::raiseError( "Permission denied", 401 );
-        }
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // On vérifie si le Tag n'est pas déja associé au Mark
         if ( $tag->isAssociatedToMark($mark->id) ) return Blogmarks::raiseError( "Le Tag [$tag->id] est déjà associé au Mark [$mark->id].", 500 );
@@ -344,7 +345,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( ! $user || ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
         
         $link->href = $href;
         
@@ -379,7 +381,8 @@ class BlogMarks_Marker {
         
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->isAuthenticated() )  return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->isAuthenticated() )  return Blogmarks::raiseError( "Permission denied", 401 );
 
         $link =& Element_Factory::makeElement( 'Bm_Links' );
         
@@ -424,7 +427,8 @@ class BlogMarks_Marker {
 
         // permissions: 
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
 
 
         $link =& Element_Factory::makeElement( 'Bm_Links' );
@@ -465,7 +469,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->isAuthenticated()) return Blogmarks::raiseError( "Permission denied", 401 );
 
         $tag =& Element_Factory::makeElement( 'Bm_Tags' );
         
@@ -521,7 +526,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Mise à jour des propriétés du Tag
         $tag->populateProps( $props );
@@ -546,7 +552,8 @@ class BlogMarks_Marker {
 
         // Permissions
         $user =& $this->_slots['auth']->getConnectedUser();
-        if ( isset($user) && ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
+        if ( Blogmarks::isError($user) ) return $user;
+        if ( ! $user->owns($tag) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Suppression du Tag
         $tag->delete();
@@ -582,6 +589,7 @@ class BlogMarks_Marker {
 
         // permissions
         $cur_user =& $this->_slots['auth']->getConnectedUser();
+        if ( Blogmarks::isError($cur_user) ) return $cur_user;
         $include_priv = ( $cur_user->login === $login_user ? true : false );
 
         // On vérifie que l'utilisateur existe
@@ -608,7 +616,7 @@ class BlogMarks_Marker {
      * @return     mixed       True en cas de succès ou Blogmarks_Exception en cas d'erreur.
      */
     function authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session = false ) {
-        $res =& $this->_slots['auth']->authenticate( $login, $cli_digest, $nonce, $timestamp );
+        $res =& $this->_slots['auth']->authenticate( $login, $cli_digest, $nonce, $timestamp, $make_session );
         return $res;
     }
 

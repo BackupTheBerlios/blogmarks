@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE package SYSTEM "http://pear.php.net/dtd/package-1.0">
+<package version="1.0">
+  <name>Blogmarks_Server_Atom</name>
+  <summary>Blogmarks' Atom Server</summary>
+  <description>Soon to come...</description>
+  <maintainers>
+    <maintainer>
+      <user>benfle</user>
+      <name>Benoit Fleury</name>
+      <email>benfle@tipic.com</email>
+      <role>lead</role>
+    </maintainer>
+    <maintainer>
+      <user>mbertier</user>
+      <name>Tristan Rivoallan</name>
+      <email>mbertier@parishq.net</email>
+      <role>developer</role>
+    </maintainer>
+  </maintainers>
+  <release>
+    <version>0.1</version>
+    <date>2004-04-01</date>
+    <license>GPL</license>
+    <state>beta</state>
+    <notes>first try</notes>
+    <deps>
+      <dep type="pkg" rel="ge" version="0.1" optional="no">Blogmarks</dep>
+    </deps>
+    <provides type="class" name="Server_Atom" />
+    <provides type="function" name="Server_Atom::run" />
+    <provides type="class" name="Controller" />
+    <provides type="class" name="ControllerFactory" />
+    <provides type="class" name="MarkController" />
+    <provides type="class" name="TagController" />
+    <provides type="class" name="MarksListController" />
+    <provides type="class" name="TagsListController" />
+    <provides type="function" name="Controller::execute" />
+    <provides type="function" name="ControllerFactory::createController" />
+    <provides type="function" name="MarkController::execute" />
+    <provides type="function" name="MarkController::parseAtom" />
+    <provides type="function" name="TagController::execute" />
+    <provides type="function" name="TagController::parseAtom" />
+    <provides type="function" name="MarksListController::execute" />
+    <provides type="function" name="TagsListController::execute" />
+    <provides type="class" name="FilterChainRoot" />
+    <provides type="class" name="InterceptingFilter" />
+    <provides type="class" name="ContextBuilderFilter" extends="InterceptingFilter" />
+    <provides type="class" name="AuthenticateFilter" extends="InterceptingFilter" />
+    <provides type="function" name="FilterChainRoot::execute" />
+    <provides type="function" name="InterceptingFilter::setChildFilter" />
+    <provides type="function" name="InterceptingFilter::getChildFilter" />
+    <provides type="function" name="ContextBuilderFilter::execute" />
+    <provides type="function" name="AuthenticateFilter::execute" />
+    <provides type="class" name="RendererFactory" />
+    <provides type="class" name="Renderer_Atom_Mark" extends="BlogMarks_Renderer" />
+    <provides type="class" name="Renderer_Atom_Tag" extends="BlogMarks_Renderer" />
+    <provides type="class" name="Renderer_Atom_TagsList" extends="BlogMarks_Renderer" />
+    <provides type="class" name="Renderer_Atom_MarksList" extends="BlogMarks_Renderer" />
+    <provides type="function" name="RendererFactory::createRenderer" />
+    <provides type="function" name="Renderer_Atom_Mark::render" />
+    <provides type="function" name="Renderer_Atom_Mark::build_tree" />
+    <provides type="function" name="Renderer_Atom_Tag::render" />
+    <provides type="function" name="Renderer_Atom_Tag::build_tree" />
+    <provides type="function" name="Renderer_Atom_TagsList::render" />
+    <provides type="function" name="Renderer_Atom_TagsList::build_tree" />
+    <provides type="function" name="Renderer_Atom_MarksList::render" />
+    <provides type="function" name="Renderer_Atom_MarksList::build_tree" />
+    <filelist>
+      <file role="php" baseinstalldir="Blogmarks" md5sum="8d5e9ab6b3060a065de83ba9e42ade99" name="Server/Atom.php"/>
+      <file role="php" baseinstalldir="Blogmarks" md5sum="46d22ef1ce06976284c45bbdedd65a87" name="Server/Atom/Controller.php"/>
+      <file role="php" baseinstalldir="Blogmarks" md5sum="779041b13af457f016f86b5bafdef62b" name="Server/Atom/Filter.php"/>
+      <file role="php" baseinstalldir="Blogmarks" md5sum="bc5a4389be1275114935a55713b52581" name="Server/Atom/Renderer.php"/>
+    </filelist>
+  </release>
+  <changelog>
+    <release>
+      <version>0.1</version>
+      <date>2004-04-01</date>
+      <license>GPL</license>
+      <state>beta</state>
+      <notes>first try</notes>
+    </release>
+  </changelog>
+</package>

@@ -110,8 +110,8 @@ while ( $list->fetch() ) {
 
 		$owner = $list->getOwner();
 
-		if ( isset( $_GET['all'] )  AND  $_GET['all'] == 1 )
-			echo $list->getOwner() . " - ";
+		if ( (!isset( $_GET['private'] ) ) OR ( isset( $_GET['all'] ) AND  $_GET['all'] == 1 ) )
+			echo $owner . " - ";
 
 		$link = $list->getLink( 'href' );
 
@@ -127,7 +127,7 @@ while ( $list->fetch() ) {
 
 		//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
 
-		if ( $owner == $USER ) {
+		if ( isset( $USER ) AND ( $owner == $USER ) ) {
 
 			echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
 

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.15 2004/05/04 13:45:14 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.16 2004/05/19 09:44:01 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -714,7 +714,6 @@ class BlogMarks_Marker {
             }
         }
 
-        
         // Reset
         $assocs =& Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
         $assocs->joinAdd();
@@ -751,9 +750,11 @@ class BlogMarks_Marker {
                 $q = "$f ". $cond[$f][1] ." '". $marks->escape($cond[$f][0]). "'";
 
                 // Le champs sur lequel on effectue la recherche se trouve dans une autre table
+                // TODO -- faire fonctionner le bouzin
                 if ( count(array_keys($marks->getLinksFields(), $f)) ) {
                     $links =& Element_Factory::makeElement( 'Bm_Links' );
                     $marks->joinAdd( $links, 'LEFT' );
+                    //                    $links->href = 'http';
                     //                    $marks->whereAdd( $q, 'AND' );
                 }
 
@@ -920,14 +921,18 @@ class BlogMarks_Marker {
         $slots_info = array( 'auth' => array( 'Blogmarks_Auth',  'Blogmarks/Auth.php' ) );
         
         foreach ( $slots_info as $slot_name => $class_info ) {
-            // Inclusion de la déclaration de la classe
-            require_once $class_info[1];
-            
-            // Instanciation
-            $obj =& new $class_info[0];
-            
-            $this->_slots[$slot_name] = $obj;
-            
+
+            // On ne recrée l'objet que si nécessaire
+            if ( ! isset($this->_slots[$slot_name]) ) {
+                
+                // Inclusion de la déclaration de la classe
+                require_once $class_info[1];
+                
+                // Instanciation
+                $obj =& new $class_info[0];
+                
+                $this->_slots[$slot_name] = $obj;
+            }
         }
         
         return true;

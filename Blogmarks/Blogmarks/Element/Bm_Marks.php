@@ -132,27 +132,32 @@ class Element_Bm_Marks extends Blogmarks_Element
     }
 
 
-    /** Renvoie le href associé au Mark. 
-     * @return       mixed     Le href associé au Mark ou Blogmarks_Exception en cas d'erreur.
-     */
-    function getHref() {
-        require_once 'Blogmarks/Element/Factory.php';
-
-        $link =& Element_Factory::makeElement( 'Bm_Links' );
-        
-        if ( ! $link->get($this->href) )
-            return Blogmarks::raiseError( "Aucun href n'est associé au Mark [$this->id].", 404 );
-
-        return $link->href;
-    }
-
-
 # ------ LINKS
 
     /** Renvoie la liste des champs de la base de données qui correpondent à des Links
      * @return      array
      */
     function getLinksFields() { return $this->_links_fields; }
+
+
+    /** Renvoie la valeur du Link lié passé en paramètre.
+     * @param      string      field_name      Un nom de champs lié (renvoyé par Bm_Marks::getLinksFields())
+     * @return     mixed       String ou Blogmarks_Exception en cas d'erreur
+     */
+    function getLink( $field ) {
+
+        // On vérifie que le champs passé en paramètre est bien un Link lié
+        if ( ! count(in_array($field, $this->_links_fields)) ) 
+            return Blogmarks::raiseError( "Aucun Link lié nommé [$field].", 404 );
+
+        $link =& Element_Factory::makeElement( 'Bm_Links' );
+
+        // Récupération du lien
+        if ( ! $link->get($field, $this->$field) )
+            return Blogmarks::raiseError( "Aucun Link associé au Mark [$this->id].", 404 );
+        
+        return $link;
+    }
 
 
 # ------

@@ -17,4 +17,37 @@ function makeDigest( $pwd, $nonce, $timestamp  ) {
     
 }    
 
+
+function dcdate2php($dcdate,$format='j/m/Y @ H:i') {
+
+	$year = substr( $dcdate , 0 , 4 );
+	$month = substr( $dcdate , 5 , 2 );
+	$day = substr( $dcdate , 8 , 2 );
+
+	$hour = substr( $dcdate , 11 , 2 );
+	$minutes = substr( $dcdate , 14 , 2 );
+	$seconds = substr( $dcdate , 17 , 2 );
+
+    $plusmoins = substr( $dcdate , 20 , 2 );
+
+    if ( strlen( $plusmoins ) ) {
+        
+        $timezone = substr( $dcdate , 20 , 2 );
+        
+        if ( $plusmoins == "+" )
+                $hour -= $timezone;
+        elseif ( $plusmoins == "-" )
+                $hour += $timezone;
+
+    }
+
+	$timestamp = mktime( $hour , $minutes , $seconds , $month , $day , $year );
+
+	$time = date( $format , $timestamp);
+
+	return $timestamp;
+
+}
+
+
 ?>

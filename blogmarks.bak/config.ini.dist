@@ -1,0 +1,8 @@
+[DB_Dataobject]
+database         = mysql://root:edison@localhost/Blogmarks
+schema_location  = /home/mbertier/dev/PEAR_OVERLAY/blogmarks/Element
+class_location   = /home/mbertier/dev/PEAR_OVERLAY/blogmarks/Element
+require_prefix   = blogmarks/Element/
+class_prefix     = Element_
+extends_location = blogmarks/
+extends          = Element.php

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Element
- * @version    $Id: Element.php,v 1.2 2004/03/01 13:21:29 benfle Exp $
+ * @version    $Id: Element.php,v 1.3 2004/03/01 15:08:55 mbertier Exp $
  */
 
 include_once 'DB/DataObject.php';
@@ -11,34 +11,12 @@ include_once 'DB/DataObject.php';
  */
 class BlogMarks_Element extends DB_DataObject {
   
-  /**  L'identifiant de l'élément (URI).
-   * @var string */
-  var $id = '';
-  
-  /**  Le titre de l'élément.
-   * @var string */
-  var $title = '';
-  
-  /** Courte description de l'élément.
-   * @var string */
-  var $summary = '';
-  
-  /** Langue de l'élément.
-   * @var string */
-  var $lang = '';
-  
-
 # ----------------------- #
 # -- METHODES PUBLIQUES --#
 # ----------------------- #
   
   /** Constructeur. */
-  function BlogMarks_Element ($id, $title, $summary, $lang) {
-    $this->id      = $id;
-    $this->title   = $title;
-    $this->summary = $summary;
-    $this->lang    = $lang;
-  }
+  function BlogMarks_Element () {}
   
   
 # ----------------------- #

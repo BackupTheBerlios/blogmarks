@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.9 2004/03/12 16:53:21 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.10 2004/03/15 11:07:27 benfle Exp $
  */
 
 require_once 'PEAR.php';
@@ -10,7 +10,7 @@ require_once 'Blogmarks.php';
 
 
 # Dataobjects
-$config = parse_ini_file('/home/mbertier/dev/PEAR_OVERLAY/blogmarks/config.ini',TRUE);
+$config = parse_ini_file('/home/benoit/dev/BlogMarks/blogmarks/config.ini',TRUE);
 foreach( $config as $class => $values ) {
     $options =& PEAR::getStaticProperty( $class, 'options' );
     $options = $values;
@@ -18,7 +18,7 @@ foreach( $config as $class => $values ) {
 
 
 # -- Includes
-require_once 'blogmarks/Element/Factory.php';
+require_once 'Element/Factory.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
  *
@@ -470,8 +470,8 @@ class BlogMarks_Marker {
     function _initSlots() {
 
         // Array( slot_name, array(class_name, class_file) );
-        $slots_info = array( 'ef'   => array( 'Element_Factory', 'blogmarks/Element/Factory.php' ),
-                             'auth' => array( 'Blogmarks_Auth',  'blogmarks/Auth.php' ) );
+        $slots_info = array( 'ef'   => array( 'Element_Factory', 'Element/Factory.php' ),
+                             'auth' => array( 'Blogmarks_Auth',  'Auth.php' ) );
 
         foreach ( $slots_info as $slot_name => $class_info ) {
             // Inclusion de la déclaration de la classe

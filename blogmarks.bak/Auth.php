@@ -1,10 +1,10 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.2 2004/03/12 16:49:30 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.3 2004/03/15 11:07:27 benfle Exp $
  */
 
-require_once 'blogmarks/Blogmarks.php';
-require_once 'blogmarks/Element/Factory.php';
+require_once 'Blogmarks.php';
+require_once 'Element/Factory.php';
 
 
 /** Classe dédiée à la gestion des droits au sein de Blogmarks.

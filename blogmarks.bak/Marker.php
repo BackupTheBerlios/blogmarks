@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.18 2004/03/30 12:34:58 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.19 2004/03/31 12:21:24 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -26,13 +26,31 @@ class BlogMarks_Marker {
      * @access   private  */
     var $_slots = array();
     
+    var $_static;
 
 # ------------------------ #
 # -- METHODES PUBLIQUES -- #
 # ------------------------ #
 
-    /** Constructeur. */
-    function BlogMarks_Marker () {
+
+    /** Retourne une référence à Marker, qui n'est créé que s'il n'existe pas encore.
+     * Doit être appelé de cette façon : <code>$marker =& new Blogmarks_Marker::singleton();</code>
+     * @return      object Blogmarks_Marker
+     */
+    function &singleton() {
+        static $instance;
+
+        if (!isset($instance)) {
+            $instance = new Blogmarks_Marker;
+        }
+
+        return $instance;
+    }
+
+    /** Constructeur. 
+     * @warning      Ne doit jamais être appelé directement, à part par Blogmarks_Marker::singleton() 
+     */
+    function Blogmarks_Marker() {
         // Initialisation des slots
         $this->_initSlots();
 
@@ -43,8 +61,9 @@ class BlogMarks_Marker {
             $options =& PEAR::getStaticProperty( $class, 'options' );
             $options = $values;
         }
-        
     }
+
+
 
 # ------- MARKS
     
@@ -115,8 +134,10 @@ class BlogMarks_Marker {
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
         // Gestion des associations Mark / Tags
-        $res = $this->associateTagsToMark( $props['tags'], $mark );
-        if ( Blogmarks::isError($res) ) return $res;
+        if ( is_array($props['tags']) ) {
+            $res = $this->associateTagsToMark( $props['tags'], $mark );
+            if ( Blogmarks::isError($res) ) return $res;
+        }
 
         // Récupération de l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -184,15 +205,18 @@ class BlogMarks_Marker {
         // Public / privé
         if ( $props['public'] === true  ) $pub = $date;
         if ( $props['public'] === false ) $pub = 0;
-        else $pub = $props['public'];
+        else $pub = ( isset($props['public']) ? $props['public'] : 0 );
         $mark->issued   = $pub;
 
         // Tags
-        $this->associateTagsToMark( $props['tags'], $mark, $props['mergetags'] );
+        if ( is_array($props['tags']) ) {
+            $res =& $this->associateTagsToMark( $props['tags'], $mark, $props['mergetags'] );
+            if ( Blogmarks::isError($res) ) return $res;
+        }
 
         // Insertion dans la base de données
         $res = $mark->update();
-        if ( Blogmarks::isError($res) ) { return Blogmarks::raiseError( $res->getMessage(), $res->getCode() ); }
+        if ( Blogmarks::isError($res) ) return $res;
 
         // On renvoie l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -266,7 +290,7 @@ class BlogMarks_Marker {
         if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
         // Désassociations
-        if ( ! $merge ) {
+        if ( ! $merge && is_array($tags) ) {
             $deprec_tags = array_diff( $mark->getTags(), $tags );
             foreach ( $deprec_tags as $tag_id ) {
                 $mark->remTagAssoc( $tag_id );

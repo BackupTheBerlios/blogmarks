@@ -1,9 +1,11 @@
 <pre>
 <?php
-/** Description du fichier.
+/**
+
+Description du fichier.
  * Détails.
  *
- * $Id: test.marker.php,v 1.2 2004/06/25 13:24:24 cortexfh Exp $
+ * $Id: test.marker.php,v 1.3 2004/06/25 14:25:33 cortexfh Exp $
  */
 //ini_set( 'include_path', '/home/mbertier/dev/PEAR_OVERLAY/Blogmarks' . ':'. ini_get('include_path') . ':/home/mbertier/dev/PEAR_OVERLAY' );  
 ini_set( 'error_reporting', E_ALL );

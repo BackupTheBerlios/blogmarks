@@ -31,16 +31,16 @@ class Element_Bm_Tags extends Blogmarks_Element
 
 
     /** Permet de savoir si le Tag est associé à un Mark donné. 
-     * @param      object Element_Bm_Marks      $mark
+     * @param      int       $mark_id
      * @return     bool
      *
      * @uses       Element_Factory
      */
-    function isAssociatedToMark( &$mark ) {
+    function isAssociatedToMark( $mark_id ) {
         require_once 'Blogmarks/Element/Factory.php';
 
         $assoc_def = Element_Factory::makeElement( 'Bm_Marks_has_bm_Tags' );
-        $assoc_def->bm_Mark_id = $mark->id;
+        $assoc_def->bm_Marks_id = $mark_id;
         $assoc_def->bm_Tags_id = $this->id;
 
         if ( $assoc_def->find() ) return true;
@@ -59,12 +59,12 @@ class Element_Bm_Tags extends Blogmarks_Element
     /** Surcharge de Blogmarks_Element::populateProps(). */
     function populateProps( $props = array() ) {
 
-        $this->id          = $props['id'];
-        $this->subTagOf    = $props['subTagOf'];
-        $this->bm_Users_id = $props['bm_Users_id'];
-        $this->status      = $props['status'];
-        $this->summary     = $props['summary'];
-        $this->lang        = $props['lang'];
+        $this->id          = isset($props['id'])            ? $props['id']          : null;
+        $this->subTagOf    = isset($props['subTagOf'])      ? $props['subTagOf']    : null;
+        $this->bm_Users_id = isset($props['bm_Users_id'])   ? $props['bm_Users_id'] : null;
+        $this->status      = isset($props['status'])        ? $props['status']      : null;
+        $this->summary     = isset($props['summary'])       ? $props['summary']     : null;
+        $this->lang        = isset($props['lang'])          ? $props['lang']        : null;
 
     }
 

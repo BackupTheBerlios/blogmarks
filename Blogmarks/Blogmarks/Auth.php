@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Auth
- * @version    $Id: Auth.php,v 1.5 2004/05/04 16:21:02 mbertier Exp $
+ * @version    $Id: Auth.php,v 1.6 2004/05/19 09:42:59 mbertier Exp $
  */
 
 require_once 'Blogmarks.php';
@@ -69,26 +69,12 @@ class Blogmarks_Auth {
 
         // Création de session à la demande
         if ( $make_session ) {
-
-            // Démarrage de la session
-            // BUGGY --     session_start();
-            
             // On lie la session à l'utilisateur
             $_SESSION['_BM']['user_id'] = $user->id;
         } 
 
-        // On se contente de stocker l'id utilisateur dans une propriété
+        // On se contente de stocker l'id utilisateur dans l'objet
         else $this->_connectedUserId = $user->id;
-
-# --
-        /* Apparemment le update est effectué avant l'insertion de la session
-         * dans la base. (alors que normalement c'est session_start qui fait cela.)
-         **
-        $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
-        $sess->get( session_id() );
-        $sess->user_id = $user->id;
-        $sess->update();  */
-# --
 
         return true;
         
@@ -121,7 +107,7 @@ class Blogmarks_Auth {
 
     /** Suppression de la session de l'utilisateur. 
      * @return      bool      */
-    function disconnectUser() { return session_write_close(); }
+    function disconnectUser() { return session_destroy(); }
 
 
 # ----------------------- #
@@ -149,7 +135,6 @@ class Blogmarks_Auth {
         $digest = base64_encode( $this->_hex2bin($txt) );
 
         return $digest;
-        
     }
 
 
@@ -175,20 +160,28 @@ class Blogmarks_Auth {
     /** Ecriture de données de session (+ création de session) */
     function _sessWrite( $sess_id, $sess_data ) {
         $sess =& Element_Factory::makeElement( 'Bm_Sessions' );
-        
+
         $sess_data = addslashes( $sess_data );
+        $time = time();
 
         // Création d'une session
-        if ( ! $sess->get( $sess_id ) ) {
-            $q = "INSERT INTO bm_Sessions VALUES ('$sess_id', '', '', '$sess_data');";
-            $sess->query( $q );
+        if ( ! $sess->get($sess_id) ) {
+
+            $sess->id          = $sess_id;
+            $sess->data        = $sess_data;
+            $sess->last_update = $time;
+
+            $sess->insert();
         }
 
         // Mise à jour d'une session existante
         else {
             // On n'update que si les données ont changé.
             if ( $sess->data !== $sess_data ) {
-                $sess->data = $sess_data;
+
+                $sess->data        = $sess_data;
+                $sess->last_update = $time;
+
                 $sess->update();
             }
         }
@@ -212,8 +205,7 @@ class Blogmarks_Auth {
 
 
     /** Garbage collection */
-    function _sessGC() { return true; }
+    function _sessGC( $max_lifetime ) { return true; }
     
 }
 ?>
-

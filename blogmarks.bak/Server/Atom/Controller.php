@@ -1,6 +1,6 @@
 <?php
 /** Déclaration des différents controlleurs et de leur Factory.
- * @version    $Id: Controller.php,v 1.2 2004/03/10 17:58:54 benfle Exp $
+ * @version    $Id: Controller.php,v 1.3 2004/03/11 15:48:50 benfle Exp $
  */
 
 
@@ -87,6 +87,75 @@ class MarkController {
     }
   }
 
+  /** Parse un document XML décrivant un Mark et renvoit un tableau de valeurs.
+   */
+  function parseAtom ($buffer) {
+
+    $props = array ();
+
+    // on construit le DOM à partir du flux XML
+    if ( !$dom = domxml_open_mem($buffer) )
+      return BlogMarks::raiseError('Impossible de créer le document DOM', 500);
+    
+    // récupère l'élément racine (blogmark)
+    $root = $dom->document_element();
+    
+    // enregistre la langue du mark
+    $props['lang'] = $root->get_attribute('lang');
+
+    // enregistre le href du link
+    $link = $root->get_elements_by_tagname('link');
+    $props['href'] = $link[0]->get_attribute('href');
+
+    // enregistre le nom de l'auteur du mark
+    $author = $root->get_elements_by_tagname('author');
+    $name = $author[0]->get_elements_by_tagname('name');
+    $props['login'] = $name[0]->get_content();
+
+    // enregistre le titre du mark
+    $title = $root->get_elements_by_tagname('title');
+    $props['title'] = $title[0]->get_content();
+
+    // enregistre la description du mark
+    $summary = $root->get_elements_by_tagname('summary');
+    $props['summary'] = $summary[0]->get_content();
+
+    // enregistre la date de publication
+    $issued = $root->get_elements_by_tagname('issued');
+    if ( !$issued = array() )
+      $props['issued'] = $issued[0]->get_content();
+
+    // enregistre l'URI du site via
+    $via = $root->get_elements_by_tagname('via');
+    if ( !$via = array() )
+      $props['via'] = $via[0]->get_content();   
+    
+    // enregistre le tableau de tags
+    $tags = $root->get_elements_by_tagname('tags');
+    if ( $tags != array() ) {
+
+      $props['tags'] = array();
+
+      $tags = $tags->get_elements_by_tagname('tag');
+
+      // on construit le tableau de chaque tag (juste title) 
+      // puis on l'empile dans le tableau principal
+      foreach ( $tags as $tag ) {
+
+	$tag_props = array();
+
+	// on récupère le nom du tag
+	$title = $tag->get_elements_by_tagname('title');
+	$tag_props['title'] = $title[0]->get_content();
+
+	// on empile
+	array_push($props['tags'], $tag_props);
+      }
+    }
+    
+    return $props;
+  }
+  
 }
 
 /** Controlleur sur un Tag.
@@ -124,7 +193,7 @@ class TagController {
 
       else
 
-	// met ç jour un tag publique
+	// met à jour un tag publique
 	return $marker->updateTag($args['tag'], $tag_array);     
 
     case 'DELETE':
@@ -156,6 +225,38 @@ class TagController {
 	return $marker->createTag($args['tag'], $tag_array);    
     }
   }
+
+  /** Parse un document XML décrivant un Tag et renvoit un tableau de valeurs.
+   */
+  function parseAtom ($buffer) {
+
+    $props = array ();
+
+    // on construit le DOM à partir du flux XML
+    if ( !$dom = domxml_open_mem($buffer) )
+      return BlogMarks::raiseError('Impossible de créer le document DOM', 500);
+    
+    // récupère l'élément racine (tag)
+    $root = $dom->document_element();
+    
+    // enregistre la langue du tag
+    $props['lang'] = $root->get_attribute('lang');
+
+    // enregistre le titre du tag
+    $title = $root->get_elements_by_tagname('title');
+    $props['title'] = $title[0]->get_content();
+
+    // enregistre la description du tag
+    $summary = $root->get_elements_by_tagname('summary');
+    $props['summary'] = $summary[0]->get_content();
+
+    // enregistre le nom du tag parent
+    $subTagOf = $root->get_elements_by_tagname('subTagOf');
+    if ( !$subTagOf = array() )
+      $props['subTagOf'] = $subTagOf[0]->get_content();
+    
+    return $props;
+  } 
 }
 
 /** Controlleur sur une liste de Marks.

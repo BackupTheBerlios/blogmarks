@@ -47,7 +47,7 @@ class Element_Bm_Marks extends Blogmarks_Element
      */
     function isPublic() {
         $now = date("Y-m-d H:i:s");
-        if ( $this->issued != 0 && $this->issued < $now ) return true;
+        if ( $this->issued && $this->issued < $now ) return true;
         else return false;
     }
 
@@ -127,7 +127,7 @@ class Element_Bm_Marks extends Blogmarks_Element
 
         $link =& Element_Factory::makeElement( 'Bm_Links' );
         
-        if ( ! $link->get($this->bm_Links_id) ) 
+        if ( ! $link->get($this->bm_Links_id) )
             return Blogmarks::raiseError( "Aucun href n'est associé au Mark [$this->id].", 404 );
 
         return $link->href;

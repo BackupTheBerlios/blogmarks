@@ -40,13 +40,13 @@ class Element_Bm_Users extends Blogmarks_Element
     /** Permet de savoir si un utilisateur est administrateur. 
      * @return     bool
      */
-    function isAdmin() { return ( $this->permlevel == 2 ) ? 'true' : 'false'; }
+    function isAdmin() { return ( $this->permlevel == 2 ) ? true : false; }
 
 
     /** Permet de savoir si un utilisateur est authentifié. 
      * @return     bool
      */
-    function isAuthenticated() { return ( $this->permlevel > 0 ) ? 'true' : 'false'; }
+    function isAuthenticated() { return ( $this->permlevel > 0 ) ? true : false; }
 
 
     /** Permet de savoir si l'élément passé en paramètre appartient à l'utilisateur.
@@ -56,7 +56,7 @@ class Element_Bm_Users extends Blogmarks_Element
      * @param      object Bm_Element
      * @return     bool
      */
-    function owns( &$element ) { return ( $this->id == $element->bm_Users_id ) ? true : false; }        
+    function owns( &$element ) { return $this->id == $element->bm_Users_id; }        
 
 
     /** Renvoie la liste des champs dont on peut renvoyer les valeurs sans danger.

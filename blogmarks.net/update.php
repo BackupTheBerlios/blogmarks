@@ -51,7 +51,7 @@ if ( $marker->userIsAuthenticated() ) {
 	
 	echo '<p>Mark Sucessfully updated !</p>' . "\n";
 
-	echo '<p>URI:<br />' . $result . '</p>' . "\n";
+	echo '<p>ID: ' . $result->id . '</p>' . "\n";
 }
 
 else echo "**error : Pas connecté";

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Blogmarks_Exception
- * @version    $Id: Exception.php,v 1.1 2004/03/31 14:57:45 mbertier Exp $
+ * @version    $Id: Exception.php,v 1.2 2004/06/02 13:33:50 mbertier Exp $
  */
 
 /** Objet dédié à la remontée d'erreurs
@@ -16,9 +16,9 @@ class Blogmarks_Exception {
      * @var string */
     var $message;
 
-# ----------------------- #
-# -- METHODES PUBLIQUES --#
-# ----------------------- #
+# ------------------------ #
+# -- METHODES PUBLIQUES -- #
+# ------------------------ #
 
     /** Constructeur. */
     function Blogmarks_Exception ( $msg, $code ) {
@@ -58,11 +58,10 @@ class Blogmarks_Exception {
         return $this->message;
     }
    
-# ----------------------- #
-# -- METHODES PRIVEES   --#
-# ----------------------- #
+# ------------------------ #
+# -- METHODES PRIVEES   -- #
+# ------------------------ #
     
     
 }
 ?>
-

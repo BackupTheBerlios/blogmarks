@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.2 2004/04/05 09:37:11 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.3 2004/04/06 10:43:30 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -521,7 +521,7 @@ class BlogMarks_Marker {
      */
     function createPublicTag( $props = array() ) {
         $props['status'] = 'public';
-        return $this->createTag( &$props );
+        return $this->createTag( $props );
     }
 
 
@@ -531,7 +531,7 @@ class BlogMarks_Marker {
      */
     function createPrivateTag( $props = array() ) {
         $props['status'] = 'private';
-        return $this->createTag( &$props );
+        return $this->createTag( $props );
     }
 
     

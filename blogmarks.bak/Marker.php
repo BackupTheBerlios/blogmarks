@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.7 2004/03/05 16:36:41 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.8 2004/03/09 11:08:05 mbertier Exp $
  */
 
 require_once 'PEAR.php';
@@ -20,9 +20,12 @@ foreach( $config as $class => $values ) {
 require_once 'blogmarks/Element/Factory.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
+ *
  * @package    Blogmarks
  * @uses       Element_Factory
  * @todo       Validation des paramètres dans les méthodes publiques (et les autres mêmes ;)
+ * @todo       Fichier de conf dédié
+ * @todo       Erreur 500 en cas de tentative de création d'un élément déja existant.
  */
 class BlogMarks_Marker {
 
@@ -41,6 +44,7 @@ class BlogMarks_Marker {
         $this->_initSlots();
     }
 
+# ------- MARKS
     
     /** Création d'un mark. 
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
@@ -82,7 +86,7 @@ class BlogMarks_Marker {
             // Insertion dans la base de données
             $mark->insert();
         }
-        
+
 
         // Récupération de l'URI du Mark
         $uri = $this->getMarkUri( $mark );
@@ -94,7 +98,7 @@ class BlogMarks_Marker {
     /** Mise à jour d'un mark.
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
-     * @return    string   L'uri du mark mis à jour.
+     * @return    string    L'uri du mark mis à jour.
      */
     function updateMark( $id, $props ) {
         $mark =& $this->slots['ef']->makeElement( 'Bm_Marks' );
@@ -109,7 +113,7 @@ class BlogMarks_Marker {
 
             // Récupération du Link associé
             $link =& $mark->getLink( 'bm_Links_id', 'Bm_Links', 'id' );
-            print_r( $mark );
+
             // L'URL doit être modifiée
             if ( $link->href !== $props['href'] ) {
                 
@@ -179,10 +183,12 @@ class BlogMarks_Marker {
     }
 
 
+# ------- LINKS
+
     /** Création d'un Link.
      * @param     string     href          URL désignant la ressource.
      * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
-     * @returns   objet Elem_bm_Links      Le Links créé
+     * @return   objet Element_Bm_Links   Le Links créé
      */
     function createLink( $href, $autofetch = false ) {
         $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
@@ -206,6 +212,65 @@ class BlogMarks_Marker {
         
     }
 
+    /** Mise à jour d'un Link.
+     * @param     int      $id              L'identifiant du Link.
+     * @param     array    $props           Un tableau associatif de la forme : <pre>array( 'label_champs_db' => 'valeur' )</pre>
+     * @param     bool     $autofetch       (optionnel) Si vrai, appel automatique de fetchUrlInfo() (au cas ou l'url du link change) (defaut: false)
+     * @return    object Element_Bm_Links   Le Link mis à jour
+     */
+    function updateLink( $id, $props = array(), $autofetch = false ) {
+        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        
+        // Si le Link n'existe pas -> erreur
+        if ( ! $link->get($id) ) { 
+            return Blogmarks::raiseError( "Le Link requis [$id] n'existe pas", 404 );
+        }
+
+        // Si un Link avec une URL équivalente existe -> erreur
+        if ( $link->get('href', $props['href']) ) {
+            return Blogmarks::raiseError( "Un autre Link [$link->id] désigne déja cette ressource", 500 );
+        }
+
+        // Table rase...
+        unset( $link );
+        
+        // Récupération du Link à mettre à jour
+        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+        $link->get( $id );
+
+        // Mise à jour des propriétés de l'objet
+        $old_href = $link->href;
+        $link->populateProps( $props );
+        
+        // Autofetch (si nécessaire et requis)
+        if ( $link->href !== $props['href'] && $autofetch ) $link->fetchUrlInfo();
+
+        // Mise à jour de l'enregistrement dans la base de données
+        $link->update();
+
+        return $link;
+    }
+
+
+    /** Suppression d'un Link. 
+     * @param    int      L'identifiant du Link dans la base de données
+     * @return   
+     */
+    function deleteLink( $id ) {
+        $link =& $this->slots['ef']->makeElement( 'Bm_Links' );
+
+        // Si le Link à effacer n'existe pas -> erreur 404
+        if ( ! $link->get($id) ) {
+            return Blogmarks::raiseError( "Le Link [$id] n'existe pas.", 404 );
+        }
+
+        // Suppression du Link
+        $link->delete();
+
+        return true;        
+    }
+
+
     /** Génération de l'URI d'un Link.
      * @param    object Element_Bm_Links     Une référence au Link dont on veut obtenir l'URI
      * @return   string     L'URI du Link
@@ -217,6 +282,101 @@ class BlogMarks_Marker {
         return $uri;
     }
 
+
+# ------- TAGS
+
+    /** Création d'un nouveau Tag.
+     * @param      array      $props     Un tableau associatif décrivant les propriétés du Tag
+     * @return     string     L'uri du tag créé
+     */
+    function createTag( $props = array() ) {
+        $tag =& $this->slots['ef']->makeElement( 'Bm_Tag' );
+        
+        // Initialisation des propriétés de l'objet
+        $tag->populateProps( $props );
+
+        // Insertion dans la base de données
+        $res = $tag->insert();
+        
+        // On renvoie l'uri du nouveau tag
+        $uri = $this->getTagUri( $tag );
+        return $uri;
+    }
+
+ 
+    /** Création d'un Tag public.
+     * @param      array     $props
+     * @return
+     */
+    function createPublicTag( $props = array() ) {
+        $props['status'] = 'public';
+        return $this->createTag( &$props );
+    }
+
+    /** Création d'un Tag privé.
+     * @param      array     $props
+     * @return
+     */
+    function createPrivateTag( $props = array() ) {
+        $props['status'] = 'private';
+        return $this->createTag( &$props );
+    }
+    
+    /** Mise à jour d'un Tag.
+     * @param      string    $id     L'identifiant du Tag dans la base de données
+     * @param      array     $props  Un tableau associatif décrivant les propriétés à mettre à jour
+     * @return     string    L'uri du Tag mis à jour
+     */
+    function updateTag( $id, $props ) {
+
+    }
+
+
+    /** Suppression d'un tag.
+     * @param     string    $id    L'identifiant du Tag dans la base de données.
+     */
+    function deleteTag( $id ) {
+        $tag =& $this->slots['ef']->makeElement( 'Bm_Tags' );
+
+        // Si le Link à effacer n'existe pas -> erreur 404
+        if ( ! $tag->get($id) ) {
+            return Blogmarks::raiseError( "Le Tag [$id] n'existe pas.", 404 );
+        }
+
+        // Suppression du Link
+        $tag->delete();
+
+        return true;        
+    }
+
+    
+    /** Renvoie l'uri du Tag passé en paramètre.
+     * @param      object Element_Bm_Tags    Le Tag dont on recherche l'uri
+     * @return     string       L'uri du Tag.
+     */
+    function getTagUri( $tag ) {
+        $pattern = 'http://www.blogmarks.net/tags/?tags=%f';
+        $uri = sprintf( $pattern, $tag->id );
+
+        return $uri;
+    }
+
+
+    /** Renvoie un tableau comprenant tous les tags existants dans la base 
+     * de données similaires au tag passé en paramètre.
+     *
+     * Dans l'espoir d'éviter une multiplication intempestive des Tags.
+     *
+     * @param    string    $name     Le nom du Tag
+     * @return   array     Un tableau associatif de la forme: <pre>array( 'relevance', 'tag' )</pre>
+     * 
+     * @see      http://www.php.net/levenshtein
+     * @see      http://www.php.net/metaphone
+     *
+     */
+    function getSimilarTags( $name ) {}
+
+                       
 # ----------------------- #
 # -- METHODES PRIVEES   --#
 # ----------------------- #
@@ -227,7 +387,8 @@ class BlogMarks_Marker {
     function _initSlots() {
 
         // Array( slot_name, array(class_name, class_file) );
-        $slots_info = array( 'ef' => array('Element_Factory', 'blogmarks/Element/Factory.php') );
+        $slots_info = array( 'ef'   => array( 'Element_Factory', 'blogmarks/Element/Factory.php' ),
+                             'auth' => array( 'Blogmarks_Auth',  'blogmarks/Auth.php' ) );
 
         foreach ( $slots_info as $slot_name => $class_info ) {
             // Inclusion de la déclaration de la classe
@@ -245,4 +406,3 @@ class BlogMarks_Marker {
     }
 }
 ?>
-

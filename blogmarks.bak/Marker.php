@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.15 2004/03/27 08:58:31 benfle Exp $
+ * @version    $Id: Marker.php,v 1.16 2004/03/29 12:35:00 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -27,7 +27,7 @@ class BlogMarks_Marker {
     var $_slots = array();
     
 
-# ----------------------- #
+# ----------------------- #f
 # -- METHODES PUBLIQUES --#
 # ----------------------- #
 
@@ -35,6 +35,13 @@ class BlogMarks_Marker {
     function BlogMarks_Marker () {
         // Initialisation des slots
         $this->_initSlots();
+
+        // Configuration des datatobjects
+        $config = parse_ini_file( dirname(__FILE__) . '/config.ini', TRUE);
+        foreach( $config as $class => $values ) {
+            $options =& PEAR::getStaticProperty( $class, 'options' );
+            $options = $values;
+        }
     }
 
 # ------- MARKS

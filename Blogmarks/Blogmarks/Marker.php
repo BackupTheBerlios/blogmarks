@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.19 2004/06/01 16:01:15 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.20 2004/06/02 12:47:18 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -45,6 +45,7 @@ class BlogMarks_Marker {
         return $instance;
     }
 
+
     /** Constructeur. 
      * @warning      Ne doit jamais être appelé directement, à part par Blogmarks_Marker::singleton() 
      */
@@ -72,7 +73,8 @@ class BlogMarks_Marker {
      *
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
-     * @return     mixed     L'URI du mark créé
+     * @return     mixed     Le Mark créé ou Blogmarks_Exception en cas d'erreur.
+     *
      * @perms      Pour pouvoir créer un Mark, il faut être authentifié.
      * @todo       check d'erreurs sur la création du Link via
      */
@@ -99,11 +101,11 @@ class BlogMarks_Marker {
         
         // Le possesseur du Mark est l'utilisateur connecté.
         $u =& $this->_slots['auth']->getConnectedUser();
-        $mark->bm_Users_id = $u->id;
-
-        $mark->href = $link->id;
 
         // Si le Mark n'existe pas, on le crée
+        $mark->bm_Users_id = $u->id;
+        $mark->href = $link->id;
+
         if ( ! $mark->find(true) ) {
 
             // Définition des propriétés
@@ -124,14 +126,14 @@ class BlogMarks_Marker {
             } // -- Fin de la création des Links associés
 
             // Dates
-            $date = date("Ymd HIs");
+            $date = date("Ymd His");
             $mark->created  = $date;
             $mark->modified = $date;
 
             // Public / privé
-            $props['public'] = isset($props['public']) ? $props['public'] : true;
-            if ( $props['public'] === true  ) $pub = $date;
-            if ( $props['public'] === false ) $pub = 0;
+            $props['public'] = isset($props['public']) ? $props['public'] : true;  // Les Marks sont publics par défaut
+            if ( $props['public'] == true) $pub = $date;
+            elseif ( $props['public'] == false ) $pub = 0;
             else $pub = $props['public'];
             $mark->issued   = $pub;
 
@@ -150,10 +152,7 @@ class BlogMarks_Marker {
             if ( Blogmarks::isError($res) ) return $res;
         }
 
-        // Récupération de l'URI du Mark
-        $uri = $this->getMarkUri( $mark );
-
-        return $uri;
+        return $mark;
     }
     
 
@@ -161,7 +160,7 @@ class BlogMarks_Marker {
      * @param      int      $id       ID identifiant le mark
      * @param      array    $props    Un tableau de propriétés à mettre à jour.
      *                                La valeur de l'index 'mergetags' sera passée à Blogmarks_Marker::associateTagsToMark()
-     * @return    string    L'uri du mark mis à jour.
+     * @return     mixed     Le Mark créé ou Blogmarks_Exception en cas d'erreur.
      * @perms     Pour mettre à jour un Mark, il faut le posséder
      */
     function updateMark( $id, $props ) {
@@ -209,12 +208,12 @@ class BlogMarks_Marker {
         $mark->lang     = isset($props['lang'])    ? $props['lang']    : $mark->lang;
         
         // Dates
-        $date = date("Ymd Hms");
+        $date = date("Ymd His");
         $mark->modified = $date;
 
         // Public / privé
-        if ( $props['public'] === true  ) $pub = $date;
-        if ( $props['public'] === false ) $pub = 0;
+        if ( $props['public'] == true  ) $pub = $date;
+        elseif ( $props['public'] == false ) $pub = 0;
         else $pub = ( isset($props['public']) ? $props['public'] : 0 );
         $mark->issued   = $pub;
 
@@ -228,17 +227,16 @@ class BlogMarks_Marker {
         $res = $mark->update();
         if ( Blogmarks::isError($res) ) return $res;
 
-        // On renvoie l'URI du Mark
-        $uri = $this->getMarkUri( $mark );
-
-        return $uri;
+        return $mark;
     }
 
 
     /** Suppression d'un mark.
-     * @param      int      $id       URI identifiant le mark
+     * @param      int      $id       Identifiant du Mark
      * @return     mixed    true ou Blogmarks_Exception en cas d'erreur.
      * @perms      Pour effacer un Mark, il faut le posséder
+     *
+     * @todo       Suppression des associations de Tags lors de la suppression du Mark
      */
     function deleteMark( $id ) {
         $mark =& Element_Factory::makeElement( 'Bm_Marks' );
@@ -251,30 +249,14 @@ class BlogMarks_Marker {
         if ( Blogmarks::isError($user) ) return $user;
         if ( ! $user->owns( $mark ) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
+        // Supression des associations avec des Tags
+        foreach ( $mark->getTags() as $tag_id ) $mark->remTagAssoc( $tag_id );
 
         // Suppression du Mark
         $res = $mark->delete();
         if ( Blogmarks::isError($res) ) return $res;
 
         return true;
-    }
-
-
-    /** Génération de l'URI d'un Mark
-     * @param     object     Element_Bm_Marks     Une référence à un Mark.
-     * @return   string     L'URI du Mark.
-     */
-    function getMarkUri( &$mark ) {
-        $pattern = 'http://www.blogmarks.net/users/%s/?mark_id=%u';
-        
-        // Récupération du login du possesseur du Mark
-        $user =& Element_Factory::makeElement( 'Bm_Users' );
-        $user->get( $mark->bm_Users_id );
-
-        // Génération de l'uri
-        $uri = sprintf( $pattern, $user->login, $mark->id );
-
-        return $uri;
     }
 
 
@@ -300,9 +282,8 @@ class BlogMarks_Marker {
         if ( Blogmarks::isError($user) ) return $user;
         if ( ! $user->owns($mark) ) return Blogmarks::raiseError( "Permission denied", 401 );
 
-        // Suppression de caractères génants
-        // -- TODO: un vrai callback de nettoyage
-        array_walk( $tags, 'trim' );
+        // Nettoyage des Tags avant association
+        $this->_cleanTags( $tags ); 
 
         // Désassociations
         if ( ! $merge && is_array($tags) ) {
@@ -759,7 +740,7 @@ class BlogMarks_Marker {
                 }
 
                 // Recherche simple
-                else $marks->whereAdd( $q, 'AND' );
+                else $marks->whereAdd( $q, 'OR' );
             }
         }
 
@@ -964,6 +945,29 @@ class BlogMarks_Marker {
         
         return true;
         
+    }
+
+
+    /** Nettoyage de Tags à associer à un Mark.
+     * Actions effectuées:
+     *  - trim
+     *  - supression des chaînes vides
+     *
+     * @param      string      $tags
+     */
+    function _cleanTags( &$tags ) {
+
+        for ( $i = 0; $i < count($tags); $i++ ) {
+            
+            // Trim
+            $tags[$i] = trim($tags[$i]);
+            
+            // Supression des Tags vides
+            if ( empty($tags[$i]) ) unset( $tags[$i] );
+            
+        }
+
+        return;
     }
 }
 ?>

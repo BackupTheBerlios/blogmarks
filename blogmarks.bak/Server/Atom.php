@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Server_Atom
- * @version    $Id: Atom.php,v 1.6 2004/03/29 10:00:48 benfle Exp $
+ * @version    $Id: Atom.php,v 1.7 2004/03/29 11:18:53 benfle Exp $
  */
 ini_set( 'include_path', ini_get('include_path') . ':/home/benoit/dev/' );
 
@@ -24,12 +24,12 @@ class Server_Atom {
   function run () {
 
     // racine du serveur a enregistrer qq part (pour l'instant ici)
-    $root = 'http://benfle.dyndns.org/blogmarks/servers/atom';
+    $root = '/blogmarks/servers/atom';
 
     // On construit le tableau d'arguments pour les filtres
     $args   = array();
     // on extrait l'URI relative
-    $uri = 'http://'.$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
+    $uri = $_SERVER['REQUEST_URI'];
 
     //***** DEBUG echo $uri."<br/>".$root;
 

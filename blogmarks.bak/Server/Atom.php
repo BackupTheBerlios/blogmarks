@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe Server_Atom
- * @version    $Id: Atom.php,v 1.3 2004/03/11 15:50:08 benfle Exp $
+ * @version    $Id: Atom.php,v 1.4 2004/03/12 10:38:42 benfle Exp $
  */
 
 require_once 'PEAR.php';
@@ -29,7 +29,7 @@ class Server_Atom {
     }
 
     // On construit le controlleur selon le type d'objet de la requête
-    $ctrlerFactory = new controllerFactory();
+    $ctrlerFactory = new ControllerFactory();
     $ctrler        = $ctrlerFactory->createController($args['object']);
 
     // On lance le controlleur pour l'objet de la requête
@@ -41,8 +41,10 @@ class Server_Atom {
     }
 
     // On applique le renderer atom a la reponse et on la renvoit
-    $renderer = new atom_renderer();
-    return $renderer->render($response);
+    $rendererFactory = new rendererFactory();
+    $renderer = $rendererFactory->createRenderer($args['object']);
+    $response->accept($renderer);
+    return $renderer->render();
   }
 }
 

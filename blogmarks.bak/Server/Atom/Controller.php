@@ -1,8 +1,9 @@
 <?php
 /** Déclaration des différents controlleurs et de leur Factory.
- * @version    $Id: Controller.php,v 1.3 2004/03/11 15:48:50 benfle Exp $
+ * @version    $Id: Controller.php,v 1.4 2004/03/15 11:08:49 benfle Exp $
  */
 
+require_once '../Marker.php';
 
 /** Classe parente des différents controlleurs.
  * @package    Atom
@@ -40,6 +41,10 @@ class ControllerFactory {
     case ('TagsList'):
       $controller = new TagsListController();
       break;
+
+    default:
+      return BlogMarks::raiseError($object.' n\'est pas un objet blogmark', 
+				   500);
     }
     
     return $controller;

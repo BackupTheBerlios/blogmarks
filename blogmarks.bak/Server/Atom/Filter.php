@@ -1,7 +1,7 @@
 <?php
 /** Déclaration des filtres, de la chaîne des filtres et des méthodes
  *   d'exécution.
- * @version    $Id: Filter.php,v 1.4 2004/03/11 16:21:50 benfle Exp $
+ * @version    $Id: Filter.php,v 1.5 2004/03/15 11:08:49 benfle Exp $
  */
 
 
@@ -90,7 +90,7 @@ class ContextBuilderFilter extends InterceptingFilter {
    * - method : méthode HTTP
    * - uri : URI relative de la requête
    * - content : contenu si c'est un POST ou un PUT */   
-  function execute($arg) {
+  function execute(&$arg) {
     
     // filtre l'URI pour déterminer l'objet de la requête
     $uri = $arg['uri'];
@@ -157,7 +157,7 @@ class ContextBuilderFilter extends InterceptingFilter {
       $arg['user']   = $resg[1];
 
     } else
-      return BlogMarks::raise_Error('URI incorrecte', 403);
+      return BlogMarks::raiseError('URI incorrecte', 403);
     
     // passe au filtre suivant ou renvoit le contexte
     if ($this->_hasChild) {

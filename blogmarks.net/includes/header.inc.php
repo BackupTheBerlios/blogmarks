@@ -48,11 +48,12 @@
 
 		<?php
 
-		include_once "includes/functions.inc.php";
+		//include_once "includes/functions.inc.php";
 
 		if ( $marker->userIsAuthenticated() ) {
-            
+			
 			$user = $marker->getUserInfo('login');
+			
             $userIsAuthenticated = TRUE; //hack;
 			echo $user;
 			echo '<p><strong>Auth OK</strong></p>';

@@ -36,6 +36,25 @@ include "includes/header.inc.php";
 
 <div id="content">
 
+<?php if ( !$userIsAuthenticated ) { ?>
+
+<p>You are not logged !</p>
+
+<form method="POST" action="<?php echo $_SERVER["REQUEST_URI"] ?>&mini=1&connect=1">
+
+<label>Username :</label>
+<input type="text" name="login">
+<label>Password : </label>
+<input type="password" name="pwd">
+
+<br />
+
+<input type="submit" value="Sign in" />
+
+</form>
+
+<?php } else { ?>
+
 <h3>Add a bookmark</h3>
 
 <form method="POST" action="add.php<?php if ( isset( $_GET['mini'] ) ) echo '?mini=1' ?>">
@@ -56,6 +75,8 @@ include "includes/header.inc.php";
 	<input type="submit" value="Add" />
 
 </form>
+
+<?php } ?>
 
 </div> <!-- # content -->
 

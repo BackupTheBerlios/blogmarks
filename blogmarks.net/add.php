@@ -63,6 +63,7 @@ if ( $marker->userIsAuthenticated() ) {
 
 	<p>You are not logged !</p>
 
+	<!-- 
 	<form method="POST" action="add.php?connect=1">
 
 	<label>Username :</label>
@@ -75,6 +76,7 @@ if ( $marker->userIsAuthenticated() ) {
 	<input type="submit" value="Sign in" />
 
 	</form>
+	-->
 
 	<?php
 

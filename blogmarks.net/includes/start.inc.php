@@ -35,7 +35,8 @@ if ( isset( $_GET['connect'] ) AND ( $_GET['connect'] == 1 ) ) {
 	elseif ( DB::isError( $auth ) )
 		$auth_error = $auth->getMessage();
 	
-	header("Location: index.php");
+	//header("Location: index.php");
+	header("Location: " . str_replace( "connect=1", "" , $_SERVER["REQUEST_URI"] ) );
 
 }
 
@@ -44,6 +45,7 @@ if ( isset( $_GET['disconnect'] ) AND ( $_GET['disconnect'] == 1 ) ) {
 	$marker->disconnectUser();
 
 	header("Location: index.php");
+	//header("Location: " . $_SERVER["REQUEST_URI"] );
 
 }
 

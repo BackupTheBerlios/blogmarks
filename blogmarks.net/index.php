@@ -148,7 +148,7 @@ if ( $_GET['section'] == 'AdvancedSearch' ) {
 		// To clean
 		$i = 0;
 		$string_date_prev = '';
-		$max = 25;
+		$max = 15;
 		//
 
 		while ( $list->fetch() && $i <= $max ) 
@@ -162,6 +162,7 @@ if ( $_GET['section'] == 'AdvancedSearch' ) {
 			if ($string_date_prev != $string_date) {
 				if ( $i != 0 ) echo '</ul>' . "\r\n";
 				echo "\r\n".'<h3>' . $string_date . '</h3>'."\r\n\r\n";
+				flush();
 				echo '<ul>'."\r\n";
 			}
 
@@ -213,7 +214,7 @@ if ( $_GET['section'] == 'AdvancedSearch' ) {
 			}
 			//echo ' <a href="infos.php?id=' . $list->id . '">infos</a>';
 
-			if ( isset( $login ) AND ( $owner == $login ) ) 
+			if ( isset( $user ) AND ( $owner == $user ) ) 
 			{
 				echo ' <a onclick="return Edit(this.href)"  href="edit.php?id=' . $list->id . '">edit</a>';
 				echo ' <a onclick="return Delete(this.href)" href="delete.php?id=' . $list->id . '">delete</a>';

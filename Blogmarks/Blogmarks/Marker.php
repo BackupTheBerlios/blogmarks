@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.25 2004/06/27 18:31:50 benfle Exp $
+ * @version    $Id: Marker.php,v 1.26 2004/07/07 07:51:14 benfle Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -8,6 +8,9 @@
 require_once 'PEAR.php';
 require_once 'Blogmarks.php';
 require_once 'Blogmarks/Element/Factory.php';
+
+# client XML-RPC pour les screenshots
+require_once 'Blogmarks/inc/IXR_Library.inc.php';
 
 /** Classe "métier". Effectue tous les traitements et opérations.
  *
@@ -69,7 +72,7 @@ class BlogMarks_Marker {
     /** Création d'un mark.
      * Dans $props, en plus des propriétés correspondants à la DB, on peux renseigner deux clés supplémentaires :
      *    - $props['tags']      -> un tableau d'id de Tags à associer au Mark
-     *    - $props['public']    -> true, false, ou une date future (timestamp) à laquelle le Mark deviendra public.
+     *    - $props['public']    -> true, false (true par defaut)
      *
      * @param      array     $props      Un tableau associatif de paramètres décrivant le mark.
      *                                   Les clés du tableau correpondent aux noms des champs de la base de données.
@@ -89,8 +92,11 @@ class BlogMarks_Marker {
         $link =& Element_Factory::makeElement( 'Bm_Links' );
 
         // Si le lien n'est pas déjà enregistré, on le fait.
+		if ( ! isset ( $props['related'] ) )
+			return Blogmarks::raiseError ('Blogmark not well formed', 500);
+
         if ( $link->get( 'href', $props['related'] ) == 0 ) {
-            $link = $this->createLink( $props['related'], true );
+            $link = $this->createLink( $props['related']);
             if ( Blogmarks::isError($link) ) { return $link; }
         }
 
@@ -118,7 +124,7 @@ class BlogMarks_Marker {
 
                 // Si le Link n'existe pas, on le crée
                 if ( isset($props[$field]) && $props[$field] != '' && ! $link->get('href', $props[$field]) ) {
-                    $link =& $this->createLink( $props[$field], true );
+                    $link =& $this->createLink( $props[$field]);
                 }
                 $mark->$field = $link->id;
 
@@ -126,15 +132,22 @@ class BlogMarks_Marker {
 
             // Dates
             $date = date("Ymd His");
-            $mark->created  = $date;
-            $mark->modified = $date;
+            $mark->created  = isset($props['created']) ? $props['created'] : $date;
+            $mark->modified = isset($props['modified']) ? $props['modified'] : $date;
 
             // Public / privé
-            $props['public'] = isset($props['public']) ? $props['public'] : true;  // Les Marks sont publics par défaut
-            if     ( $props['public'] == true  ) $pub = $date;
-            elseif ( $props['public'] == false ) $pub = 0;
-            else   $pub = $props['public'];
-            $mark->issued   = $pub;
+			if ( isset ( $props['issued'] ) )
+				$mark->issued = $props['issued'];
+			else
+			{
+	            $props['public'] = isset($props['public']) ? $props['public'] : true;
+				if ( $props['public'] == true  ) 
+					$pub = $date;
+				else
+					$pub = 0;
+            
+				$mark->issued   = $pub;
+			}
 
             // Insertion dans la base de données
             $res = $mark->insert();
@@ -146,7 +159,7 @@ class BlogMarks_Marker {
         else { return Blogmarks::raiseError( "Le Mark existe déjà.", 500 ); }
 
         // Gestion des associations Mark / Tags
-        if ( is_array($props['tags']) && count($props['tags']) ) {
+        if ( isset ($props['tags']) && is_array($props['tags']) && count($props['tags']) ) {
             $res = $this->associateTagsToMark( $props['tags'], $mark );
             if ( Blogmarks::isError($res) ) return $res;
         }
@@ -192,7 +205,7 @@ class BlogMarks_Marker {
                 
                 // Si aucun Link correspondant n'existe, on en crée un
                 else {
-                    $link =& $this->createLink( $props[$field], true );
+                    $link =& $this->createLink( $props[$field]);
                     $mark->$field = $link->id;
                     $res = $mark->update();
                     if ( Blogmarks::isError($res) ) return $res;
@@ -387,11 +400,10 @@ class BlogMarks_Marker {
 
     /** Création d'un Link.
      * @param     string     href          URL désignant la ressource.
-     * @param     bool       autofetch     (optionnel) Si vrai, appel automatique de fetchUrlInfo() (defaut: false)
      * @return    object Element_Bm_Links   Le Links créé
      * @perms     Pour créer un Link, il faut être authentifié
      */
-    function createLink( $href, $autofetch = false ) {
+    function createLink( $href) {
         $link =& Element_Factory::makeElement( 'Bm_Links' );
 
         // Permissions
@@ -410,16 +422,7 @@ class BlogMarks_Marker {
         // Sinon, création du Link
         else { $link->insert(); }
 
-
-        // Récupération des informations de la page (si autofetch)
-        if ( $autofetch == true ) { 
-            $link->fetchUrlInfo(); 
-            $res = $link->update();
-            if ( Blogmarks::isError($res) ) return $res;
-        }
-
-        return $link;
-        
+		return $link;
     }
 
 
@@ -744,7 +747,7 @@ class BlogMarks_Marker {
 	/** Récupération d'une liste de Tags en fonction des critères passés en paramètre.
 	 * La méthode attend un tableau associatif définissant les critères de sélection :
 	 *		- user_login	=> recherche au sein des tags privés d'un utilisateur (authentification obligatoire)
-	 *		- date_in		=> date au format mysql. On ne recherche que les marks créés ultérieirement à cette date.
+	 *		- date_in		=> date au format mysql. On ne recherche que les marks créés ultérieurement à cette date.
 	 *		- date_out		=> date au format mysql. On ne recherche que les marks créés antérieurement à cette date.
 	 *		- order_by		=> array ( string champs ou array(champs1, champs2, ...)), string ASC|DESC )
 	 *
@@ -761,7 +764,7 @@ class BlogMarks_Marker {
      * @return     DB_DataObject ou Blogmarks_Exception en cas d'erreur.
      */
 	function getTagsList( $cond ) {
-		
+
 		$now = date( "Ymd His");
 		$tags =& Element_Factory::makeElement( 'Bm_Tags' );
 		 

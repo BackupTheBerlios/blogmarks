@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.11 2004/04/28 14:47:05 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.12 2004/04/29 10:44:46 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -628,35 +628,19 @@ class BlogMarks_Marker {
 
 # ------- MARKSLISTS
 
-    /** Renvoie la liste des Marks d'un utilisateur.
-     * Si l'utilisateur requeteur n'est pas l'utilisateur possesseur, 
-     * seule la liste de ses Marks publics de l'utilisateur possesseur est renvoyée.
-     *
-     * @param      string      $login_user      
-     * @param      array       $include_tags    Ids de Tags, seuls les Marks correspondants aux Tags listés ici seront sélectionnés
-     * @param      array       $exclude_tags    Ids de Tags, les Marks correspondants à ces Tags ne seront pas sélectionnés
-     *
-     */
-    function getMarksListOfUser( $login_user, $include_tags = null, $exclude_tags = null ) {
-
-        // permissions
-        $cur_user =& $this->_slots['auth']->getConnectedUser();
-        if ( Blogmarks::isError($cur_user) ) return $cur_user;
-        $include_priv = ( $cur_user->login === $login_user ? true : false );
-
-        // On vérifie que l'utilisateur existe
-        $user =& Element_Factory::makeElement( 'Bm_Users' );
-        if ( ! $user->get( 'login', $login_user ) ) return Blogmarks::raiseError( "L'utilisateur [$login_user] n'existe pas", 404 );
-
-        // Récupération de la liste des Marks
-        $res = $user->getMarksList( $include_tags, $exclude_tags, $include_priv );
-
-        return $res;
-    }
 
     /** Récupération d'une liste de Marks en fonction des critères passés en paramètre.
-     * @param      array      $cond      
-     * @return     
+     * @param      array      $cond      Tableau associatif définissant les critère de sélection des Marks
+     *                                     * user_login    => recherche au sein des marks d'un utilisateur en particulier (sinon recherche globale)
+     *                                     * date_in       => date au format mysql. On ne recherche que les marks créés ultérieurement à cette date
+     *                                     * date_out      => date au format mysql. On ne recherche que les marks créés postérieurement à cette date
+     *                                     * exclude_tags  => tableau de tags. Les marks décrits par ces tags ne seront pas sélectionnés
+     *                                     * include_tags  => tableau de tags. Seuls les marks décrits par ces tags seront sélectionnés
+     *                                     * select_priv   => booléen. Si vrai, recherche aussi au sein des marks privés 
+     *                                                        (si niveau de permission suffisant).
+     *                                     * order_by      => array( string champs ou array(champs1, champs2, ...), string ASC / DESC )
+     *                                    
+     * @return     DB_DataObject ou Blogmarks_Exception en cas d'erreur.
      */
     function getMarksList( $cond ) {
         
@@ -729,7 +713,33 @@ class BlogMarks_Marker {
         }
 
         // Tri des résultats
-        if ( isset($cond['order_by']) ) $marks->orderBy( $cond['order_by'] );
+        if ( isset($cond['order_by']) ) {
+            
+            $fields = $cond['order_by'][0];
+            $dir = isset($cond['order_by'][1]) ? $cond['order_by'][1] : 'ASC';
+            $str_order = null;
+
+            // Tri selon champs multiples
+            if ( is_array($fields) ) {
+                foreach ( $fields as $f ) $str_order .= "$f,";
+                // Suppression de la virgule finale
+                $str_order = substr( $str_order, 0, strlen($str_order) - 1 );
+            }
+
+            // Tri selon un champs unique
+            elseif ( is_string($fields) ) {
+                $str_order = $fields;
+            }
+
+            // Direction du tri
+            $str_order = "$str_order $dir";
+
+            $marks->orderBy( $str_order );
+
+        }
+
+        // HACK: permet de ne pas avoir de doublons
+        $marks->groupBy( 'id' );
 
         return ( $marks->find() > 0 ? $marks : Blogmarks::raiseError( 'Aucun Mark disponible avec ces critères.', 404 ) );
 

@@ -1,6 +1,6 @@
 <?php
 /** Déclaration de la classe BlogMarks_Marker
- * @version    $Id: Marker.php,v 1.3 2004/04/06 10:43:30 mbertier Exp $
+ * @version    $Id: Marker.php,v 1.4 2004/04/06 11:33:01 mbertier Exp $
  * @todo       Comment fonctionne les permissions sur les Links ?
  */
 
@@ -624,6 +624,82 @@ class BlogMarks_Marker {
         $res = $user->getMarksList( $include_tags, $exclude_tags, $include_priv );
 
         return $res;
+    }
+
+
+# ------- USERS
+
+    /** Création d'un utilisateur.
+     * @param       array      $props      Tableau associatif des propriétés de l'utilisateur à créer (login, pwd, email)
+     * @return      mixed      true ou Blogmarks_Exception en cas d'erreur
+     *
+     * @todo        Checks des permissions dans les méthodes *User
+     */
+    function createUser( $props ) {
+        
+        $user =& Element_Factory::makeElement( 'Bm_Users' );
+
+        // On vérifie qu'un utilisateur avec un pseudo identique n'existe pas déjà
+        $user->login = $props['login'];
+        if ( $user->find() ) return Blogmarks::raiseError( "L'utilisateur [$user->login] existe déjà.", 470 );
+
+        // Les mots de passe sont stockés en md5
+        $user->pwd = md5( $props['pwd'] );
+
+        // Email
+        $user->email = $props['email'];
+        
+        // Insertion dans la base de données
+        $res =& $user->insert();
+        if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
+
+        return true;
+        
+    }
+
+    
+    /** Mise à jour des propriétés d'un utilisateur.
+     * On ne peut pas mettre à jour le login.
+     * @param      string     $login      Le login de l'utilisateur à mettre à jour
+     * @param      array      $props      Tableau associatif des propriétés à mettre à jour (pwd, email)
+     * @return     mixed      true ou Blogmarks_Exception en cas d'erreur
+     */
+    function updateUser( $login, $props ) {
+        
+        $user =& Element_Factory::makeElement( 'Bm_Users' );
+
+        // On vérifie que l'utilisateur existe
+        $user->login = $login;
+        if ( ! $user->find(true) ) return Blogmarks::raiseError( "L'utilisateur [$user->login] n'existe pas.", 404 );
+
+        // Mise à jour des propriétés
+        $user->pwd   = isset($props['pwd'])   ? md5($props['pwd']) : $user->pwd;
+        $user->email = isset($props['email']) ? $props['email']    : $user->email;
+
+        // Mise à jour
+        $res =& $user->update();
+        if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
+    }
+
+
+    /** Suppression d'un utilisateur
+     * @param      string      $login      Le login de l'utilisateur.
+     * @return     mixed       true ou Blogmarks_Exception en cas d'erreur
+     */
+    function deleteUser( $login ) {
+
+        $user =& Element_Factory::makeElement( 'Bm_Users' );
+
+        // On vérifie que l'utilisateur existe
+        $user->login = $login;
+        if ( ! $user->find() ) return Blogmarks::raiseError( "L'utilisateur [$user->login] n'existe pas.", 404 );
+
+        // Suppression
+        $res =& $user->delete();
+        if ( DB::isError($res) ) return Blogmarks::raiseError( $res->getMessage(), $res->getCode() );
+
+        return true;
+        
     }
 
 
